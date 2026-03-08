@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Person {
+  id     String  @id @default(uuid())
+  name   String
+  email  String  @unique
+  bi     String
+  phone  String
+  users  User[]
+  events Event[]
+}
+
+model User {
+  id           String        @id @default(uuid())
+  person_id    String
+  person       Person        @relation(fields: [person_id], references: [id])
+  password     String
+  role         role          @default(USER)
+  reset_code   String?
+  reset_expire DateTime?
+  events       Event[]
+  ownerEvents  Owner_event[]
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  url       String
+  priority  Int      @default(0)
+  event_id  String
+  event     Event    @relation(fields: [event_id], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Event {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  date_start  DateTime
+  type_event  String
+  date_end    DateTime?
+  promoter    String? // quem está a realizar o evento
+  duration    Int? // duração do evento em minutos
+  contact     Json? // contato para mais informações
+  location    String
+  online      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  owner_id    String // O nosso cliente que é o dono deste evento
+  owner       Person    @relation(fields: [owner_id], references: [id])
+
+  responsible_id String // O nosso funcionario responsável por este evento
+  responsible    User          @relation(fields: [responsible_id], references: [id])
+  packages       Packages[]
+  images         Image[]
+  ownerEvents    Owner_event[]
+  guests         Guest[]
+}
+
+model Packages {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  event_id    String
+  priority    Int      @default(0)
+  event       Event    @relation(fields: [event_id], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model personal_data_formulary {
+  id                String              @id @default(uuid())
+  company_name      String
+  responsible_name  String
+  nif               String
+  email             String
+  phone             String
+  address           String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  request_formulary Request_formulary[]
+}
+
+model Request_formulary {
+  id                String                  @id @default(uuid())
+  title_event       String
+  description_event String
+  date_start        DateTime
+  date_end          DateTime?
+  promoter          String? // quem está a realizar o evento
+  province          String
+  type_event        String
+  location          String
+  personal_data_id  String
+  personal_data     personal_data_formulary @relation(fields: [personal_data_id], references: [id])
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+}
+
+model Guest {
+  id         String       @id @default(uuid())
+  name       String
+  email      String
+  phone      String
+  qr_code    String?
+  code_email String? // código de confirmação para o evento
+  status     status_guest @default(PENDING)
+  link       String
+  event_id   String
+  event      Event        @relation(fields: [event_id], references: [id])
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+model Owner_event {
+  id       String @id @default(uuid())
+  user_id  String
+  event_id String
+  user     User   @relation(fields: [user_id], references: [id])
+  event    Event  @relation(fields: [event_id], references: [id])
+}
+
+enum role {
+  USER
+  ADMIN
+}
+
+enum status_guest {
+  PENDING // fez a solicitacao
+  CONFIRMED // pagou o evento e recebeu o convite
+  COMPLETED // participou do evento, recebeu a fita
+  CANCELLED // cancelou a participação
+  BLOCKED // bloqueado por algum motivo, não pode participar do evento
+}

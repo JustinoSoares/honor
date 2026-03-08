@@ -1,0 +1,165 @@
+
+import { PrismaClient } from '@prisma/client';
+import * as schema from './user.schema';
+const prisma = new PrismaClient();
+
+export class UserService {
+    constructor(private prisma: PrismaClient) { }
+
+    async createUser(data: schema.UserCreate) {
+
+        const existingUser = await this.prisma.person.findFirst({
+            where: {
+                OR: [
+                    { email: data.email },
+                    { bi: data.bi },
+                ],
+            },
+        });
+
+
+        if (existingUser) {
+            return {
+                message: 'Email já cadastrado',
+                status: 400,
+            };
+        }
+
+        const person = await this.prisma.person.create({
+            data: {
+                name: data.name,
+                email: data.email,
+                bi: data.bi,
+                phone: data.phone,
+            },
+        });
+
+        const user = await this.prisma.user.create({
+            data: {
+                password: data.password,
+                person_id: person.id,
+            },
+        });
+        return {
+            id: user.id,
+            name: person.name,
+            email: person.email,
+            bi: person.bi,
+            phone: person.phone,
+            person_id: person.id,
+        } as schema.ResponseUser;
+    }
+
+    async getAllusers(limit = 10, page = 1, search = '') {
+        const skip = (page - 1) * limit;
+        const users = await this.prisma.user.findMany({
+            skip,
+            take: limit,
+            where: {
+                person: {
+                    name: {
+                        contains: search,
+                        mode: 'insensitive',
+                    },
+                },
+            },
+            include: {
+                person: true,
+            },
+        });
+
+        return users.map(user => ({
+            id: user.id,
+            name: user.person.name,
+            email: user.person.email,
+            bi: user.person.bi,
+            phone: user.person.phone,
+            person_id: user.person_id,
+        })) as schema.ResponseUser[];
+    }
+
+    async getUserById(id: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { id },
+            include: { person: true },
+        });
+
+        if (!user) {
+            return {
+                message: 'Usuário não encontrado',
+                status: 404,
+            };
+        }
+
+        return {
+            id: user.id,
+            name: user.person.name,
+            email: user.person.email,
+            bi: user.person.bi,
+            phone: user.person.phone,
+            person_id: user.person_id,
+        } as schema.ResponseUser;
+    }
+
+    async updateUser(id: string, data: schema.UserUpdate) {
+        const user = await this.prisma.user.findUnique({
+            where: { id },
+            include: { person: true },
+        });
+
+        if (!user) {
+            return {
+                message: 'Usuário não encontrado',
+                status: 404,
+            };
+        }
+
+        const updatedPerson = await this.prisma.person.update({
+            where: { id: user.person_id },
+            data: {
+                name: data.name ?? user.person.name,
+                email: data.email ?? user.person.email,
+                bi: data.bi ?? user.person.bi,
+                phone: data.phone ?? user.person.phone,
+            },
+        });
+
+        if (data.password) {
+            await this.prisma.user.update({
+                where: { id },
+                data: { password: data.password },
+            });
+        }
+
+        return {
+            id: user.id,
+            name: updatedPerson.name,
+            email: updatedPerson.email,
+            bi: updatedPerson.bi,
+            phone: updatedPerson.phone,
+            person_id: updatedPerson.id,
+        } as schema.ResponseUser;
+    }
+
+    async deleteUser(id: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { id },
+            include: { person: true },
+        });
+
+        if (!user) {
+            return {
+                message: 'Usuário não encontrado',
+                status: 404,
+            };
+        }
+
+        await this.prisma.user.delete({ where: { id } });
+        await this.prisma.person.delete({ where: { id: user.person_id } });
+
+        return {
+            message: 'Usuário deletado com sucesso',
+            status: 200,
+        } as schema.ResponseBad;
+    }
+}
