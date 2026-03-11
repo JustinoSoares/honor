@@ -7,12 +7,13 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/index.ts",
+    "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "ts-node src/index.ts"
   },
   "dependencies": {
     "@prisma/client": "^7.4.2",
+    "@types/pg": "^8.18.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.2",
     "cors": "^2.8.6",
@@ -20,13 +21,17 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "nodemon": "^3.1.14",
+    "pg": "^8.20.0",
     "prisma": "^7.4.2",
     "socket.io": "^4.8.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@prisma/adapter-pg": "^7.4.2",
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
-    "@types/node": "^25.3.5",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.4.0",
     "@types/nodemon": "^3.1.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",

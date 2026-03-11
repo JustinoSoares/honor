@@ -16,3 +16,25 @@ O Client solicita o convite colocando (email, telefone, e o seu nome).
 O convite é logo enviado no seu email ou whatsapp ou lhe é enviado um link no email para poder acessar e baixar o seu convite único.
           |
 O Client chega no evento, o qr-code é scanneado e a sua entrada é verificada.
+
+
+## Endpointes pesperados
+
+Gerenciamento de usuarios admin
+criate, update, list, each
+
+Gerenciamento de eventos, os eventos precisam ser criados
+associados a uma pessoa, para ela poder receber sempre relatorios
+
+### Fluxo de compra de ingresso
+Os clients acessam o site 
+          |
+Escolher o ingresso
+          | 
+Dizer a quantidade de ingresso
+          |
+Vamos ter o total em dinheiro
+          |
+O client fechar o total e paga
+          | 
+mandamos o link do convite convite 

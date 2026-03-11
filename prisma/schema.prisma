@@ -55,7 +55,7 @@ model Event {
   duration    Int? // duração do evento em minutos
   contact     Json? // contato para mais informações
   location    String
-  online      Boolean   @default(false)
+  available   Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   owner_id    String // O nosso cliente que é o dono deste evento

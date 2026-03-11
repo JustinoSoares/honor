@@ -1,14 +1,15 @@
 
-import { PrismaClient } from '@prisma/client';
+import prisma  from '../../database/prisma';
 import * as schema from './user.schema';
-const prisma = new PrismaClient();
+import * as bcrypt from 'bcrypt';
+
 
 export class UserService {
-    constructor(private prisma: PrismaClient) { }
+    constructor() { }
 
     async createUser(data: schema.UserCreate) {
 
-        const existingUser = await this.prisma.person.findFirst({
+        const existingUser = await prisma.person.findFirst({
             where: {
                 OR: [
                     { email: data.email },
@@ -17,7 +18,6 @@ export class UserService {
             },
         });
 
-
         if (existingUser) {
             return {
                 message: 'Email já cadastrado',
@@ -25,7 +25,7 @@ export class UserService {
             };
         }
 
-        const person = await this.prisma.person.create({
+        const person = await prisma.person.create({
             data: {
                 name: data.name,
                 email: data.email,
@@ -34,9 +34,9 @@ export class UserService {
             },
         });
 
-        const user = await this.prisma.user.create({
+        const user = await prisma.user.create({
             data: {
-                password: data.password,
+                password: await bcrypt.hash(data.password, 10),
                 person_id: person.id,
             },
         });
@@ -50,22 +50,28 @@ export class UserService {
         } as schema.ResponseUser;
     }
 
-    async getAllusers(limit = 10, page = 1, search = '') {
+    async getAllusers(limit = 10, page = 1, search : string = '') {
         const skip = (page - 1) * limit;
-        const users = await this.prisma.user.findMany({
-            skip,
-            take: limit,
-            where: {
+        let whereClause = {};
+
+        if (search) {
+            whereClause = {
                 person: {
                     name: {
                         contains: search,
                         mode: 'insensitive',
                     },
                 },
-            },
+            };
+        }
+
+        const users = await prisma.user.findMany({
+            where: whereClause,
             include: {
                 person: true,
             },
+            skip,
+            take: limit,
         });
 
         return users.map(user => ({
@@ -79,7 +85,7 @@ export class UserService {
     }
 
     async getUserById(id: string) {
-        const user = await this.prisma.user.findUnique({
+        const user = await prisma.user.findUnique({
             where: { id },
             include: { person: true },
         });
@@ -102,7 +108,7 @@ export class UserService {
     }
 
     async updateUser(id: string, data: schema.UserUpdate) {
-        const user = await this.prisma.user.findUnique({
+        const user = await prisma.user.findUnique({
             where: { id },
             include: { person: true },
         });
@@ -114,7 +120,7 @@ export class UserService {
             };
         }
 
-        const updatedPerson = await this.prisma.person.update({
+        const updatedPerson = await prisma.person.update({
             where: { id: user.person_id },
             data: {
                 name: data.name ?? user.person.name,
@@ -125,7 +131,7 @@ export class UserService {
         });
 
         if (data.password) {
-            await this.prisma.user.update({
+            await prisma.user.update({
                 where: { id },
                 data: { password: data.password },
             });
@@ -142,7 +148,7 @@ export class UserService {
     }
 
     async deleteUser(id: string) {
-        const user = await this.prisma.user.findUnique({
+        const user = await prisma.user.findUnique({
             where: { id },
             include: { person: true },
         });
@@ -154,8 +160,8 @@ export class UserService {
             };
         }
 
-        await this.prisma.user.delete({ where: { id } });
-        await this.prisma.person.delete({ where: { id: user.person_id } });
+        await prisma.user.delete({ where: { id } });
+        await prisma.person.delete({ where: { id: user.person_id } });
 
         return {
             message: 'Usuário deletado com sucesso',
