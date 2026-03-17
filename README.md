@@ -38,3 +38,27 @@ Vamos ter o total em dinheiro
 O client fechar o total e paga
           | 
 mandamos o link do convite convite 
+
+
+
+
+## fluxo para hoje
+Organizador cria evento - GOOD
+        ↓
+Sistema publica evento no site - GOOD
+        ↓
+Cliente compra ingresso -- PROGRESS
+        ↓
+Pagamento confirmado
+        ↓
+Sistema gera ticket (QR Code)
+        ↓
+Cliente recebe email com link
+        ↓
+Cliente baixa convite 
+        ↓
+No evento: app escaneia QR 
+        ↓
+API valida ticket x
+        ↓
+Entrada autorizada ou negada
