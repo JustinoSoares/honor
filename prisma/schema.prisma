@@ -12,140 +12,125 @@ datasource db {
   provider = "postgresql"
 }
 
-model Person {
-  id    String @id @default(uuid())
-  name  String
-  email String @unique
-  bi    String
-  phone String
-  users User[]
-}
-
-model Owner {
-  id     String  @id @default(uuid())
-  name   String
-  email  String
-  phone  String
-  events Event[]
-}
-
-model User {
-  id           String        @id @default(uuid())
-  person_id    String
-  person       Person        @relation(fields: [person_id], references: [id])
+model user {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  phone        String
   password     String
-  role         role          @default(USER)
+  role         role      @default(USER)
   reset_code   String?
   reset_expire DateTime?
-  events       Event[]
-  ownerEvents  Owner_event[]
-}
-
-model Image {
-  id        String   @id @default(uuid())
-  url       String
-  priority  Int      @default(0)
-  event_id  String
-  event     Event    @relation(fields: [event_id], references: [id])
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-}
-
-model Event {
-  id          String    @id @default(uuid())
-  title       String
-  description String
-  date_start  DateTime
-  type_event  String
-  date_end    DateTime?
-  promoter    String? // quem está a realizar o evento
-  duration    Int? // duração do evento em minutos
-  contact     Json? // contato para mais informações
-  location    String
-  province    String
-  available   Boolean   @default(false)
+  events       event[]
+  members      member[]
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
-  owner_id    String // O nosso cliente que é o dono deste evento
-  owner       Owner     @relation(fields: [owner_id], references: [id])
-
-  responsible_id String // O nosso funcionario responsável por este evento
-  responsible    User          @relation(fields: [responsible_id], references: [id])
-  packages       Packages[]
-  images         Image[]
-  ownerEvents    Owner_event[]
-  guests         Guest[]
 }
 
-model Packages {
-  id          String   @id @default(uuid())
+model event {
+  id           String    @id @default(uuid())
+  title        String
+  category     String
+  description  String
+  date_start   DateTime
+  date_end     DateTime?
+  promoter     String? // quem está a realizar o evento ou o nome da empresa
+  promoter_nif String? // nif do promotor
+  duration     Int? // duração do evento em minutos
+  contact      Json? // contato para mais informações ["example@example.com", "123456789"]
+  location     String
+  province     String
+  available    Boolean   @default(false)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  classification String? // A, B, C
+  responsible_id String? // O nosso funcionario responsável por este evento
+  responsible    user?           @relation(fields: [responsible_id], references: [id])
+  event_category event_category? @relation(fields: [category], references: [name])
+  images         image[]
+  guests         guest[]
+  packages       packages[]
+  members        member[]
+}
+
+model member {
+  id         String     @id @default(uuid())
+  user_id    String
+  event_id   String
+  user       user       @relation(fields: [user_id], references: [id])
+  event      event      @relation(fields: [event_id], references: [id])
+  permission permission @default(STAFF) // cargo do membro no evento, por exemplo: organizador, voluntário, etc.
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+}
+
+// adiconar categorias para os eventos, como por exemplo: música, teatro, conferência, etc. para facilitar a organização e busca dos eventos
+model event_category {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  events event[]
+}
+
+model packages {
+  id          String       @id @default(uuid())
   name        String
   description String
   price       Float
   event_id    String
-  priority    Int      @default(0)
-  event       Event    @relation(fields: [event_id], references: [id])
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
-}
-
-model personal_data_formulary {
-  id                String              @id @default(uuid())
-  company_name      String
-  responsible_name  String
-  nif               String
-  email             String
-  phone             String
-  address           String
-  created_at         DateTime            @default(now())
-  updated_at         DateTime            @updatedAt
-  request_formulary Request_formulary[]
-}
-
-model Request_formulary {
-  id                String                  @id @default(uuid())
-  title_event       String
-  description_event String
-  date_start        DateTime
-  date_end          DateTime?
-  promoter          String? // quem está a realizar o evento
-  province          String
-  type_event        String
-  location          String
-  personal_data_id  String
-  personal_data     personal_data_formulary @relation(fields: [personal_data_id], references: [id])
-  created_at         DateTime                @default(now())
-  updated_at         DateTime                @updatedAt
-}
-
-model Guest {
-  id         String       @id @default(uuid())
-  name       String
-  email      String
-  phone      String
-  qr_code    String?
-  code_email String? // código de confirmação para o evento
-  status     status_guest @default(PENDING)
-  link       String?
-  is_sent    Boolean      @default(false)
-  is_paid    Boolean      @default(false)
-  is_used    Boolean      @default(false)
-  event_id   String
-  event      Event        @relation(fields: [event_id], references: [id])
+  priority    Int          @default(0)
+  event       event        @relation(fields: [event_id], references: [id])
   created_at  DateTime     @default(now())
   updated_at  DateTime     @updatedAt
+  invitations invitation[]
 }
 
-model Owner_event {
-  id       String @id @default(uuid())
-  user_id  String
-  event_id String
-  user     User   @relation(fields: [user_id], references: [id])
-  event    Event  @relation(fields: [event_id], references: [id])
+model image {
+  id         String   @id @default(uuid())
+  url        String
+  priority   Int      @default(0)
+  event_id   String
+  event      event    @relation(fields: [event_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model invitation {
+  id          String   @id @default(uuid())
+  packages_id String
+  guest_id    String
+  qr_code     String?
+  is_used     Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  package packages @relation(fields: [packages_id], references: [id])
+  guest   guest    @relation(fields: [guest_id], references: [id])
+}
+
+model guest {
+  id               String       @id @default(uuid())
+  name             String
+  email            String
+  phone            String
+  code_email       String? // código de confirmação para o evento
+  expiration_email DateTime? // data de expiração do código de confirmação
+  status           status_guest @default(PENDING)
+  link             String?
+  is_paid          Boolean      @default(false)
+  event_id         String
+  event            event        @relation(fields: [event_id], references: [id])
+  created_at       DateTime     @default(now())
+  updated_at       DateTime     @updatedAt
+  invitations      invitation[]
 }
 
 enum role {
   USER
+  MANAGER
   ADMIN
 }
 
@@ -155,4 +140,9 @@ enum status_guest {
   COMPLETED // participou do evento, recebeu a fita
   CANCELLED // cancelou a participação
   BLOCKED // bloqueado por algum motivo, não pode participar do evento
+}
+
+enum permission {
+  MANAGER
+  STAFF
 }

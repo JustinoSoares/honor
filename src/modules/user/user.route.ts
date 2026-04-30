@@ -1,8 +1,8 @@
 import express from "express";
+const router = express.Router();
 import { UserController } from "./user.controller";
 import { validate } from "../../middleware/validate";
 import * as userSchema from "./user.schema";
-const router = express.Router();
 const userController = new UserController();
 
 router.post("/create", validate(userSchema.UserSchema), userController.createUser);

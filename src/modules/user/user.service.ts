@@ -1,4 +1,5 @@
 
+import { role } from '@prisma/client';
 import prisma  from '../../database/prisma';
 import * as schema from './user.schema';
 import * as bcrypt from 'bcrypt';
@@ -8,45 +9,38 @@ export class UserService {
     constructor() { }
 
     async createUser(data: schema.UserCreate) {
-
-        const existingUser = await prisma.person.findFirst({
+        const existingUser = await prisma.user.findFirst({
             where: {
                 OR: [
                     { email: data.email },
-                    { bi: data.bi },
+                    { phone: data.phone },
                 ],
             },
         });
 
         if (existingUser) {
             return {
-                message: 'Email já cadastrado',
+                message: 'Email ou telefone já cadastrado',
                 status: 400,
             };
         }
 
-        const person = await prisma.person.create({
+        const user = await prisma.user.create({
             data: {
                 name: data.name,
                 email: data.email,
-                bi: data.bi,
                 phone: data.phone,
-            },
-        });
-
-        const user = await prisma.user.create({
-            data: {
                 password: await bcrypt.hash(data.password, 10),
-                person_id: person.id,
-            },
+            }
         });
         return {
             id: user.id,
-            name: person.name,
-            email: person.email,
-            bi: person.bi,
-            phone: person.phone,
-            person_id: person.id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            role: user.role as role,
+            created_at: user.created_at,
+            updated_at: user.updated_at,
         } as schema.ResponseUser;
     }
 
@@ -67,27 +61,26 @@ export class UserService {
 
         const users = await prisma.user.findMany({
             where: whereClause,
-            include: {
-                person: true,
-            },
             skip,
             take: limit,
         });
 
-        return users.map(user => ({
+        const totalUsers = await prisma.user.count({ where: whereClause });
+
+        return [users.map(user => ({
             id: user.id,
-            name: user.person.name,
-            email: user.person.email,
-            bi: user.person.bi,
-            phone: user.person.phone,
-            person_id: user.person_id,
-        })) as schema.ResponseUser[];
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            role: user.role as role,
+            created_at: user.created_at,
+            updated_at: user.updated_at,
+        })) as schema.ResponseUser[], totalUsers];
     }
 
     async getUserById(id: string) {
         const user = await prisma.user.findUnique({
             where: { id },
-            include: { person: true },
         });
 
         if (!user) {
@@ -99,18 +92,18 @@ export class UserService {
 
         return {
             id: user.id,
-            name: user.person.name,
-            email: user.person.email,
-            bi: user.person.bi,
-            phone: user.person.phone,
-            person_id: user.person_id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            role: user.role as role,
+            created_at: user.created_at,
+            updated_at: user.updated_at,
         } as schema.ResponseUser;
     }
 
     async updateUser(id: string, data: schema.UserUpdate) {
         const user = await prisma.user.findUnique({
             where: { id },
-            include: { person: true },
         });
 
         if (!user) {
@@ -120,13 +113,12 @@ export class UserService {
             };
         }
 
-        const updatedPerson = await prisma.person.update({
-            where: { id: user.person_id },
+        const updatedUser = await prisma.user.update({
+            where: { id: user.id },
             data: {
-                name: data.name ?? user.person.name,
-                email: data.email ?? user.person.email,
-                bi: data.bi ?? user.person.bi,
-                phone: data.phone ?? user.person.phone,
+                name: data.name ?? user.name,
+                email: data.email ?? user.email,
+                phone: data.phone ?? user.phone,
             },
         });
 
@@ -136,21 +128,29 @@ export class UserService {
                 data: { password: data.password },
             });
         }
+            
+
+        if (data.password) {
+            await prisma.user.update({
+                where: { id },
+                data: { password: data.password },
+            });
+        }
 
         return {
-            id: user.id,
-            name: updatedPerson.name,
-            email: updatedPerson.email,
-            bi: updatedPerson.bi,
-            phone: updatedPerson.phone,
-            person_id: updatedPerson.id,
+            id: updatedUser.id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            phone: updatedUser.phone,
+            role: updatedUser.role as role,
+            created_at: updatedUser.created_at,
+            updated_at: updatedUser.updated_at,
         } as schema.ResponseUser;
     }
 
     async deleteUser(id: string) {
         const user = await prisma.user.findUnique({
             where: { id },
-            include: { person: true },
         });
 
         if (!user) {
@@ -161,7 +161,6 @@ export class UserService {
         }
 
         await prisma.user.delete({ where: { id } });
-        await prisma.person.delete({ where: { id: user.person_id } });
 
         return {
             message: 'Usuário deletado com sucesso',

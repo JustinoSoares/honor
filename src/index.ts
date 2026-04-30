@@ -3,8 +3,6 @@ import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import userRoutes from './modules/user/user.route';
-import authRoutes from './modules/auth/auth.route';
-import eventRoutes from './modules/event/event.route';
 
 const app = express();
 const httpServer = createServer(app);
@@ -26,8 +24,8 @@ io.on('connection', (socket) => {
 });
 
 app.use('/api/v1/user', userRoutes);
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/event', eventRoutes);
+//app.use('/api/v1/auth', authRoutes);
+//app.use('/api/v1/event', eventRoutes);
 
 
 const PORT = process.env.PORT || 3000;

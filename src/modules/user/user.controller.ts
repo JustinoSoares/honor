@@ -21,13 +21,20 @@ export class UserController {
     async getAllUsers(req: Request, res: Response) {
         try {
             const { limit, page, search } = req.query;
-            const users = await userService.getAllusers(
+            const [users, totalUsers] = await userService.getAllusers(
                 Number(limit) || 10,
                 Number(page) || 1,
                 String(search) || ''
             );
 
-            return res.status(200).json(users);
+            return res.status(200).json({
+                data : users,
+                meta: {
+                    total: totalUsers,
+                    page: Number(page) || 1,
+                    limit: Number(limit) || 10,
+                },
+            });
         } catch (error) {
             console.error(error);
             return res.status(500).json({ message: 'Erro ao buscar usuários' });
