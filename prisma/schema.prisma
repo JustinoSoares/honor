@@ -19,6 +19,7 @@ model user {
   phone        String
   password     String
   role         role      @default(USER)
+  verified     Boolean   @default(false)
   reset_code   String?
   reset_expire DateTime?
   events       event[]
@@ -34,10 +35,10 @@ model event {
   description  String
   date_start   DateTime
   date_end     DateTime?
-  promoter     String? // quem está a realizar o evento ou o nome da empresa
-  promoter_nif String? // nif do promotor
+  promoter     String // quem está a realizar o evento ou o nome da empresa
+  promoter_nif String // nif do promotor
   duration     Int? // duração do evento em minutos
-  contact      Json? // contato para mais informações ["example@example.com", "123456789"]
+  contact      Json // contato para mais informações ["example@example.com", "123456789"]
   location     String
   province     String
   available    Boolean   @default(false)
@@ -58,6 +59,7 @@ model member {
   id         String     @id @default(uuid())
   user_id    String
   event_id   String
+  name       String // nome do membro, para facilitar a identificação, por exemplo: João Silva
   user       user       @relation(fields: [user_id], references: [id])
   event      event      @relation(fields: [event_id], references: [id])
   permission permission @default(STAFF) // cargo do membro no evento, por exemplo: organizador, voluntário, etc.
@@ -69,6 +71,7 @@ model member {
 model event_category {
   id         String   @id @default(uuid())
   name       String   @unique
+  active     Boolean  @default(true)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

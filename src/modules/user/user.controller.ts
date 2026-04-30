@@ -20,10 +20,10 @@ export class UserController {
 
     async getAllUsers(req: Request, res: Response) {
         try {
-            const { limit, page, search } = req.query;
+            const { page, per_page, search } = req.query;
             const [users, totalUsers] = await userService.getAllusers(
-                Number(limit) || 10,
                 Number(page) || 1,
+                Number(per_page) || 10,
                 String(search) || ''
             );
 
@@ -32,7 +32,8 @@ export class UserController {
                 meta: {
                     total: totalUsers,
                     page: Number(page) || 1,
-                    limit: Number(limit) || 10,
+                    per_page: Number(per_page) || 10,
+                    total_pages: Math.ceil(totalUsers / (Number(per_page) || 10)),
                 },
             });
         } catch (error) {

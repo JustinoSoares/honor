@@ -1,88 +1,260 @@
-// import z from "zod";
+import z from "zod";
 
-// export const EventSchema = z.object({
-//     title: z.string("O título do evento é obrigatório").min(1, 'O título do evento é obrigatório'),
-//     description: z.string("A descrição do evento é obrigatória").min(1, 'A descrição do evento é obrigatória'),
-//     date_start: z.string("A data de início do evento é obrigatória").refine((date) => !isNaN(Date.parse(date)), {
-//         message: 'Data de início inválida',
-//     }),
-//     date_end: z.string("A data de término do evento é obrigatória").refine((date) => !isNaN(Date.parse(date)), {
-//         message: 'Data de término inválida',
-//     }).optional(),
-//     promoter: z.string("O promotor do evento é obrigatório").min(1, 'O promotor do evento é obrigatório').optional(),
-//     duration : z.number("A duração do evento em minuto deve ser um número inteiro positivo").int().positive().optional(),
-//     province: z.string("A província do evento é obrigatória").min(1, 'A província do evento é obrigatória'),
-//     type_event: z.string("O tipo do evento é obrigatório").min(1, 'O tipo do evento é obrigatório'),
-//     location: z.string("A localização do evento é obrigatória").min(1, 'A localização do evento é obrigatória'),
-//     available : z.boolean().default(false).optional(),
-//     owner: z.object({
-//         name: z.string("O nome do dono do evento é obrigatório").min(1, 'O nome do dono do evento é obrigatório'),
-//         email: z.string("O email do dono do evento é obrigatório").email('Endereço de email inválido'),
-//         phone: z.string("O telefone do dono do evento é obrigatório").min(1, 'O telefone do dono do evento é obrigatório'),
-//     })
-// });
+export const CreateEventSchema = z.object({
+  title: z
+    .string("O título do evento é obrigatório")
+    .min(1, "O título do evento é obrigatório"),
+  description: z
+    .string("A descrição do evento é obrigatória")
+    .min(1, "A descrição do evento é obrigatória"),
+  date_start: z
+    .string("A data de início do evento é obrigatória")
+    .refine((date) => !isNaN(Date.parse(date)), {
+      message: "Data de início inválida",
+    }),
+  date_end: z
+    .string("A data de término do evento é obrigatória")
+    .refine((date) => !isNaN(Date.parse(date)), {
+      message: "Data de término inválida",
+    })
+    .optional(),
+  promoter: z
+    .string("O promotor do evento é obrigatório")
+    .min(1, "O promotor do evento é obrigatório"),
+  promoter_nif: z
+    .string("O NIF do promotor do evento é obrigatório")
+    .min(1, "O NIF do promotor do evento é obrigatório"),
+  category: z
+    .string("A categoria do evento é obrigatória")
+    .min(1, "A categoria do evento é obrigatória")
+    .optional(),
+  duration: z
+    .number("A duração do evento em minuto deve ser um número inteiro positivo")
+    .int()
+    .positive()
+    .optional(),
+  province: z
+    .string("A província do evento é obrigatória")
+    .min(1, "A província do evento é obrigatória"),
+  location: z
+    .string("A localização do evento é obrigatória")
+    .min(1, "A localização do evento é obrigatória"),
+  contact: z.object({
+    option: z.string("O email do contato é obrigatório"),
+    option2: z.string("O telefone do contato é obrigatório").optional(),
+  }),
+  classification: z.enum(["A", "B", "C"]).openapi({ example: "C" }),
 
-// export type EventCreate = z.infer<typeof EventSchema>;
+  packages: z
+    .array(
+      z.object({
+        name: z
+          .string("O nome do pacote é obrigatório")
+          .min(1, "O nome do pacote é obrigatório"),
+        price: z
+          .number("O preço do pacote deve ser um número")
+          .positive("O preço do pacote deve ser um número positivo"),
+        priority: z
+          .number("A prioridade do pacote deve ser um número inteiro")
+          .int()
+          .positive(
+            "A prioridade do pacote deve ser um número inteiro positivo",
+          ),
+        description: z
+          .string("A descrição do pacote é obrigatória")
+          .min(1, "A descrição do pacote é obrigatória"),
+      }),
+    )
+    .optional(),
+});
 
-// export const EventUpdateSchema = z.object({
-//     title: z.string().min(1, 'O título do evento é obrigatório').optional(),
-//     description: z.string().min(1, 'A descrição do evento é obrigatória').optional(),
-//     date_start: z.string().refine((date) => !isNaN(Date.parse(date)), {
-//         message: 'Data de início inválida',
-//     }).optional(),
-//     date_end: z.string().refine((date) => !isNaN(Date.parse(date)), {
-//         message: 'Data de término inválida',
-//     }).optional(),
-//     promoter: z.string().min(1, 'O promotor do evento é obrigatório').optional(),
-//     duration : z.number().int().positive('A duração do evento em minuto deve ser um número inteiro positivo').optional(),
-//     province: z.string().min(1, 'A província do evento é obrigatória').optional(),
-//     type_event: z.string().min(1, 'O tipo do evento é obrigatório').optional(),
-//     location: z.string().min(1, 'A localização do evento é obrigatória').optional(),
-//     available : z.boolean().default(false).optional(),
-//     owner: z.object({
-//         name: z.string("O nome do dono do evento é obrigatório").min(1, 'O nome do dono do evento é obrigatório'),
-//         email: z.string("O email do dono do evento é obrigatório").email('Endereço de email inválido'),
-//         phone: z.string("O telefone do dono do evento é obrigatório").min(1, 'O telefone do dono do evento é obrigatório'),
-//     }).optional(),
-// });
+export type EventCreate = z.infer<typeof CreateEventSchema>;
 
-// export type EventUpdate = z.infer<typeof EventUpdateSchema>;
+export const CreatePackage = z.object({
+  name: z
+    .string("O nome do pacote é obrigatório")
+    .min(1, "O nome do pacote é obrigatório"),
+  price: z
+    .number("O preço do pacote deve ser um número")
+    .positive("O preço do pacote deve ser um número positivo"),
+  priority: z
+    .number("A prioridade do pacote deve ser um número inteiro")
+    .int()
+    .positive("A prioridade do pacote deve ser um número inteiro positivo"),
+  description: z
+    .string("A descrição do pacote é obrigatória")
+    .min(1, "A descrição do pacote é obrigatória"),
+});
 
-// export const ResponseEventSchema = z.object({
-//     id: z.string(),
-//     title: z.string(),
-//     description: z.string(),
-//     date_start: z.string(),
-//     date_end: z.string().nullable(),
-//     promoter: z.string().nullable(),
-//     duration : z.number().int().positive('A duração do evento em minuto deve ser um número inteiro positivo').nullable(),
-//     province: z.string(),
-//     type_event: z.string(),
-//     location: z.string(),
-//     available : z.boolean().default(false),
-//     responsible: z.object({
-//         id: z.string(),
-//         name: z.string(),
-//         email: z.string(),
-//         bi: z.string(),
-//         phone: z.string(),
-//         person_id: z.string(),
-//     }),
-//     owner: z.object({
-//         id: z.string(),
-//         name: z.string(),
-//         email: z.string(),
-//         phone: z.string(),
-//     }),
-//     created_at: z.string().optional(),
-//     updated_at: z.string().optional(),
-// });
+export type PackageCreate = z.infer<typeof CreatePackage>;
 
-// export type ResponseEvent = z.infer<typeof ResponseEventSchema>;
+export const createMemberSchema = z.object({
+  name: z
+    .string("O nome do membro é obrigatório")
+    .min(1, "O nome do membro é obrigatório"),
+  user_id: z
+    .string("O ID do usuário é obrigatório")
+    .uuid("O ID do usuário deve ser um UUID"),
+  event_id: z
+    .string("O ID do evento é obrigatório")
+    .uuid("O ID do evento deve ser um UUID"),
+  permission: z
+    .enum(["MANAGER", "STAFF"])
+    .openapi({ example: "MANAGER" }),
+});
 
-// export const ResponseBadSchema = z.object({
-//     message: z.string(),
-//     status: z.number(),
-// });
+export type CreateMember = z.infer<typeof createMemberSchema>;
 
-// export type ResponseBad = z.infer<typeof ResponseBadSchema>;
+export const ResponseMemberSchema = z.object({
+  id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+  name: z.string().openapi({ example: "João Silva" }),
+  user_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+  event_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+  permission: z
+    .enum(["MANAGER", "STAFF"])
+    .openapi({ example: "MANAGER" }),
+});
+
+export type ResponseMember = z.infer<typeof ResponseMemberSchema>;
+
+export const ResponsePackageSchema = z
+  .object({
+    id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+    name: z.string().openapi({ example: "Pacote VIP" }),
+    price: z.number().openapi({ example: 150.0 }),
+    priority: z.number().openapi({ example: 1 }),
+    description: z
+      .string()
+      .openapi({ example: "Acesso VIP com benefícios exclusivos." }),
+  })
+  .openapi("ResponsePackage");
+
+export type ResponsePackage = z.infer<typeof ResponsePackageSchema>;
+
+export const EventUpdateSchema = z.object({
+  title: z
+    .string("O título do evento é obrigatório")
+    .min(1, "O título do evento é obrigatório")
+    .optional(),
+  description: z
+    .string("A descrição do evento é obrigatória")
+    .min(1, "A descrição do evento é obrigatória")
+    .optional(),
+  date_start: z
+    .string("A data de início do evento é obrigatória")
+    .refine((date) => !isNaN(Date.parse(date)), {
+      message: "Data de início inválida",
+    })
+    .optional(),
+  date_end: z
+    .string("A data de término do evento é obrigatória")
+    .refine((date) => !isNaN(Date.parse(date)), {
+      message: "Data de término inválida",
+    })
+    .optional(),
+  promoter: z
+    .string("O promotor do evento é obrigatório")
+    .min(1, "O promotor do evento é obrigatório")
+    .optional(),
+  promoter_nif: z
+    .string("O NIF do promotor do evento é obrigatório")
+    .min(1, "O NIF do promotor do evento é obrigatório")
+    .optional(),
+  category: z
+    .string("A categoria do evento é obrigatória")
+    .min(1, "A categoria do evento é obrigatória")
+    .optional(),
+  duration: z
+    .number("A duração do evento em minuto deve ser um número inteiro positivo")
+    .int()
+    .positive()
+    .optional(),
+  province: z
+    .string("A província do evento é obrigatória")
+    .min(1, "A província do evento é obrigatória")
+    .optional(),
+  location: z
+    .string("A localização do evento é obrigatória")
+    .min(1, "A localização do evento é obrigatória")
+    .optional(),
+  contact: z
+    .object({
+      option: z.string("O email do contato é obrigatório"),
+      option2: z.string("O telefone do contato é obrigatório").optional(),
+    })
+    .optional(),
+  classification: z.enum(["A", "B", "C"]).openapi({ example: "C" }).optional(),
+});
+
+export type EventUpdate = z.infer<typeof EventUpdateSchema>;
+
+export const ResponseEventSchema = z
+  .object({
+    id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+    title: z.string().openapi({ example: "Evento de Música" }),
+    description: z
+      .string()
+      .openapi({ example: "Um evento de música ao vivo com várias bandas." }),
+    date_start: z.string().openapi({ example: "2024-01-01T20:00:00Z" }),
+    date_end: z
+      .string()
+      .optional()
+      .openapi({ example: "2024-01-01T23:00:00Z" }),
+    promoter: z.string().openapi({ example: "Promotor XYZ" }),
+    promoter_nif: z.string().openapi({ example: "123456789" }),
+    category: z.string().openapi({ example: "Música" }),
+    duration: z.number().optional().openapi({ example: 180 }),
+    province: z.string().openapi({ example: "Luanda" }),
+    location: z.string().openapi({ example: "Estádio Nacional" }),
+    contact: z.object({
+      option: z.string(),
+      option2: z.string().optional(),
+    }),
+    available: z.boolean().openapi({ example: true }),
+    classification: z
+      .enum(["A", "B", "C"])
+      .openapi({ example: "C" })
+      .optional(),
+    created_at: z
+      .string()
+      .datetime()
+      .openapi({ example: "2024-01-01T00:00:00Z" }),
+    updated_at: z
+      .string()
+      .datetime()
+      .openapi({ example: "2024-01-01T00:00:00Z" }),
+
+    packages: z
+      .array(
+        z.object({
+          id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+          name: z.string().openapi({ example: "Pacote VIP" }),
+          price: z.number().openapi({ example: 150.0 }),
+          priority: z.number().openapi({ example: 1 }),
+          description: z
+            .string()
+            .openapi({ example: "Acesso VIP com benefícios exclusivos." }),
+        }),
+      )
+      .optional(),
+      members : z.array(
+        z.object({
+          id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+          name: z.string().openapi({ example: "João Silva" }),
+          user_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+          permission: z
+            .enum(["MANAGER", "STAFF"])
+            .openapi({ example: "MANAGER" }),
+        })
+      ).optional(),
+  })
+  .openapi("ResponseEvent");
+
+export type ResponseEvent = z.infer<typeof ResponseEventSchema>;
+
+export const ResponseBadSchema = z.object({
+  message: z.string(),
+  status: z.number(),
+});
+
+export type ResponseBad = z.infer<typeof ResponseBadSchema>;

@@ -1,170 +1,162 @@
-
-import { role } from '@prisma/client';
-import prisma  from '../../database/prisma';
-import * as schema from './user.schema';
-import * as bcrypt from 'bcrypt';
-
+import { role } from "@prisma/client";
+import prisma from "../../database/prisma";
+import * as schema from "./user.schema";
+import * as bcrypt from "bcrypt";
 
 export class UserService {
-    constructor() { }
+  constructor() {}
 
-    async createUser(data: schema.UserCreate) {
-        const existingUser = await prisma.user.findFirst({
-            where: {
-                OR: [
-                    { email: data.email },
-                    { phone: data.phone },
-                ],
-            },
-        });
+  async createUser(data: schema.UserCreate) {
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email: data.email }, { phone: data.phone }],
+      },
+    });
 
-        if (existingUser) {
-            return {
-                message: 'Email ou telefone já cadastrado',
-                status: 400,
-            };
-        }
-
-        const user = await prisma.user.create({
-            data: {
-                name: data.name,
-                email: data.email,
-                phone: data.phone,
-                password: await bcrypt.hash(data.password, 10),
-            }
-        });
-        return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            role: user.role as role,
-            created_at: user.created_at,
-            updated_at: user.updated_at,
-        } as schema.ResponseUser;
+    if (existingUser) {
+      return {
+        message: "Email ou telefone já cadastrado",
+        status: 400,
+      };
     }
 
-    async getAllusers(limit = 10, page = 1, search : string = '') {
-        const skip = (page - 1) * limit;
-        let whereClause = {};
+    const user = await prisma.user.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        password: await bcrypt.hash(data.password, 10),
+      },
+    });
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role as role,
+      created_at: user.created_at.toISOString(),
+      updated_at: user.updated_at.toISOString(),
+    } as schema.ResponseUser;
+  }
 
-        if (search) {
-            whereClause = {
-                person: {
-                    name: {
-                        contains: search,
-                        mode: 'insensitive',
-                    },
-                },
-            };
-        }
+  async getAllusers(
+    page = 1,
+    per_page = 10,
+    search: string = "",
+  ): Promise<[schema.ResponseUser[], number]> {
+    const skip = (page - 1) * per_page;
+    let whereClause = {};
 
-        const users = await prisma.user.findMany({
-            where: whereClause,
-            skip,
-            take: limit,
-        });
-
-        const totalUsers = await prisma.user.count({ where: whereClause });
-
-        return [users.map(user => ({
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            role: user.role as role,
-            created_at: user.created_at,
-            updated_at: user.updated_at,
-        })) as schema.ResponseUser[], totalUsers];
+    if (search != "undefined" && search !== "") {
+      whereClause = {
+        name: {
+          contains: search,
+          mode: "insensitive",
+        },
+      };
     }
 
-    async getUserById(id: string) {
-        const user = await prisma.user.findUnique({
-            where: { id },
-        });
+    const users = await prisma.user.findMany({
+      where: whereClause,
+      skip,
+      take: per_page,
+    });
 
-        if (!user) {
-            return {
-                message: 'Usuário não encontrado',
-                status: 404,
-            };
-        }
+    const totalUsers = await prisma.user.count({ where: whereClause });
 
-        return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            role: user.role as role,
-            created_at: user.created_at,
-            updated_at: user.updated_at,
-        } as schema.ResponseUser;
+    return [
+      users.map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role as role,
+        created_at: user.created_at.toISOString(),
+        updated_at: user.updated_at.toISOString(),
+      })) as schema.ResponseUser[],
+      totalUsers as number,
+    ];
+  }
+
+  async getUserById(id: string) {
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      return {
+        message: "Usuário não encontrado",
+        status: 404,
+      };
     }
 
-    async updateUser(id: string, data: schema.UserUpdate) {
-        const user = await prisma.user.findUnique({
-            where: { id },
-        });
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role as role,
+      created_at: user.created_at.toISOString(),
+      updated_at: user.updated_at.toISOString(),
+    } as schema.ResponseUser;
+  }
 
-        if (!user) {
-            return {
-                message: 'Usuário não encontrado',
-                status: 404,
-            };
-        }
+  async updateUser(id: string, data: schema.UserUpdate) {
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
 
-        const updatedUser = await prisma.user.update({
-            where: { id: user.id },
-            data: {
-                name: data.name ?? user.name,
-                email: data.email ?? user.email,
-                phone: data.phone ?? user.phone,
-            },
-        });
-
-        if (data.password) {
-            await prisma.user.update({
-                where: { id },
-                data: { password: data.password },
-            });
-        }
-            
-
-        if (data.password) {
-            await prisma.user.update({
-                where: { id },
-                data: { password: data.password },
-            });
-        }
-
-        return {
-            id: updatedUser.id,
-            name: updatedUser.name,
-            email: updatedUser.email,
-            phone: updatedUser.phone,
-            role: updatedUser.role as role,
-            created_at: updatedUser.created_at,
-            updated_at: updatedUser.updated_at,
-        } as schema.ResponseUser;
+    if (!user) {
+      return {
+        message: "Usuário não encontrado",
+        status: 404,
+      };
     }
 
-    async deleteUser(id: string) {
-        const user = await prisma.user.findUnique({
-            where: { id },
-        });
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        name: data.name ?? user.name,
+        email: data.email ?? user.email,
+        phone: data.phone ?? user.phone,
+      },
+    });
 
-        if (!user) {
-            return {
-                message: 'Usuário não encontrado',
-                status: 404,
-            };
-        }
-
-        await prisma.user.delete({ where: { id } });
-
-        return {
-            message: 'Usuário deletado com sucesso',
-            status: 200,
-        } as schema.ResponseBad;
+    if (data.password) {
+      await prisma.user.update({
+        where: { id : user.id },
+        data: { password:  await bcrypt.hash(data.password, 10) },
+      });
     }
+
+    return {
+      id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      phone: updatedUser.phone,
+      role: updatedUser.role as role,
+      created_at: updatedUser.created_at.toISOString(),
+      updated_at: updatedUser.updated_at.toISOString(),
+    } as schema.ResponseUser;
+  }
+
+  async deleteUser(id: string) {
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      return {
+        message: "Usuário não encontrado",
+        status: 404,
+      };
+    }
+
+    await prisma.user.delete({ where: { id } });
+
+    return {
+      message: "Usuário deletado com sucesso",
+      status: 200,
+    } as schema.ResponseBad;
+  }
 }
