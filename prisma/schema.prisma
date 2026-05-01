@@ -53,6 +53,7 @@ model event {
   guests         guest[]
   packages       packages[]
   members        member[]
+  invitations    invitation[]
 }
 
 model member {
@@ -79,16 +80,17 @@ model event_category {
 }
 
 model packages {
-  id          String       @id @default(uuid())
-  name        String
-  description String
-  price       Float
-  event_id    String
-  priority    Int          @default(0)
-  event       event        @relation(fields: [event_id], references: [id])
-  created_at  DateTime     @default(now())
-  updated_at  DateTime     @updatedAt
-  invitations invitation[]
+  id            String       @id @default(uuid())
+  name          String
+  description   String
+  price         Float
+  default_color String?
+  event_id      String
+  priority      Int          @default(0)
+  event         event        @relation(fields: [event_id], references: [id])
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @updatedAt
+  invitations   invitation[]
 }
 
 model image {
@@ -102,16 +104,21 @@ model image {
 }
 
 model invitation {
-  id          String   @id @default(uuid())
-  packages_id String
-  guest_id    String
-  qr_code     String?
-  is_used     Boolean  @default(false)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  package packages @relation(fields: [packages_id], references: [id])
-  guest   guest    @relation(fields: [guest_id], references: [id])
+  id            String   @id @default(uuid())
+  package_id    String
+  guest_id      String
+  package_name  String // nome do pacote, para facilitar a identificação por exemplo: VIP, Pista, etc.
+  package_color String? // cor do pacote, para facilitar a identificação por exemplo: vermelho, azul, etc.
+  name          String // nome do convidado, para facilitar a identificação por exemplo: João Silva
+  qr_code       String?
+  event_id      String
+  is_used       Boolean  @default(false)
+  is_paid       Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  package       packages @relation(fields: [package_id], references: [id])
+  guest         guest    @relation(fields: [guest_id], references: [id])
+  event         event    @relation(fields: [event_id], references: [id])
 }
 
 model guest {
@@ -123,12 +130,26 @@ model guest {
   expiration_email DateTime? // data de expiração do código de confirmação
   status           status_guest @default(PENDING)
   link             String?
-  is_paid          Boolean      @default(false)
+  debt             Float        @default(0)
   event_id         String
   event            event        @relation(fields: [event_id], references: [id])
   created_at       DateTime     @default(now())
   updated_at       DateTime     @updatedAt
   invitations      invitation[]
+  payments         payment[]
+}
+
+model payment {
+  id         String         @id @default(uuid())
+  guest_id   String
+  ref        String         @unique // referência do pagamento, por exemplo: número do boleto, id da transação, etc.
+  amount     Float
+  method     String // método de pagamento, por exemplo: cartão de crédito, boleto, etc.
+  status     payment_status @default(PENDING) // status do pagamento, por exemplo: pendente, aprovado, recusado, etc.
+  created_at DateTime       @default(now())
+  updated_at DateTime       @updatedAt
+
+  guest guest @relation(fields: [guest_id], references: [id])
 }
 
 enum role {
@@ -139,13 +160,19 @@ enum role {
 
 enum status_guest {
   PENDING // fez a solicitacao
-  CONFIRMED // pagou o evento e recebeu o convite
-  COMPLETED // participou do evento, recebeu a fita
-  CANCELLED // cancelou a participação
+  APPROVED // aprovado para participar do evento
+  REJECTED // rejeitado para participar do evento
+  EXPIRED // expirou o prazo para confirmação do convite
   BLOCKED // bloqueado por algum motivo, não pode participar do evento
 }
 
 enum permission {
   MANAGER
   STAFF
+}
+
+enum payment_status {
+  PENDING
+  APPROVED
+  REJECTED
 }

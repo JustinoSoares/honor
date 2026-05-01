@@ -66,6 +66,20 @@ export const CreateEventSchema = z.object({
       }),
     )
     .optional(),
+
+  images: z
+    .array(
+      z.object({
+        url: z
+          .string("A URL da imagem é obrigatória")
+          .min(1, "A URL da imagem é obrigatória"),
+        priority: z
+          .number("A prioridade da imagem deve ser um número inteiro")
+          .int()
+          .optional(),
+      }),
+    )
+    .optional(),
 });
 
 export type EventCreate = z.infer<typeof CreateEventSchema>;
@@ -98,24 +112,52 @@ export const createMemberSchema = z.object({
   event_id: z
     .string("O ID do evento é obrigatório")
     .uuid("O ID do evento deve ser um UUID"),
-  permission: z
-    .enum(["MANAGER", "STAFF"])
-    .openapi({ example: "MANAGER" }),
+  permission: z.enum(["MANAGER", "STAFF"]).openapi({ example: "MANAGER" }),
 });
 
 export type CreateMember = z.infer<typeof createMemberSchema>;
+
+export const addMemberToEventSchema = z.object({
+  email: z
+    .string("O email do usuário é obrigatório")
+    .email("O email do usuário deve ser válido"),
+  permission: z.enum(["MANAGER", "STAFF"]).openapi({ example: "MANAGER" }),
+});
+
+export type AddMemberToEvent = z.infer<typeof addMemberToEventSchema>;
 
 export const ResponseMemberSchema = z.object({
   id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
   name: z.string().openapi({ example: "João Silva" }),
   user_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
   event_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
-  permission: z
-    .enum(["MANAGER", "STAFF"])
-    .openapi({ example: "MANAGER" }),
+  permission: z.enum(["MANAGER", "STAFF"]).openapi({ example: "MANAGER" }),
 });
 
 export type ResponseMember = z.infer<typeof ResponseMemberSchema>;
+
+export const CreateImageSchema = z.object({
+  url: z
+    .string("A URL da imagem é obrigatória")
+    .min(1, "A URL da imagem é obrigatória"),
+  priority: z
+    .number("A prioridade da imagem deve ser um número inteiro")
+    .int()
+    .optional(),
+});
+
+export type CreateImage = z.infer<typeof CreateImageSchema>;
+
+export const ResponseImageSchema = z.object({
+  id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+  url: z.string().openapi({ example: "https://example.com/image.jpg" }),
+  priority: z
+    .number()
+    .optional()
+    .openapi({ example: 1 }),
+});
+
+export type ResponseImage = z.infer<typeof ResponseImageSchema>;
 
 export const ResponsePackageSchema = z
   .object({
@@ -237,7 +279,8 @@ export const ResponseEventSchema = z
         }),
       )
       .optional(),
-      members : z.array(
+    members: z
+      .array(
         z.object({
           id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
           name: z.string().openapi({ example: "João Silva" }),
@@ -245,8 +288,21 @@ export const ResponseEventSchema = z
           permission: z
             .enum(["MANAGER", "STAFF"])
             .openapi({ example: "MANAGER" }),
-        })
-      ).optional(),
+        }),
+      )
+      .optional(),
+    images: z
+      .array(
+        z.object({
+          id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+          url: z.string().openapi({ example: "https://example.com/image.jpg" }),
+          priority: z
+            .number()
+            .optional()
+            .openapi({ example: 1 }),
+        }),
+      )
+      .optional(),
   })
   .openapi("ResponseEvent");
 
@@ -258,3 +314,14 @@ export const ResponseBadSchema = z.object({
 });
 
 export type ResponseBad = z.infer<typeof ResponseBadSchema>;
+
+
+
+export const MetaSchema = z.object({
+  page: z.number().openapi({ example: 1 }),
+  per_page: z.number().openapi({ example: 10 }),
+  total: z.number().openapi({ example: 100 }),
+  total_pages: z.number().openapi({ example: 10 }),
+});
+
+export type Meta = z.infer<typeof MetaSchema>;

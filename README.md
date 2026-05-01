@@ -69,12 +69,12 @@ obs: vai se poder criar categoria do evento (se é vip, normal)
 ## Novo fluxo
 Qualquer pessoas antes de criar um evento deve ter uma conta criada (nome, email, telefone, e senha). $
         |
-Essa mesma pessoa pode adicionar ou ser adicionado como membro gerente desse evento. (master, manager)
+Essa mesma pessoa pode adicionar ou ser adicionado como membro gerente desse evento. (master, manager)  $
         |
-O usuário pode criar um determinado evento depois esse evento precisa ser verificado pela nossa equipa, só assim ele fica disponível para o público.
+O usuário pode criar um determinado evento depois esse evento precisa ser verificado pela nossa equipa, só assim ele fica disponível para o público. $
         |
-A criação do evento é free mas ele pode pagar X na plataforma para ter o seu evento como prioridade sempre, mesmo nas pesquisas e na capa. classificacao a b e c
-        | 
+A criação do evento é free mas ele pode pagar X na plataforma para ter o seu evento como prioridade sempre, mesmo nas pesquisas e na capa. classificacao a b e c $
+        |
 Um membro manager é responsável por controlar um evento podendo scannear o qrcode e ver o histórico de entradas no evento.
         |
 Um membro master de um vento poderá acompanhar o processo todo em tempo real adicionar manegers remover, editar dados do evento bloqueiar pessoas do evento, ver o valor e quantas compras foram feitas.

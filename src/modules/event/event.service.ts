@@ -1,6 +1,7 @@
 import prisma from "../../database/prisma";
 import { validate } from "uuid";
 import * as schema from "./event.schema";
+import { isImageByExtension } from "../../utils/verify_image";
 
 export class EventService {
   constructor() {}
@@ -75,6 +76,15 @@ export class EventService {
           })) || [],
       });
 
+      await prisma.image.createMany({
+        data:
+          data.images?.map((img) => ({
+            url: img.url,
+            priority: img.priority || 0,
+            event_id: event.id,
+          })) || [],
+      });
+
       await prisma.member.create({
         data: {
           user_id,
@@ -89,6 +99,10 @@ export class EventService {
       });
 
       const getMembers = await prisma.member.findMany({
+        where: { event_id: event.id },
+      });
+
+      const getImages = await prisma.image.findMany({
         where: { event_id: event.id },
       });
 
@@ -122,6 +136,11 @@ export class EventService {
           user_id: member.user_id,
           permission: member.permission as "MANAGER" | "STAFF",
         })),
+        images: getImages.map((img) => ({
+          id: img.id,
+          url: img.url,
+          priority: img.priority,
+        })),
       };
 
       return dataResponse;
@@ -132,6 +151,42 @@ export class EventService {
         status: 500,
       };
     }
+  }
+
+  async verifyEvent(
+    event_id: string,
+    user_id: string,
+    available: boolean,
+  ): Promise<{ message: string; status: number }> {
+    if (!validate(event_id) || !validate(user_id)) {
+      return {
+        message: "ID de evento ou usuário inválido",
+        status: 400,
+      };
+    }
+    const existEvent = await prisma.event.findUnique({
+      where: { id: event_id },
+    });
+
+    if (!existEvent) {
+      return {
+        message: "Evento não encontrado",
+        status: 404,
+      };
+    }
+
+    await prisma.event.update({
+      where: { id: event_id },
+      data: {
+        available: available,
+        responsible_id: user_id,
+      },
+    });
+
+    return {
+      message: "Evento atualizado com sucesso",
+      status: 200,
+    };
   }
 
   async getAllEvents(
@@ -189,6 +244,7 @@ export class EventService {
         include: {
           packages: true,
           members: true,
+          images: true,
         },
         orderBy: {
           created_at: "desc",
@@ -229,6 +285,11 @@ export class EventService {
           user_id: member.user_id,
           permission: member.permission as "MANAGER" | "STAFF",
         })),
+        images: event.images.map((img) => ({
+          id: img.id,
+          url: img.url,
+          priority: img.priority,
+        })),
       }));
 
       return {
@@ -258,6 +319,7 @@ export class EventService {
         include: {
           packages: true,
           members: true,
+          images: true,
         },
       });
 
@@ -323,6 +385,11 @@ export class EventService {
           user_id: member.user_id,
           permission: member.permission as "MANAGER" | "STAFF",
         })),
+        images: event.images.map((img) => ({
+          id: img.id,
+          url: img.url,
+          priority: img.priority,
+        })),
       };
 
       return dataResponse;
@@ -343,6 +410,7 @@ export class EventService {
       include: {
         packages: true,
         members: true,
+        images: true,
       },
     });
 
@@ -409,6 +477,11 @@ export class EventService {
         user_id: member.user_id,
         permission: member.permission as "MANAGER" | "STAFF",
       })),
+      images: existingEvent.images.map((img) => ({
+        id: img.id,
+        url: img.url,
+        priority: img.priority,
+      })),
     };
 
     return dataResponse;
@@ -432,6 +505,506 @@ export class EventService {
     });
     return {
       message: "Evento deletado com sucesso",
+      status: 200,
+    };
+  }
+
+  async addPackageToEvent(
+    event_id: string,
+    data: schema.PackageCreate,
+  ): Promise<schema.ResponsePackage | { message: string; status: number }> {
+    const existingEvent = await prisma.event.findUnique({
+      where: { id: event_id },
+      include: {
+        packages: true,
+        members: true,
+      },
+    });
+
+    if (!existingEvent) {
+      return {
+        message: "Evento não encontrado",
+        status: 404,
+      };
+    }
+
+    const newPackage = await prisma.packages.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        priority: data.priority,
+        event_id,
+      },
+    });
+
+    const dataResponse: schema.ResponsePackage = {
+      id: newPackage.id,
+      name: newPackage.name,
+      description: newPackage.description,
+      price: newPackage.price,
+      priority: newPackage.priority,
+    };
+
+    return dataResponse;
+  }
+
+  async editarPackage(
+    package_id: string,
+    data: schema.PackageCreate,
+  ): Promise<schema.ResponsePackage | { message: string; status: number }> {
+    const existingPackage = await prisma.packages.findUnique({
+      where: { id: package_id },
+    });
+
+    if (!existingPackage) {
+      return {
+        message: "Pacote não encontrado",
+        status: 404,
+      };
+    }
+
+    const updatedPackage = await prisma.packages.update({
+      where: { id: package_id },
+      data: {
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        priority: data.priority,
+      },
+    });
+
+    const dataResponse: schema.ResponsePackage = {
+      id: updatedPackage.id,
+      name: updatedPackage.name,
+      description: updatedPackage.description,
+      price: updatedPackage.price,
+      priority: updatedPackage.priority,
+    };
+
+    return dataResponse;
+  }
+
+  async listPackagesByEvent(
+    event_id: string,
+    page = 1,
+    per_page = 10,
+    search = "",
+  ): Promise<
+    | {
+        data: schema.ResponsePackage[];
+        meta: {
+          total: number;
+          page: number;
+          per_page: number;
+          total_pages: number;
+        };
+      }
+    | { message: string; status: number }
+  > {
+    const skip = (page - 1) * per_page;
+
+    const existingEvent = await prisma.event.findUnique({
+      where: { id: event_id },
+    });
+
+    if (!existingEvent) {
+      return {
+        message: "Evento não encontrado",
+        status: 404,
+      };
+    }
+
+    let whereClause = {};
+
+    if (search && search !== "undefined") {
+      whereClause = {
+        name: {
+          contains: search,
+          mode: "insensitive",
+        },
+      };
+    }
+
+    const packages = await prisma.packages.findMany({
+      where: {
+        ...whereClause,
+        event_id,
+      },
+      skip,
+      take: per_page,
+      orderBy: {
+        created_at: "desc",
+      },
+    });
+
+    const total = await prisma.packages.count({
+      where: {
+        ...whereClause,
+        event_id,
+      },
+    });
+
+    const dataResponse: schema.ResponsePackage[] = packages.map((pkg) => ({
+      id: pkg.id,
+      name: pkg.name,
+      description: pkg.description,
+      price: pkg.price,
+      priority: pkg.priority,
+    }));
+
+    return {
+      data: dataResponse,
+      meta: {
+        total,
+        page,
+        per_page,
+        total_pages: Math.ceil(total / per_page),
+      },
+    };
+  }
+
+  async getPackageById(
+    package_id: string,
+  ): Promise<schema.ResponsePackage | { message: string; status: number }> {
+    const existingPackage = await prisma.packages.findUnique({
+      where: { id: package_id },
+    });
+
+    if (!existingPackage) {
+      return {
+        message: "Pacote não encontrado",
+        status: 404,
+      };
+    }
+
+    const dataResponse: schema.ResponsePackage = {
+      id: existingPackage.id,
+      name: existingPackage.name,
+      description: existingPackage.description,
+      price: existingPackage.price,
+      priority: existingPackage.priority,
+    };
+
+    return dataResponse;
+  }
+
+  async deletePackage(
+    package_id: string,
+  ): Promise<{ message: string; status: number }> {
+    const existingPackage = await prisma.packages.findUnique({
+      where: { id: package_id },
+    });
+
+    if (!existingPackage) {
+      return {
+        message: "Pacote não encontrado",
+        status: 404,
+      };
+    }
+
+    await prisma.packages.delete({
+      where: { id: package_id },
+    });
+
+    return {
+      message: "Pacote deletado com sucesso",
+      status: 200,
+    };
+  }
+
+  async addMemberToEvent(
+    event_id: string,
+    data: schema.AddMemberToEvent,
+    user_id: string,
+  ): Promise<schema.ResponseMember | { message: string; status: number }> {
+    const existingEvent = await prisma.event.findUnique({
+      where: { id: event_id },
+    });
+
+    if (!existingEvent) {
+      return {
+        message: "Evento não encontrado",
+        status: 404,
+      };
+    }
+
+    const hasPermission = await prisma.member.findFirst({
+      where: {
+        event_id,
+        user_id: user_id,
+        permission: "MANAGER",
+      },
+    });
+
+    if (!hasPermission) {
+      return {
+        message: "Usuário não tem permissão para adicionar membros",
+        status: 403,
+      };
+    }
+
+    const existingUser = await prisma.user.findFirst({
+      where: { email: data.email },
+    });
+
+    if (!existingUser) {
+      return {
+        message: "Usuário com esse email não encontrado",
+        status: 404,
+      };
+    }
+
+    const existMember = await prisma.member.findFirst({
+      where: {
+        event_id,
+        user_id: existingUser.id,
+      },
+    });
+
+    if (existMember) {
+      return {
+        message: "Usuário já é membro do evento",
+        status: 400,
+      };
+    }
+
+    const newMember = await prisma.member.create({
+      data: {
+        name: existingUser.name,
+        user_id: existingUser.id,
+        event_id,
+        permission: data.permission,
+      },
+    });
+
+    const dataResponse: schema.ResponseMember = {
+      id: newMember.id,
+      name: newMember.name,
+      user_id: newMember.user_id,
+      event_id: newMember.event_id,
+      permission: newMember.permission as "MANAGER" | "STAFF",
+    };
+
+    return dataResponse;
+  }
+
+  async removeMemberFromEvent(
+    event_id: string,
+    user_id: string,
+    authed_id: string,
+  ): Promise<{ message: string; status: number }> {
+    const existingEvent = await prisma.event.findUnique({
+      where: { id: event_id },
+    });
+
+    if (!existingEvent) {
+      return {
+        message: "Evento não encontrado",
+        status: 404,
+      };
+    }
+
+    const hasPermission = await prisma.member.findFirst({
+      where: {
+        event_id,
+        user_id: authed_id,
+        permission: "MANAGER",
+      },
+    });
+
+    if (!hasPermission) {
+      return {
+        message: "Usuário não tem permissão para remover membros",
+        status: 403,
+      };
+    }
+
+    const existingMember = await prisma.member.findFirst({
+      where: {
+        event_id: event_id,
+        user_id: user_id,
+      },
+    });
+
+    if (!existingMember) {
+      return {
+        message: "Membro não encontrado",
+        status: 404,
+      };
+    }
+
+    await prisma.member.delete({
+      where: { id: existingMember.id },
+    });
+
+    return {
+      message: "Membro removido com sucesso",
+      status: 200,
+    };
+  }
+
+  async addImageToEvent(
+    event_id: string,
+    data: schema.CreateImage,
+  ): Promise<schema.ResponseImage | { message: string; status: number }> {
+    const existingEvent = await prisma.event.findUnique({
+      where: { id: event_id },
+    });
+
+    if (!existingEvent) {
+      return {
+        message: "Evento não encontrado",
+        status: 404,
+      };
+    }
+
+    if (isImageByExtension(data.url) == false) {
+      return {
+        message: "URL deve ser de uma imagem válida",
+        status: 400,
+      };
+    }
+
+    const newImage = await prisma.image.create({
+      data: {
+        url: data.url,
+        priority: data.priority || 0,
+        event_id,
+      },
+    });
+
+    const dataResponse: schema.ResponseImage = {
+      id: newImage.id,
+      url: newImage.url,
+      priority: newImage.priority,
+    };
+
+    return dataResponse;
+  }
+
+  async listImagesByEvent(
+    event_id: string,
+    page: number = 1,
+    per_page: number = 10,
+  ): Promise<{ data: schema.ResponseImage[]; meta: schema.Meta } | { message: string; status: number }> {
+    const existingEvent = await prisma.event.findFirst({
+      where: { id: event_id },
+    });
+
+    if (!existingEvent) {
+      return {
+        message: "Evento não encontrado",
+        status: 404,
+      };
+    }
+
+    const images = await prisma.image.findMany({
+      where: { event_id },
+      skip: (page - 1) * per_page,
+      take: per_page,
+    });
+
+    const coutImages = await prisma.image.count({
+      where: { event_id },
+    });
+    const formatImages = images.map((img) => ({
+      id: img.id,
+      url: img.url,
+      priority: img.priority,
+    }));
+
+    return {
+      data: formatImages,
+      meta: {
+        page,
+        per_page,
+        total: formatImages.length,
+        total_pages: Math.ceil(coutImages / per_page),
+      },
+    };
+  }
+
+  async getImageById(
+    image_id: string,
+  ): Promise<schema.ResponseImage | { message: string; status: number }> {
+    const existingImage = await prisma.image.findUnique({
+      where: { id: image_id },
+    });
+    
+    if (!existingImage) {
+      return {
+        message: "Imagem não encontrada",
+        status: 404,
+      };
+    }
+
+    const dataResponse: schema.ResponseImage = {
+      id: existingImage.id,
+      url: existingImage.url,
+      priority: existingImage.priority,
+    };
+
+    return dataResponse;
+  }
+
+  async updateImage(
+    image_id: string,
+    data: schema.CreateImage,
+  ): Promise<schema.ResponseImage | { message: string; status: number }> {
+    const existingImage = await prisma.image.findUnique({
+      where: { id: image_id },
+    });
+    
+    if (!existingImage) {
+      return {
+        message: "Imagem não encontrada",
+        status: 404,
+      };
+    }
+
+    if (data.url && isImageByExtension(data.url) == false) {
+      return {
+        message: "URL deve ser de uma imagem válida",
+        status: 400,
+      };
+    }
+
+    const updatedImage = await prisma.image.update({
+      where: { id: image_id },
+      data: {
+        url: data.url ?? existingImage.url,
+        priority: data.priority ?? existingImage.priority,
+      },
+    });
+
+    const dataResponse: schema.ResponseImage = {
+      id: updatedImage.id,
+      url: updatedImage.url,
+      priority: updatedImage.priority,
+    };
+
+    return dataResponse;
+  }
+
+  async deleteImage(image_id: string): Promise<{ message: string; status: number }> {
+    const existingImage = await prisma.image.findUnique({
+      where: { id: image_id },
+    });
+    
+    if (!existingImage) {
+      return {
+        message: "Imagem não encontrada",
+        status: 404,
+      };
+    }
+
+    await prisma.image.delete({
+      where: { id: image_id },
+    });
+
+    return {
+      message: "Imagem deletada com sucesso",
       status: 200,
     };
   }

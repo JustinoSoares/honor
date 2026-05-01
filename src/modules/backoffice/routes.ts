@@ -34,9 +34,12 @@ backofficeRouter.put(
 );
 
 backofficeRouter.patch(
-  "/category/toggle/:category_name",
+  "/category/toggle",
   authentication,
   backofficeController.toggleCategory,
 );
+
+
+
 
 export default backofficeRouter;

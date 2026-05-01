@@ -1,13 +1,26 @@
-import QRcode from 'qrcode';
+import { PrismaClient } from "@prisma/client";
 
-export async function generateQRCode(guest_id: string): Promise<string | null> {
+import  QRCode  from "qrcode";
+//const QRCode = require("qrcode");
+
+const prisma = new PrismaClient();
+import dotenv from "dotenv";
+dotenv.config();
+
+
+
+
+export async function generateUserQRCode(inviteId: string): Promise<string> {
   try {
-    const qrCodeDataURL = await QRcode.toString(guest_id,{
-        type: 'svg',
+    const dataToEncode = String(inviteId); // não precisa do JSON.stringify
+    const svg = await QRCode.toString(dataToEncode, {
+      type: 'svg',
+      errorCorrectionLevel: 'H',
+      margin: 1,
+      width: 256, // opcional
     });
-    return qrCodeDataURL;
+    return svg; // markup SVG
   } catch (error) {
-    console.error('Error generating QR code:', error);
-    return null;
+    throw new Error('Erro ao gerar QR Code (SVG): ' + error);
   }
 }
