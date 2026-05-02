@@ -368,4 +368,40 @@ export class EventController {
       return res.status(500).json({ message: "Erro ao deletar imagem" });
     }
   }
+
+  async readCode(req: Request, res: Response) {
+    try {
+      let { code } = req.body;
+      code = String(code);
+      const result = await service.readCode(code);
+      if (!result) {
+        return res.status(404).json({ message: "Código não encontrado" });
+      }
+      if ("status" in result && result.status !== 200) {
+        return res.status(result.status!).json({ message: result.message });
+      }
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao ler código" });
+    }
+  }
+  
+  async historyInvitationsByEvent(req: Request, res: Response) {
+    try {
+      let { event_id } = req.params;
+      event_id = String(event_id);
+      const result = await service.historyInvitationsByEvent(event_id);
+      if (!result) {
+        return res.status(404).json({ message: "Evento não encontrado" });
+      }
+      if ("status" in result && result.status !== 200) {
+        return res.status(result.status!).json({ message: result.message });
+      }
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao buscar histórico de convites do evento" });
+    }
+  }
 }

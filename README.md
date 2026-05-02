@@ -72,7 +72,7 @@ Qualquer pessoas antes de criar um evento deve ter uma conta criada (nome, email
 Essa mesma pessoa pode adicionar ou ser adicionado como membro gerente desse evento. (master, manager)  $
         |
 O usuário pode criar um determinado evento depois esse evento precisa ser verificado pela nossa equipa, só assim ele fica disponível para o público. $
-        |
+    k    |
 A criação do evento é free mas ele pode pagar X na plataforma para ter o seu evento como prioridade sempre, mesmo nas pesquisas e na capa. classificacao a b e c $
         |
 Um membro manager é responsável por controlar um evento podendo scannear o qrcode e ver o histórico de entradas no evento.

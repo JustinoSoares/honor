@@ -1,4 +1,5 @@
 import prisma from "../../database/prisma";
+import { encryptDefault } from "../../utils/crypt";
 import { generateUserQRCode } from "../../utils/generate_qr";
 import * as schema from "./guest.schema";
 
@@ -66,7 +67,7 @@ export class GuestService {
         const updatedInvitation = await prisma.invitation.update({
           where: { id: invitation.id },
           data: {
-            qr_code: await generateUserQRCode(invitation.id),
+            qr_code: await generateUserQRCode(encryptDefault(invitation.id)),
           },
         });
 
@@ -117,6 +118,7 @@ export class GuestService {
     event_id: string,
     page: number,
     per_page: number,
+    search?: string,
   ): Promise<
     | {
         data: schema.ResponseGuest[];
@@ -133,8 +135,19 @@ export class GuestService {
       };
     }
     const skip = (page - 1) * per_page;
+
+    const whereClause = {};
+    if (search && search.trim() !== "undefined") {
+      Object.assign(whereClause, {
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { email: { contains: search, mode: "insensitive" } },
+          { phone: { contains: search, mode: "insensitive" } },
+        ],
+      });
+    }
     const guests = await prisma.guest.findMany({
-      where: { event_id },
+      where: { event_id, ...whereClause },
       include: {
         invitations: {
           include: {

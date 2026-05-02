@@ -115,4 +115,16 @@ eventRouter.delete(
   eventController.deleteImage,
 );
 
+eventRouter.post(
+  "/read/code",
+  authentication,
+  eventController.readCode,
+);
+
+eventRouter.get(
+  "/history/:event_id",
+  authentication,
+  eventController.historyInvitationsByEvent,
+);
+
 export default eventRouter;

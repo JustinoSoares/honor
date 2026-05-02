@@ -1,7 +1,9 @@
 import prisma from "../../database/prisma";
 import { validate } from "uuid";
 import * as schema from "./event.schema";
+import * as schemaGuest from "../guest/guest.schema";
 import { isImageByExtension } from "../../utils/verify_image";
+import { decryptDefault } from "../../utils/crypt";
 
 export class EventService {
   constructor() {}
@@ -887,7 +889,10 @@ export class EventService {
     event_id: string,
     page: number = 1,
     per_page: number = 10,
-  ): Promise<{ data: schema.ResponseImage[]; meta: schema.Meta } | { message: string; status: number }> {
+  ): Promise<
+    | { data: schema.ResponseImage[]; meta: schema.Meta }
+    | { message: string; status: number }
+  > {
     const existingEvent = await prisma.event.findFirst({
       where: { id: event_id },
     });
@@ -931,7 +936,7 @@ export class EventService {
     const existingImage = await prisma.image.findUnique({
       where: { id: image_id },
     });
-    
+
     if (!existingImage) {
       return {
         message: "Imagem não encontrada",
@@ -955,7 +960,7 @@ export class EventService {
     const existingImage = await prisma.image.findUnique({
       where: { id: image_id },
     });
-    
+
     if (!existingImage) {
       return {
         message: "Imagem não encontrada",
@@ -987,11 +992,13 @@ export class EventService {
     return dataResponse;
   }
 
-  async deleteImage(image_id: string): Promise<{ message: string; status: number }> {
+  async deleteImage(
+    image_id: string,
+  ): Promise<{ message: string; status: number }> {
     const existingImage = await prisma.image.findUnique({
       where: { id: image_id },
     });
-    
+
     if (!existingImage) {
       return {
         message: "Imagem não encontrada",
@@ -1006,6 +1013,134 @@ export class EventService {
     return {
       message: "Imagem deletada com sucesso",
       status: 200,
+    };
+  }
+
+  async readCode(code: string): Promise<{ message: string; status: number }> {
+    if (!code) {
+      return {
+        message: "Código é obrigatório",
+        status: 400,
+      };
+    }
+
+    const invitation_id = decryptDefault(code);
+
+    if (!invitation_id || !validate(invitation_id)) {
+      return {
+        message: "Convite inválido",
+        status: 400,
+      };
+    }
+
+    const existingInvitation = await prisma.invitation.findFirst({
+      where: { id: invitation_id },
+    });
+
+    if (!existingInvitation) {
+      return {
+        message: "Este convite não existe",
+        status: 404,
+      };
+    }
+
+    if (existingInvitation.is_used) {
+      return {
+        message: "Este convite já foi utilizado",
+        status: 400,
+      };
+    }
+
+    if (!existingInvitation.is_paid) {
+      return {
+        message: "Convite inválido, valide antes de processeguir",
+        status: 400,
+      };
+    }
+
+    await prisma.invitation.update({
+      where: { id: invitation_id },
+      data: {
+        is_used: true,
+      },
+    });
+
+    return {
+      message: "Convite validado com sucesso",
+      status: 200,
+    };
+  }
+
+  async historyInvitationsByEvent(
+    event_id: string,
+    page: number = 1,
+    per_page: number = 10,
+    is_paid?: boolean,
+    is_used?: boolean,
+  ): Promise<
+    | {
+        data: schemaGuest.ResponseInvitationGuest[];
+        meta: {
+          page: number;
+          per_page: number;
+          total: number;
+          total_pages: number;
+        };
+      }
+    | { message: string; status: number }
+  > {
+    const existingEvent = await prisma.event.findUnique({
+      where: { id: event_id },
+    });
+
+    if (!existingEvent) {
+      return {
+        message: "Evento não encontrado",
+        status: 404,
+      };
+    }
+
+    const invitations = await prisma.invitation.findMany({
+      where: { event_id, is_paid: is_paid ?? true, is_used: is_used ?? false },
+      include: {
+        package: true,
+        guest: true,
+      },
+      skip: (page - 1) * per_page,
+      take: per_page,
+      orderBy: {
+        created_at: "desc",
+      },
+    });
+
+    const totalGuests = await prisma.invitation.count({
+      where: { event_id, is_paid: is_paid ?? true, is_used: is_used ?? false },
+    });
+
+    const dataResponse: schemaGuest.ResponseInvitationGuest[] = invitations.map(
+      (inv) => ({
+        event_id: inv.event_id,
+        package_id: inv.package_id,
+        name: inv.name,
+        is_paid: inv.is_paid,
+        is_used: inv.is_used,
+        package_color: inv.package_color || undefined,
+        package_name: inv.package_name,
+        guest_id: inv.guest_id,
+        qr_code: inv.qr_code || undefined,
+        created_at: inv.created_at.toISOString(),
+        updated_at: inv.updated_at.toISOString(),
+      }),
+    );
+
+    return {
+      data: dataResponse,
+      meta: {
+        page,
+        per_page,
+        total: totalGuests,
+        total_pages: Math.ceil(totalGuests / per_page),
+      },
     };
   }
 }

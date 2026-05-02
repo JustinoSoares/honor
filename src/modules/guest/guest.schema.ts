@@ -79,18 +79,18 @@ export const ResponseInvitationGuest = z.object({
   name: z
     .string("O nome do convite é obrigatório")
     .min(1, "O nome do convite é obrigatório"),
-  is_paid: z.boolean().optional(),
-  is_used: z.boolean().optional(),
+  is_paid: z.boolean(),
+  is_used: z.boolean(),
   package_name: z
     .string("O nome do pacote é obrigatório")
     .min(1, "O nome do pacote é obrigatório"),
   package_color: z
     .string("A cor do pacote é obrigatória")
-    .min(1, "A cor do pacote é obrigatória"),
+    .min(1, "A cor do pacote é obrigatória").optional(),
   guest_id: z.string("O ID do convidado é obrigatório"),
-  created_at: z.string().optional(),
-  updated_at: z.string().optional(),
-  qr_code: z.string().nullable().optional(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  qr_code: z.string().optional(),
 });
 
 export type ResponseInvitationGuest = z.infer<typeof ResponseInvitationGuest>;

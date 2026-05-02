@@ -2,6 +2,7 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import z from "zod";
 import * as schema from "../../modules/event/event.schema";
+import * as schemaGuest from "../../modules/guest/guest.schema";
 
 export function registerEventDocs(registry: OpenAPIRegistry) {
   // Regista os schemas
@@ -719,6 +720,86 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
       },
       404: {
         description: "Imagem não encontrada",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+      500: {
+        description: "Erro interno do servidor",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+    },
+  });
+
+  // POST /event/read/code
+  registry.registerPath({
+    method: "post",
+    path: "/event/read/code",
+    tags: ["Events", "Invitations"],
+    summary: "Lê um código por ID",
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: "Código obtido com sucesso",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+      404: {
+        description: "Código não encontrado",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+      500: {
+        description: "Erro interno do servidor",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+    },
+  });
+
+  // GET /event/history/:event_id
+  registry.registerPath({
+    method: "get",
+    path: "/event/history/:event_id",
+    tags: ["Events", "Invitations"],
+    summary: "Obtém o histórico de um evento",
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: z.object({
+        event_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+      }),
+      query: z.object({
+        page: z.string().optional().openapi({ example: "1" }),
+        per_page: z.string().optional().openapi({ example: "10" }),
+        search: z.string().optional().openapi({ example: "Música" }),
+        is_paid: z.string().optional().openapi({ example: "true" }),
+        is_used: z.string().optional().openapi({ example: "false" }),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Histórico obtido com sucesso",
+        content: {
+          "application/json": {
+            schema: z.object({
+              data: z.array(schemaGuest.ResponseInvitationGuest),
+              meta: z.object({
+                total: z.number().openapi({ example: 100 }),
+                page: z.number().openapi({ example: 1 }),
+                per_page: z.number().openapi({ example: 10 }),
+                total_pages: z.number().openapi({ example: 10 }),
+              }),
+            }),
+          },
+        },
+      },
+      404: {
+        description: "Evento não encontrado",
         content: {
           "application/json": { schema: schema.ResponseBadSchema },
         },

@@ -1,9 +1,6 @@
-import { PrismaClient } from "@prisma/client";
-
 import  QRCode  from "qrcode";
 //const QRCode = require("qrcode");
 
-const prisma = new PrismaClient();
 import dotenv from "dotenv";
 dotenv.config();
 
