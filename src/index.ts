@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { setupSwagger } from './config/swagger';
@@ -16,8 +17,10 @@ const io = new Server(httpServer, {
     origin: '*',
   },
 });
-
-app.use(cors());
+app.use(helmet());
+app.use(cors({
+  origin: '*',
+}));
 app.use(express.json());
 
 io.on('connection', (socket) => {
