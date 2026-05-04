@@ -732,6 +732,17 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
     tags: ["Events", "Invitations"],
     summary: "Lê um código por ID",
     security: [{ bearerAuth: [] }],
+    request: {
+      body: {
+        content: {
+          "application/json": {
+            schema: z.object({
+              code: z.string().openapi({ example: "ABC123" }),
+            }),
+          },
+        },
+      },
+    },
     responses: {
       200: {
         description: "Código obtido com sucesso",

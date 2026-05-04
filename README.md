@@ -72,17 +72,17 @@ Essa mesma pessoa pode adicionar ou ser adicionado como membro gerente desse eve
 |
 O usuário pode criar um determinado evento depois esse evento precisa ser verificado pela nossa equipa, só assim ele fica disponível para o público. $
 k |
-A criação do evento é free mas ele pode pagar X na plataforma para ter o seu evento como prioridade sempre, mesmo nas pesquisas e na capa. classificacao a b e c $
+A criação do evento é free mas ele pode pagar X na plataforma para ter o seu evento como prioridade sempre, mesmo nas pesquisas e na capa. classificacao a b e c ????
 |
-Um membro manager é responsável por controlar um evento podendo scannear o qrcode e ver o histórico de entradas no evento.
+Um membro manager é responsável por controlar um evento podendo scannear o qrcode e ver o histórico de entradas no evento. $
 |
-Um membro master de um vento poderá acompanhar o processo todo em tempo real adicionar manegers remover, editar dados do evento bloqueiar pessoas do evento, ver o valor e quantas compras foram feitas.
+Um membro master de um evento poderá acompanhar o processo todo em tempo real adicionar manegers remover, editar dados do evento bloqueiar pessoas do evento, ver o valor e quantas compras foram feitas.
 |
-estes mesmos usuários vão poder fazer autenticação (senha e email e google)
+estes mesmos usuários vão poder fazer autenticação (senha e email e google) $
 |
-Os convidados terão acesso a todos eventos disponíveis na plataforma
+Os convidados terão acesso a todos eventos disponíveis na plataforma $
 |
-Podem selecionar um evento especificando a quantidade de convites e lhe é calculado o preço dependendo do pacote.
+Podem selecionar um evento especificando a quantidade de convites e lhe é calculado o preço dependendo do pacote. $
 |
 Quem quiser um convite deve informar o seu (nome, email, telefone e finalizar o pagamento).
 |
