@@ -1,13 +1,14 @@
 import { GuestService } from "./guest.service";
-import { Request, Response } from "express";
+import {  Response } from "express";
 import * as schema from "./guest.schema";
+import { AuthRequest } from "../../middleware/auth.middleware";
 
 const service = new GuestService();
 
 export class GuestController {
   constructor() {}
 
-  async createGuest(req: Request, res: Response) {
+  async createGuest(req: AuthRequest, res: Response) {
     try {
       const { data } = req.body;
 
@@ -22,7 +23,7 @@ export class GuestController {
     }
   }
 
-  async getGuestsByEventId(req: Request, res: Response) {
+  async getGuestsByEventId(req: AuthRequest, res: Response) {
     try {
       let { event_id } = req.params;
       const { page, per_page, search } = req.query;
@@ -47,7 +48,7 @@ export class GuestController {
     }
   }
 
-  async getGuestById(req: Request, res: Response) {
+  async getGuestById(req: AuthRequest, res: Response) {
     try {
       let { guest_id } = req.params;
 
@@ -69,7 +70,7 @@ export class GuestController {
     }
   }
 
-  async deleteGuest(req: Request, res: Response) {
+  async deleteGuest(req: AuthRequest, res: Response) {
     try {
       let { guest_id } = req.params;
 

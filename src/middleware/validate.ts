@@ -1,8 +1,9 @@
-import { Request, Response, NextFunction } from "express";
+import {  Response, NextFunction } from "express";
 import { ZodSchema } from "zod";
+import { AuthRequest } from "./auth.middleware";
 
 export const validate =
-  (schema: ZodSchema) => (req: Request, res: Response, next: NextFunction) => {
+  (schema: ZodSchema) => (req: AuthRequest, res: Response, next: NextFunction) => {
     const result = schema.safeParse(req.body);
 
     if (!result.success) {

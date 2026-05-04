@@ -1,11 +1,12 @@
+import { AuthRequest } from "../../middleware/auth.middleware";
 import { UserService } from "./user.service";
-import { Request, Response } from "express";
+import { Response } from "express";
 
 const userService = new UserService();
 export class UserController {
   constructor() {}
 
-  async createUser(req: Request, res: Response) {
+  async createUser(req: AuthRequest, res: Response) {
     try {
       const user = await userService.createUser(req.body);
       if ("status" in user && user.status !== 200) {
@@ -18,7 +19,7 @@ export class UserController {
     }
   }
 
-  async getAllUsers(req: Request, res: Response) {
+  async getAllUsers(req: AuthRequest, res: Response) {
     try {
       const { page, per_page, search } = req.query;
       const [users, totalUsers] = await userService.getAllusers(
@@ -42,7 +43,7 @@ export class UserController {
     }
   }
 
-  async getUserById(req: Request, res: Response) {
+  async getUserById(req: AuthRequest, res: Response) {
     try {
       const { user_id } = req.params;
       const user = await userService.getUserById(user_id as string);
@@ -59,7 +60,7 @@ export class UserController {
     }
   }
 
-  async updateUser(req: Request, res: Response) {
+  async updateUser(req: AuthRequest, res: Response) {
     try {
       const { user_id } = req.params;
       const userData = req.body;
@@ -74,7 +75,7 @@ export class UserController {
     }
   }
 
-  async deleteUser(req: Request, res: Response) {
+  async deleteUser(req: AuthRequest, res: Response) {
     try {
       const { user_id } = req.params;
       const result = await userService.deleteUser(user_id as string);

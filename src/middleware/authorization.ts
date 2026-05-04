@@ -1,7 +1,8 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction,  Response } from "express";
 import jwt from "jsonwebtoken";
 import prisma from "../database/prisma";
-export const authentication = async (req: Request, res: Response, next: NextFunction) => {
+import { AuthRequest } from "./auth.middleware";
+export const authentication = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     return res.status(401).json({ message: "Token de autenticação ausente" });

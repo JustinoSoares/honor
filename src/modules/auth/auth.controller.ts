@@ -1,6 +1,7 @@
 import { AuthService } from "./auth.service";
-import { Request, Response } from "express";
+import { Response } from "express";
 import { env } from "../../env";
+import { AuthRequest } from "../../middleware/auth.middleware";
 
 const authService = new AuthService();
 
@@ -15,7 +16,7 @@ const COOKIE_OPTIONS = {
 export class AuthController {
   constructor() {}
 
-  async login(req: Request, res: Response) {
+  async login(req: AuthRequest, res: Response) {
     try {
       const result = await authService.login(req.body);
       if ("status" in result && result.status !== 200) {
@@ -28,7 +29,7 @@ export class AuthController {
     }
   }
 
-  async googleAuth(req: Request, res: Response) {
+  async googleAuth(req: AuthRequest, res: Response) {
     try {
       const { url, state } = await authService.googleAuth();
       res.cookie("oauth_state", state, COOKIE_OPTIONS);
@@ -39,7 +40,7 @@ export class AuthController {
     }
   }
 
-  async googleCallback(req: Request, res: Response) {
+  async googleCallback(req: AuthRequest, res: Response) {
     try {
       const { code, state, error } = req.query;
 
@@ -68,7 +69,7 @@ export class AuthController {
     }
   }
 
-  async refreshToken(req: Request, res: Response) {
+  async refreshToken(req: AuthRequest, res: Response) {
     try {
       const refreshToken = req.cookies.refresh_token;
       if (!refreshToken) {
@@ -88,7 +89,7 @@ export class AuthController {
     }
   }
 
-  async logout(req: Request, res: Response) {
+  async logout(req: AuthRequest, res: Response) {
     try {
       const refreshToken = req.cookies.refresh_token;
       if (refreshToken) {

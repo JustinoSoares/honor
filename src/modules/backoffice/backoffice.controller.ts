@@ -1,12 +1,13 @@
+import { AuthRequest } from "../../middleware/auth.middleware";
 import { BackofficeService } from "./backoffice.service";
-import { Request, Response } from "express";
+import {  Response } from "express";
 
 const service = new BackofficeService();
 
 export class BackofficeController {
   constructor() {}
 
-  async createCategory(req: Request, res: Response) {
+  async createCategory(req: AuthRequest, res: Response) {
     try {
       const category = await service.addCategory(req.body);
       if ("status" in category && category.status !== 200) {
@@ -19,7 +20,7 @@ export class BackofficeController {
     }
   }
 
-  async getAllCategories(req: Request, res: Response) {
+  async getAllCategories(req: AuthRequest, res: Response) {
     try {
       const categories = await service.getAllCategories();
       if ("status" in categories && categories.status !== 200) {
@@ -34,7 +35,7 @@ export class BackofficeController {
     }
   }
 
-  async getCategoryById(req: Request, res: Response) {
+  async getCategoryById(req: AuthRequest, res: Response) {
     try {
       const { category_id } = req.params;
       const category = await service.getCategoryById(category_id as string);
@@ -51,7 +52,7 @@ export class BackofficeController {
     }
   }
 
-  async updateCategory(req: Request, res: Response) {
+  async updateCategory(req: AuthRequest, res: Response) {
     try {
       const { category_id } = req.params;
       const { name } = req.body;
@@ -66,7 +67,7 @@ export class BackofficeController {
     }
   }
 
-  async toggleCategory(req: Request, res: Response) {
+  async toggleCategory(req: AuthRequest, res: Response) {
     try {
       const { name } = req.body;
       const category = await service.toggleCategory(name);

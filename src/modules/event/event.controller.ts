@@ -1,13 +1,14 @@
 import { validate } from "uuid";
 import { EventService } from "./event.service";
 import { Request, Response } from "express";
+import { AuthRequest } from "../../middleware/auth.middleware";
 
 const service = new EventService();
 
 export class EventController {
   constructor() {}
 
-  async createEvent(req: Request, res: Response) {
+  async createEvent(req: AuthRequest, res: Response) {
     const user_id = req.userId;
     try {
       if (!user_id || validate(user_id) === false) {
@@ -24,7 +25,7 @@ export class EventController {
     }
   }
 
-  async verifyEvent(req: Request, res: Response) {
+  async verifyEvent(req: AuthRequest, res: Response) {
     const user_id = req.userId;
     try {
       if (!user_id || validate(user_id) === false) {
@@ -47,7 +48,7 @@ export class EventController {
     }
   }
 
-  async getAllEvents(req: Request, res: Response) {
+  async getAllEvents(req: AuthRequest, res: Response) {
     const user_id = req.userId;
     try {
       const { per_page, page, search } = req.query;
@@ -70,7 +71,7 @@ export class EventController {
     }
   }
 
-  async getEventById(req: Request, res: Response) {
+  async getEventById(req: AuthRequest, res: Response) {
     try {
       const { event_id } = req.params;
       const event = await service.getEventById(event_id as string);
@@ -89,7 +90,7 @@ export class EventController {
     }
   }
 
-  async updateEvent(req: Request, res: Response) {
+  async updateEvent(req: AuthRequest, res: Response) {
     try {
       const { event_id } = req.params;
       const eventData = req.body;
@@ -107,7 +108,7 @@ export class EventController {
     }
   }
 
-  async deleteEvent(req: Request, res: Response) {
+  async deleteEvent(req: AuthRequest, res: Response) {
     try {
       const { event_id } = req.params;
       const result = await service.deleteEvent(event_id as string);
@@ -126,7 +127,7 @@ export class EventController {
     }
   }
 
-  async addPackageToEvent(req: Request, res: Response) {
+  async addPackageToEvent(req: AuthRequest, res: Response) {
     try {
       const { event_id } = req.params;
       const packageData = req.body;
@@ -144,7 +145,7 @@ export class EventController {
     }
   }
 
-  async editarPackageInEvent(req: Request, res: Response) {
+  async editarPackageInEvent(req: AuthRequest, res: Response) {
     const { package_id } = req.params;
     const packageData = req.body;
     try {
@@ -162,7 +163,7 @@ export class EventController {
     }
   }
 
-  async listPackagesByEvent(req: Request, res: Response) {
+  async listPackagesByEvent(req: AuthRequest, res: Response) {
     try {
       const { event_id } = req.params;
       const result = await service.listPackagesByEvent(event_id as string);
@@ -179,7 +180,7 @@ export class EventController {
     }
   }
 
-  async getPackageById(req: Request, res: Response) {
+  async getPackageById(req: AuthRequest, res: Response) {
     try {
       const { package_id } = req.params;
       const result = await service.getPackageById(package_id as string);
@@ -196,7 +197,7 @@ export class EventController {
     }
   }
 
-  async deletePackage(req: Request, res: Response) {
+  async deletePackage(req: AuthRequest, res: Response) {
     try {
       const { package_id } = req.params;
       const result = await service.deletePackage(package_id as string);
@@ -213,7 +214,7 @@ export class EventController {
     }
   }
 
-  async addMemberToEvent(req: Request, res: Response) {
+  async addMemberToEvent(req: AuthRequest, res: Response) {
     try {
       const { event_id } = req.params;
       const user_id = req.userId;
@@ -234,7 +235,7 @@ export class EventController {
     }
   }
 
-  async removeMemberFromEvent(req: Request, res: Response) {
+  async removeMemberFromEvent(req: AuthRequest, res: Response) {
     try {
       const { event_id, user_id } = req.params;
       const authed_id = req.userId;
@@ -257,7 +258,7 @@ export class EventController {
     }
   }
 
-  async addImageToEvent(req: Request, res: Response) {
+  async addImageToEvent(req: AuthRequest, res: Response) {
     try {
       const { event_id } = req.params;
       const result = await service.addImageToEvent(event_id as string, req.body);
@@ -274,7 +275,7 @@ export class EventController {
     }
   }
 
-  async listImagesByEvent(req: Request, res: Response) {
+  async listImagesByEvent(req: AuthRequest, res: Response) {
     try {
       const { event_id } = req.params;
       const { page, per_page } = req.query;
@@ -293,7 +294,7 @@ export class EventController {
     }
   }
 
-  async getImageById(req: Request, res: Response) {
+  async getImageById(req: AuthRequest, res: Response) {
     try {
       const { image_id } = req.params;
       const result = await service.getImageById(image_id as string);
@@ -310,7 +311,7 @@ export class EventController {
     }
   }
 
-  async updateImage(req: Request, res: Response) {
+  async updateImage(req: AuthRequest, res: Response) {
     try {
       const { image_id } = req.params;
       const result = await service.updateImage(image_id as string, req.body);
@@ -327,7 +328,7 @@ export class EventController {
     }
   }
 
-  async deleteImage(req: Request, res: Response) {
+  async deleteImage(req: AuthRequest, res: Response) {
     try {
       const { image_id } = req.params;
       const result = await service.deleteImage(image_id as string);
@@ -344,7 +345,7 @@ export class EventController {
     }
   }
 
-  async readCode(req: Request, res: Response) {
+  async readCode(req: AuthRequest, res: Response) {
     try {
       let { code } = req.body;
       code = String(code);
@@ -362,7 +363,7 @@ export class EventController {
     }
   }
 
-  async historyInvitationsByEvent(req: Request, res: Response) {
+  async historyInvitationsByEvent(req: AuthRequest, res: Response) {
     try {
       let { event_id } = req.params;
       event_id = String(event_id);
