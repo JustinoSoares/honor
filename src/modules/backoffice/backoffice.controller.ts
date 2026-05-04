@@ -4,8 +4,6 @@ import {  Response } from "express";
 
 const service = new BackofficeService();
 
-// algo mudou
-
 export class BackofficeController {
   constructor() {}
 
