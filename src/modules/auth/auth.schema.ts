@@ -8,7 +8,8 @@ export const LoginSchema = z.object({
 export type LoginData = z.infer<typeof LoginSchema>;
 
 export const ResponseLoginSchema = z.object({
-  token: z.string(),
+  accessToken: z.string(),
+  refreshToken: z.string(),
 });
 
 export type ResponseLogin = z.infer<typeof ResponseLoginSchema>;
@@ -19,3 +20,9 @@ export const ResponseBadSchema = z.object({
 });
 
 export type ResponseBad = z.infer<typeof ResponseBadSchema>;
+
+export const RefreshTokenSchema = z.object({
+  refreshToken: z.string(),
+});
+
+export type RefreshTokenData = z.infer<typeof RefreshTokenSchema>;

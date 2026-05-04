@@ -11,6 +11,7 @@ import backofficeRoutes from './modules/backoffice/routes';
 import guestRoutes from './modules/guest/guest.route';
 
 const app = express();
+
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
@@ -18,6 +19,7 @@ const io = new Server(httpServer, {
   },
 });
 app.use(helmet());
+
 app.use(cors({
   origin: '*',
 }));

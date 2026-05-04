@@ -16,8 +16,9 @@ model user {
   id           String    @id @default(uuid())
   name         String
   email        String    @unique
-  phone        String
+  phone        String?
   password     String
+  refreshToken String? // token para manter o usuário logado
   role         role      @default(USER)
   verified     Boolean   @default(false)
   reset_code   String?
