@@ -303,7 +303,7 @@ export class EventService {
           total_pages: Math.ceil(totalEvents / per_page),
         },
       };
-    } catch (error) {
+    } catch {
       return {
         message: "Erro ao buscar eventos",
         status: 500,
@@ -395,7 +395,7 @@ export class EventService {
       };
 
       return dataResponse;
-    } catch (error) {
+    } catch {
       return {
         message: "Erro ao buscar evento",
         status: 500,
@@ -428,21 +428,15 @@ export class EventService {
       data: {
         title: data.title ?? existingEvent.title,
         description: data.description ?? existingEvent.description,
-        date_start: data.date_start
-          ? new Date(data.date_start)
-          : existingEvent.date_start,
-        date_end: data.date_end
-          ? new Date(data.date_end)
-          : existingEvent.date_end,
+        date_start: data.date_start ? new Date(data.date_start) : existingEvent.date_start,
+        date_end: data.date_end ? new Date(data.date_end) : existingEvent.date_end,
         location: data.location ?? existingEvent.location,
         promoter: data.promoter ?? existingEvent.promoter,
         promoter_nif: data.promoter_nif ?? existingEvent.promoter_nif,
         category: data.category ?? existingEvent.category,
         duration: data.duration ?? existingEvent.duration,
         province: data.province ?? existingEvent.province,
-        contact:
-          (data.contact as { option: string; option2?: string }) ??
-          existingEvent.contact,
+        contact: (data.contact as { option: string; option2?: string }) ?? existingEvent.contact,
         classification: data.classification ?? existingEvent.classification,
       },
     });
@@ -452,9 +446,7 @@ export class EventService {
       title: updatedEvent.title,
       description: updatedEvent.description,
       date_start: updatedEvent.date_start.toISOString(),
-      date_end: updatedEvent.date_end
-        ? updatedEvent.date_end.toISOString()
-        : undefined,
+      date_end: updatedEvent.date_end ? updatedEvent.date_end.toISOString() : undefined,
       location: updatedEvent.location,
       promoter: updatedEvent.promoter,
       promoter_nif: updatedEvent.promoter_nif,
@@ -489,9 +481,7 @@ export class EventService {
     return dataResponse;
   }
 
-  async deleteEvent(
-    event_id: string,
-  ): Promise<{ message: string; status: number }> {
+  async deleteEvent(event_id: string): Promise<{ message: string; status: number }> {
     const existingEvent = await prisma.event.findUnique({
       where: { id: event_id },
     });
@@ -691,9 +681,7 @@ export class EventService {
     return dataResponse;
   }
 
-  async deletePackage(
-    package_id: string,
-  ): Promise<{ message: string; status: number }> {
+  async deletePackage(package_id: string): Promise<{ message: string; status: number }> {
     const existingPackage = await prisma.packages.findUnique({
       where: { id: package_id },
     });
@@ -890,8 +878,7 @@ export class EventService {
     page: number = 1,
     per_page: number = 10,
   ): Promise<
-    | { data: schema.ResponseImage[]; meta: schema.Meta }
-    | { message: string; status: number }
+    { data: schema.ResponseImage[]; meta: schema.Meta } | { message: string; status: number }
   > {
     const existingEvent = await prisma.event.findFirst({
       where: { id: event_id },
@@ -992,9 +979,7 @@ export class EventService {
     return dataResponse;
   }
 
-  async deleteImage(
-    image_id: string,
-  ): Promise<{ message: string; status: number }> {
+  async deleteImage(image_id: string): Promise<{ message: string; status: number }> {
     const existingImage = await prisma.image.findUnique({
       where: { id: image_id },
     });
@@ -1117,21 +1102,19 @@ export class EventService {
       where: { event_id, is_paid: is_paid ?? true, is_used: is_used ?? false },
     });
 
-    const dataResponse: schemaGuest.ResponseInvitationGuest[] = invitations.map(
-      (inv) => ({
-        event_id: inv.event_id,
-        package_id: inv.package_id,
-        name: inv.name,
-        is_paid: inv.is_paid,
-        is_used: inv.is_used,
-        package_color: inv.package_color || undefined,
-        package_name: inv.package_name,
-        guest_id: inv.guest_id,
-        qr_code: inv.qr_code || undefined,
-        created_at: inv.created_at.toISOString(),
-        updated_at: inv.updated_at.toISOString(),
-      }),
-    );
+    const dataResponse: schemaGuest.ResponseInvitationGuest[] = invitations.map((inv) => ({
+      event_id: inv.event_id,
+      package_id: inv.package_id,
+      name: inv.name,
+      is_paid: inv.is_paid,
+      is_used: inv.is_used,
+      package_color: inv.package_color || undefined,
+      package_name: inv.package_name,
+      guest_id: inv.guest_id,
+      qr_code: inv.qr_code || undefined,
+      created_at: inv.created_at.toISOString(),
+      updated_at: inv.updated_at.toISOString(),
+    }));
 
     return {
       data: dataResponse,

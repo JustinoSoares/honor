@@ -46,9 +46,7 @@ export function registerGuestDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: z.object({
-              message: z
-                .string()
-                .openapi({ example: "Erro ao criar convidado" }),
+              message: z.string().openapi({ example: "Erro ao criar convidado" }),
             }),
           },
         },
@@ -94,9 +92,7 @@ export function registerGuestDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: z.object({
-              message: z
-                .string()
-                .openapi({ example: "Evento não encontrado" }),
+              message: z.string().openapi({ example: "Evento não encontrado" }),
             }),
           },
         },
@@ -106,9 +102,7 @@ export function registerGuestDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: z.object({
-              message: z
-                .string()
-                .openapi({ example: "Erro ao buscar convidados" }),
+              message: z.string().openapi({ example: "Erro ao buscar convidados" }),
             }),
           },
         },
@@ -139,9 +133,7 @@ export function registerGuestDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: z.object({
-              message: z
-                .string()
-                .openapi({ example: "Convidado não encontrado" }),
+              message: z.string().openapi({ example: "Convidado não encontrado" }),
             }),
           },
         },
@@ -151,9 +143,7 @@ export function registerGuestDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: z.object({
-              message: z
-                .string()
-                .openapi({ example: "Erro ao buscar convidado" }),
+              message: z.string().openapi({ example: "Erro ao buscar convidado" }),
             }),
           },
         },
@@ -179,9 +169,7 @@ export function registerGuestDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: z.object({
-              message: z
-                .string()
-                .openapi({ example: "Convidado removido com sucesso" }),
+              message: z.string().openapi({ example: "Convidado removido com sucesso" }),
             }),
           },
         },
@@ -191,9 +179,7 @@ export function registerGuestDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: z.object({
-              message: z
-                .string()
-                .openapi({ example: "Convidado não encontrado" }),
+              message: z.string().openapi({ example: "Convidado não encontrado" }),
             }),
           },
         },
@@ -203,9 +189,7 @@ export function registerGuestDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: z.object({
-              message: z
-                .string()
-                .openapi({ example: "Erro ao deletar convidado" }),
+              message: z.string().openapi({ example: "Erro ao deletar convidado" }),
             }),
           },
         },

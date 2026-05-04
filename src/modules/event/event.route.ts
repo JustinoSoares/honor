@@ -15,11 +15,7 @@ eventRouter.post(
 
 eventRouter.get("/list", authentication, eventController.getAllEvents);
 
-eventRouter.get(
-  "/each/:event_id",
-  authentication,
-  eventController.getEventById,
-);
+eventRouter.get("/each/:event_id", authentication, eventController.getEventById);
 
 eventRouter.put(
   "/update/:event_id",
@@ -27,11 +23,7 @@ eventRouter.put(
   validate(schema.EventUpdateSchema),
   eventController.updateEvent,
 );
-eventRouter.delete(
-  "/delete/:event_id",
-  authentication,
-  eventController.deleteEvent,
-);
+eventRouter.delete("/delete/:event_id", authentication, eventController.deleteEvent);
 
 eventRouter.post(
   "/verify/:event_id",
@@ -53,29 +45,13 @@ eventRouter.put(
   eventController.editarPackageInEvent,
 );
 
-eventRouter.get(
-  "/list/package/:event_id",
-  authentication,
-  eventController.listPackagesByEvent,
-);
+eventRouter.get("/list/package/:event_id", authentication, eventController.listPackagesByEvent);
 
-eventRouter.get(
-  "/get/package/:package_id",
-  authentication,
-  eventController.getPackageById,
-);
+eventRouter.get("/get/package/:package_id", authentication, eventController.getPackageById);
 
-eventRouter.delete(
-  "/delete/package/:package_id",
-  authentication,
-  eventController.deletePackage,
-);
+eventRouter.delete("/delete/package/:package_id", authentication, eventController.deletePackage);
 
-eventRouter.post(
-  "/add/member/:event_id",
-  authentication,
-  eventController.addMemberToEvent,
-);
+eventRouter.post("/add/member/:event_id", authentication, eventController.addMemberToEvent);
 
 eventRouter.delete(
   "/remove/member/:event_id/:user_id",
@@ -90,17 +66,9 @@ eventRouter.post(
   eventController.addImageToEvent,
 );
 
-eventRouter.get(
-  "/list/image/:event_id",
-  authentication,
-  eventController.listImagesByEvent,
-);
+eventRouter.get("/list/image/:event_id", authentication, eventController.listImagesByEvent);
 
-eventRouter.get(
-  "/get/image/:image_id",
-  authentication,
-  eventController.getImageById,
-);
+eventRouter.get("/get/image/:image_id", authentication, eventController.getImageById);
 
 eventRouter.put(
   "/update/image/:image_id",
@@ -109,22 +77,10 @@ eventRouter.put(
   eventController.updateImage,
 );
 
-eventRouter.delete(
-  "/delete/image/:image_id",
-  authentication,
-  eventController.deleteImage,
-);
+eventRouter.delete("/delete/image/:image_id", authentication, eventController.deleteImage);
 
-eventRouter.post(
-  "/read/code",
-  authentication,
-  eventController.readCode,
-);
+eventRouter.post("/read/code", authentication, eventController.readCode);
 
-eventRouter.get(
-  "/history/:event_id",
-  authentication,
-  eventController.historyInvitationsByEvent,
-);
+eventRouter.get("/history/:event_id", authentication, eventController.historyInvitationsByEvent);
 
 export default eventRouter;

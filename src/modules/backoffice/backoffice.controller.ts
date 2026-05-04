@@ -42,9 +42,7 @@ export class BackofficeController {
         return res.status(404).json({ message: "Categoria não encontrada" });
       }
       if ("status" in category && category.status !== 200) {
-        return res
-          .status(category.status as number)
-          .json({ message: category.message as string });
+        return res.status(category.status as number).json({ message: category.message as string });
       }
       return res.status(200).json(category);
     } catch (error) {
@@ -57,14 +55,9 @@ export class BackofficeController {
     try {
       const { category_id } = req.params;
       const { name } = req.body;
-      const category = await service.updateCategory(
-        category_id as string,
-        name,
-      );
+      const category = await service.updateCategory(category_id as string, name);
       if ("status" in category && category.status !== 200) {
-        return res
-          .status(category.status as number)
-          .json({ message: category.message as string });
+        return res.status(category.status as number).json({ message: category.message as string });
       }
       return res.status(200).json(category);
     } catch (error) {
@@ -78,9 +71,7 @@ export class BackofficeController {
       const { name } = req.body;
       const category = await service.toggleCategory(name);
       if ("status" in category && category.status !== 200) {
-        return res
-          .status(category.status as number)
-          .json({ message: category.message as string });
+        return res.status(category.status as number).json({ message: category.message as string });
       }
       return res.status(200).json(category);
     } catch (error) {

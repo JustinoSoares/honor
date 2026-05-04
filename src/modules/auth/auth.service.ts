@@ -88,7 +88,7 @@ export class AuthService {
       audience: process.env.GOOGLE_CLIENT_ID,
     });
 
-    const { sub: googleId, email, name, picture } = ticket.getPayload()!;
+    const { sub: email, name } = ticket.getPayload()!;
 
     if (!email) {
       return {

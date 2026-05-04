@@ -1,11 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import prisma from "../database/prisma";
-export const authentication = async (
-  req: Request | any,
-  res: Response,
-  next: NextFunction,
-) => {
+export const authentication = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     return res.status(401).json({ message: "Token de autenticação ausente" });
@@ -26,9 +22,9 @@ export const authentication = async (
       return res.status(401).json({ message: "Usuário não encontrado" });
     }
     req.userId = existingUser.id;
-    
+
     next();
-  } catch (error) {
+  } catch {
     return res.status(401).json({ message: "Token de autenticação inválido" });
   }
 };

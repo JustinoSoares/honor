@@ -186,9 +186,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: z.object({
-              message: z
-                .string()
-                .openapi({ example: "Evento removido com sucesso" }),
+              message: z.string().openapi({ example: "Evento removido com sucesso" }),
             }),
           },
         },
@@ -427,9 +425,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: z.object({
-              message: z
-                .string()
-                .openapi({ example: "Pacote removido com sucesso" }),
+              message: z.string().openapi({ example: "Pacote removido com sucesso" }),
             }),
           },
         },
@@ -513,9 +509,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: z.object({
-              message: z
-                .string()
-                .openapi({ example: "Membro removido com sucesso" }),
+              message: z.string().openapi({ example: "Membro removido com sucesso" }),
             }),
           },
         },
@@ -711,9 +705,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: z.object({
-              message: z
-                .string()
-                .openapi({ example: "Imagem removida com sucesso" }),
+              message: z.string().openapi({ example: "Imagem removida com sucesso" }),
             }),
           },
         },

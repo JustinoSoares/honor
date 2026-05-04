@@ -14,11 +14,7 @@ backofficeRouter.post(
   backofficeController.createCategory,
 );
 
-backofficeRouter.get(
-  "/category/list",
-  authentication,
-  backofficeController.getAllCategories,
-);
+backofficeRouter.get("/category/list", authentication, backofficeController.getAllCategories);
 
 backofficeRouter.get(
   "/category/each/:category_id",
@@ -33,13 +29,6 @@ backofficeRouter.put(
   backofficeController.updateCategory,
 );
 
-backofficeRouter.patch(
-  "/category/toggle",
-  authentication,
-  backofficeController.toggleCategory,
-);
-
-
-
+backofficeRouter.patch("/category/toggle", authentication, backofficeController.toggleCategory);
 
 export default backofficeRouter;

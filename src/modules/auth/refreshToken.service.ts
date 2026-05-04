@@ -1,13 +1,13 @@
-import valkey from '../../config/valkey';
+import valkey from "../../config/valkey";
 
-const RT_PREFIX = 'refresh:';
+const RT_PREFIX = "refresh:";
 const RT_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 dias
 
 // Salva no Valkey com TTL idêntico ao JWT
 export async function storeRefreshToken(user_id: string, token: string): Promise<void> {
   // Chave: refresh:<user_id> → valor: o token
   // Se o usuário fizer login de novo, sobrescreve (sessão única por usuário)
-  await valkey.set(`${RT_PREFIX}${user_id}`, token, 'EX', RT_TTL_SECONDS);
+  await valkey.set(`${RT_PREFIX}${user_id}`, token, "EX", RT_TTL_SECONDS);
 }
 
 // Verifica se o token é válido e pertence ao user_id

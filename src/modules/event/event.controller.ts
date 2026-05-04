@@ -1,13 +1,18 @@
+import { validate } from "uuid";
 import { EventService } from "./event.service";
 import { Request, Response } from "express";
 
 const service = new EventService();
+
 export class EventController {
   constructor() {}
 
-  async createEvent(req: Request | any, res: Response) {
+  async createEvent(req: Request, res: Response) {
     const user_id = req.userId;
     try {
+      if (!user_id || validate(user_id) === false) {
+        return res.status(401).json({ message: "Usuário não autenticado" });
+      }
       const event = await service.createEvent(req.body, user_id);
       if ("status" in event && event.status !== 200) {
         return res.status(event.status).json({ message: event.message });
@@ -19,16 +24,15 @@ export class EventController {
     }
   }
 
-  async verifyEvent(req: Request | any, res: Response) {
+  async verifyEvent(req: Request, res: Response) {
     const user_id = req.userId;
     try {
+      if (!user_id || validate(user_id) === false) {
+        return res.status(401).json({ message: "Usuário não autenticado" });
+      }
       const { event_id } = req.params;
       const available = await req.body.available;
-      const result = await service.verifyEvent(
-        event_id as string,
-        user_id,
-        available,
-      );
+      const result = await service.verifyEvent(event_id as string, user_id, available);
 
       if (!result) {
         return res.status(404).json({ message: "Evento não encontrado" });
@@ -43,7 +47,7 @@ export class EventController {
     }
   }
 
-  async getAllEvents(req: Request | any, res: Response) {
+  async getAllEvents(req: Request, res: Response) {
     const user_id = req.userId;
     try {
       const { per_page, page, search } = req.query;
@@ -85,7 +89,7 @@ export class EventController {
     }
   }
 
-  async updateEvent(req: Request | any, res: Response) {
+  async updateEvent(req: Request, res: Response) {
     try {
       const { event_id } = req.params;
       const eventData = req.body;
@@ -103,7 +107,7 @@ export class EventController {
     }
   }
 
-  async deleteEvent(req: Request | any, res: Response) {
+  async deleteEvent(req: Request, res: Response) {
     try {
       const { event_id } = req.params;
       const result = await service.deleteEvent(event_id as string);
@@ -122,14 +126,11 @@ export class EventController {
     }
   }
 
-  async addPackageToEvent(req: Request | any, res: Response) {
+  async addPackageToEvent(req: Request, res: Response) {
     try {
       const { event_id } = req.params;
       const packageData = req.body;
-      const result = await service.addPackageToEvent(
-        event_id as string,
-        packageData,
-      );
+      const result = await service.addPackageToEvent(event_id as string, packageData);
       if (!result) {
         return res.status(404).json({ message: "Evento não encontrado" });
       }
@@ -139,24 +140,17 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({ message: "Erro ao adicionar pacote ao evento" });
+      return res.status(500).json({ message: "Erro ao adicionar pacote ao evento" });
     }
   }
 
-  async editarPackageInEvent(req: Request | any, res: Response) {
+  async editarPackageInEvent(req: Request, res: Response) {
     const { package_id } = req.params;
     const packageData = req.body;
     try {
-      const result = await service.editarPackage(
-        package_id as string,
-        packageData,
-      );
+      const result = await service.editarPackage(package_id as string, packageData);
       if (!result) {
-        return res
-          .status(404)
-          .json({ message: "Evento ou pacote não encontrado" });
+        return res.status(404).json({ message: "Evento ou pacote não encontrado" });
       }
       if ("status" in result && result.status !== 200) {
         return res.status(result.status!).json({ message: result.message });
@@ -164,9 +158,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({ message: "Erro ao editar pacote no evento" });
+      return res.status(500).json({ message: "Erro ao editar pacote no evento" });
     }
   }
 
@@ -183,9 +175,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({ message: "Erro ao listar pacotes do evento" });
+      return res.status(500).json({ message: "Erro ao listar pacotes do evento" });
     }
   }
 
@@ -223,19 +213,16 @@ export class EventController {
     }
   }
 
-  async addMemberToEvent(req: Request | any, res: Response) {
+  async addMemberToEvent(req: Request, res: Response) {
     try {
       const { event_id } = req.params;
       const user_id = req.userId;
-      const result = await service.addMemberToEvent(
-        event_id as string,
-        req.body,
-        user_id,
-      );
+      if (!user_id || validate(user_id) === false) {
+        return res.status(401).json({ message: "Usuário não autenticado" });
+      }
+      const result = await service.addMemberToEvent(event_id as string, req.body, user_id);
       if (!result) {
-        return res
-          .status(404)
-          .json({ message: "Evento ou usuário não encontrado" });
+        return res.status(404).json({ message: "Evento ou usuário não encontrado" });
       }
       if ("status" in result && result.status !== 200) {
         return res.status(result.status!).json({ message: result.message });
@@ -243,25 +230,22 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({ message: "Erro ao adicionar membro ao evento" });
+      return res.status(500).json({ message: "Erro ao adicionar membro ao evento" });
     }
   }
 
-  async removeMemberFromEvent(req: Request | any, res: Response) {
+  async removeMemberFromEvent(req: Request, res: Response) {
     try {
       const { event_id, user_id } = req.params;
       const authed_id = req.userId;
+
       const result = await service.removeMemberFromEvent(
         event_id as string,
-        user_id,
-        authed_id,
+        user_id as string,
+        authed_id as string,
       );
       if (!result) {
-        return res
-          .status(404)
-          .json({ message: "Evento ou usuário não encontrado" });
+        return res.status(404).json({ message: "Evento ou usuário não encontrado" });
       }
       if ("status" in result && result.status !== 200) {
         return res.status(result.status!).json({ message: result.message });
@@ -269,19 +253,14 @@ export class EventController {
       return res.status(result.status!).json({ message: result.message });
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({ message: "Erro ao remover membro do evento" });
+      return res.status(500).json({ message: "Erro ao remover membro do evento" });
     }
   }
 
   async addImageToEvent(req: Request, res: Response) {
     try {
       const { event_id } = req.params;
-      const result = await service.addImageToEvent(
-        event_id as string,
-        req.body,
-      );
+      const result = await service.addImageToEvent(event_id as string, req.body);
       if (!result) {
         return res.status(404).json({ message: "Evento não encontrado" });
       }
@@ -291,9 +270,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({ message: "Erro ao adicionar imagem ao evento" });
+      return res.status(500).json({ message: "Erro ao adicionar imagem ao evento" });
     }
   }
 
@@ -312,9 +289,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({ message: "Erro ao listar imagens do evento" });
+      return res.status(500).json({ message: "Erro ao listar imagens do evento" });
     }
   }
 
@@ -386,7 +361,7 @@ export class EventController {
       return res.status(500).json({ message: "Erro ao ler código" });
     }
   }
-  
+
   async historyInvitationsByEvent(req: Request, res: Response) {
     try {
       let { event_id } = req.params;

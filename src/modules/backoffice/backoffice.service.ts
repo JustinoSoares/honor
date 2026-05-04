@@ -1,8 +1,6 @@
 import prisma from "../../database/prisma";
 import { validate } from "uuid";
 import * as schema from "./backoffice.schema";
-import { meta } from "zod/v4/core";
-import { access } from "fs";
 
 export class BackofficeService {
   constructor() {}
@@ -48,7 +46,6 @@ export class BackofficeService {
       }
     | { message: string; status: number }
   > {
-
     let whereClause = {};
     if (search && search !== "undefined") {
       whereClause = {
@@ -150,7 +147,7 @@ export class BackofficeService {
       };
     }
 
-    const category = await prisma.event_category.update({
+    await prisma.event_category.update({
       where: {
         name: name,
       },

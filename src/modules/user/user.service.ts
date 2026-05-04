@@ -124,8 +124,8 @@ export class UserService {
 
     if (data.password) {
       await prisma.user.update({
-        where: { id : user.id },
-        data: { password:  await bcrypt.hash(data.password, 10) },
+        where: { id: user.id },
+        data: { password: await bcrypt.hash(data.password, 10) },
       });
     }
 

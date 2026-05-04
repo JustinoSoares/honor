@@ -63,11 +63,19 @@ export class GuestService {
             package_color: packageData.default_color,
           },
         });
+        const qrCodeData = await generateUserQRCode(encryptDefault(invitation.id));
+
+        if (!qrCodeData) {
+          return {
+            status: 500,
+            message: "Erro ao gerar QR Code para o convite",
+          };
+        }
 
         const updatedInvitation = await prisma.invitation.update({
           where: { id: invitation.id },
           data: {
-            qr_code: await generateUserQRCode(encryptDefault(invitation.id)),
+            qr_code: qrCodeData,
           },
         });
 
@@ -179,9 +187,7 @@ export class GuestService {
 
   async getGuestById(
     guest_id: string,
-  ): Promise<
-    schema.ResponseGuest | { status: number; message: string } | null
-  > {
+  ): Promise<schema.ResponseGuest | { status: number; message: string } | null> {
     if (!guest_id) {
       return {
         status: 400,
@@ -215,9 +221,7 @@ export class GuestService {
     } as schema.ResponseGuest;
   }
 
-  async deleteGuest(
-    guest_id: string,
-  ): Promise<{ status: number; message: string }> {
+  async deleteGuest(guest_id: string): Promise<{ status: number; message: string }> {
     if (!guest_id) {
       return {
         status: 400,

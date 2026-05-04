@@ -35,9 +35,7 @@ export class AuthController {
       res.redirect(url);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({ message: "Erro ao iniciar autenticação Google" });
+      return res.status(500).json({ message: "Erro ao iniciar autenticação Google" });
     }
   }
 
@@ -50,17 +48,13 @@ export class AuthController {
       }
 
       if (typeof code !== "string" || typeof state !== "string") {
-        return res.redirect(
-          `${env.FRONTEND_URL}/login?error=invalid_oauth_response`,
-        );
+        return res.redirect(`${env.FRONTEND_URL}/login?error=invalid_oauth_response`);
       }
 
       const result = await authService.googleAuthCallback(code, state);
 
       if ("status" in result && result.status !== 200) {
-        return res.redirect(
-          `${env.FRONTEND_URL}/login?error=Autenticação_google_falhou`,
-        );
+        return res.redirect(`${env.FRONTEND_URL}/login?error=Autenticação_google_falhou`);
       }
 
       res.cookie("refresh_token", result.refreshToken, COOKIE_OPTIONS);
@@ -83,9 +77,7 @@ export class AuthController {
 
       const result = await authService.refreshToken(refreshToken);
       if ("status" in result && result.status !== 200) {
-        return res
-          .status(result.status as number)
-          .json({ message: result.message });
+        return res.status(result.status as number).json({ message: result.message });
       }
 
       res.cookie("refresh_token", result.refreshToken, COOKIE_OPTIONS);

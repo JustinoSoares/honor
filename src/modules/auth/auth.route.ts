@@ -12,11 +12,7 @@ router.get("/google", authController.googleAuth);
 
 router.get("/google/callback", authController.googleCallback);
 
-router.post(
-  "/refresh",
-  validate(auth.RefreshTokenSchema),
-  authController.refreshToken,
-);
+router.post("/refresh", validate(auth.RefreshTokenSchema), authController.refreshToken);
 
 router.post("/logout", authController.logout);
 

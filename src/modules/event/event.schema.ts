@@ -1,9 +1,7 @@
 import z from "zod";
 
 export const CreateEventSchema = z.object({
-  title: z
-    .string("O título do evento é obrigatório")
-    .min(1, "O título do evento é obrigatório"),
+  title: z.string("O título do evento é obrigatório").min(1, "O título do evento é obrigatório"),
   description: z
     .string("A descrição do evento é obrigatória")
     .min(1, "A descrição do evento é obrigatória"),
@@ -48,18 +46,14 @@ export const CreateEventSchema = z.object({
   packages: z
     .array(
       z.object({
-        name: z
-          .string("O nome do pacote é obrigatório")
-          .min(1, "O nome do pacote é obrigatório"),
+        name: z.string("O nome do pacote é obrigatório").min(1, "O nome do pacote é obrigatório"),
         price: z
           .number("O preço do pacote deve ser um número")
           .positive("O preço do pacote deve ser um número positivo"),
         priority: z
           .number("A prioridade do pacote deve ser um número inteiro")
           .int()
-          .positive(
-            "A prioridade do pacote deve ser um número inteiro positivo",
-          ),
+          .positive("A prioridade do pacote deve ser um número inteiro positivo"),
         description: z
           .string("A descrição do pacote é obrigatória")
           .min(1, "A descrição do pacote é obrigatória"),
@@ -70,13 +64,8 @@ export const CreateEventSchema = z.object({
   images: z
     .array(
       z.object({
-        url: z
-          .string("A URL da imagem é obrigatória")
-          .min(1, "A URL da imagem é obrigatória"),
-        priority: z
-          .number("A prioridade da imagem deve ser um número inteiro")
-          .int()
-          .optional(),
+        url: z.string("A URL da imagem é obrigatória").min(1, "A URL da imagem é obrigatória"),
+        priority: z.number("A prioridade da imagem deve ser um número inteiro").int().optional(),
       }),
     )
     .optional(),
@@ -85,9 +74,7 @@ export const CreateEventSchema = z.object({
 export type EventCreate = z.infer<typeof CreateEventSchema>;
 
 export const CreatePackage = z.object({
-  name: z
-    .string("O nome do pacote é obrigatório")
-    .min(1, "O nome do pacote é obrigatório"),
+  name: z.string("O nome do pacote é obrigatório").min(1, "O nome do pacote é obrigatório"),
   price: z
     .number("O preço do pacote deve ser um número")
     .positive("O preço do pacote deve ser um número positivo"),
@@ -103,24 +90,16 @@ export const CreatePackage = z.object({
 export type PackageCreate = z.infer<typeof CreatePackage>;
 
 export const createMemberSchema = z.object({
-  name: z
-    .string("O nome do membro é obrigatório")
-    .min(1, "O nome do membro é obrigatório"),
-  user_id: z
-    .string("O ID do usuário é obrigatório")
-    .uuid("O ID do usuário deve ser um UUID"),
-  event_id: z
-    .string("O ID do evento é obrigatório")
-    .uuid("O ID do evento deve ser um UUID"),
+  name: z.string("O nome do membro é obrigatório").min(1, "O nome do membro é obrigatório"),
+  user_id: z.string("O ID do usuário é obrigatório").uuid("O ID do usuário deve ser um UUID"),
+  event_id: z.string("O ID do evento é obrigatório").uuid("O ID do evento deve ser um UUID"),
   permission: z.enum(["MANAGER", "STAFF"]).openapi({ example: "MANAGER" }),
 });
 
 export type CreateMember = z.infer<typeof createMemberSchema>;
 
 export const addMemberToEventSchema = z.object({
-  email: z
-    .string("O email do usuário é obrigatório")
-    .email("O email do usuário deve ser válido"),
+  email: z.string("O email do usuário é obrigatório").email("O email do usuário deve ser válido"),
   permission: z.enum(["MANAGER", "STAFF"]).openapi({ example: "MANAGER" }),
 });
 
@@ -137,13 +116,8 @@ export const ResponseMemberSchema = z.object({
 export type ResponseMember = z.infer<typeof ResponseMemberSchema>;
 
 export const CreateImageSchema = z.object({
-  url: z
-    .string("A URL da imagem é obrigatória")
-    .min(1, "A URL da imagem é obrigatória"),
-  priority: z
-    .number("A prioridade da imagem deve ser um número inteiro")
-    .int()
-    .optional(),
+  url: z.string("A URL da imagem é obrigatória").min(1, "A URL da imagem é obrigatória"),
+  priority: z.number("A prioridade da imagem deve ser um número inteiro").int().optional(),
 });
 
 export type CreateImage = z.infer<typeof CreateImageSchema>;
@@ -151,10 +125,7 @@ export type CreateImage = z.infer<typeof CreateImageSchema>;
 export const ResponseImageSchema = z.object({
   id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
   url: z.string().openapi({ example: "https://example.com/image.jpg" }),
-  priority: z
-    .number()
-    .optional()
-    .openapi({ example: 1 }),
+  priority: z.number().optional().openapi({ example: 1 }),
 });
 
 export type ResponseImage = z.infer<typeof ResponseImageSchema>;
@@ -165,9 +136,7 @@ export const ResponsePackageSchema = z
     name: z.string().openapi({ example: "Pacote VIP" }),
     price: z.number().openapi({ example: 150.0 }),
     priority: z.number().openapi({ example: 1 }),
-    description: z
-      .string()
-      .openapi({ example: "Acesso VIP com benefícios exclusivos." }),
+    description: z.string().openapi({ example: "Acesso VIP com benefícios exclusivos." }),
   })
   .openapi("ResponsePackage");
 
@@ -234,14 +203,9 @@ export const ResponseEventSchema = z
   .object({
     id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
     title: z.string().openapi({ example: "Evento de Música" }),
-    description: z
-      .string()
-      .openapi({ example: "Um evento de música ao vivo com várias bandas." }),
+    description: z.string().openapi({ example: "Um evento de música ao vivo com várias bandas." }),
     date_start: z.string().openapi({ example: "2024-01-01T20:00:00Z" }),
-    date_end: z
-      .string()
-      .optional()
-      .openapi({ example: "2024-01-01T23:00:00Z" }),
+    date_end: z.string().optional().openapi({ example: "2024-01-01T23:00:00Z" }),
     promoter: z.string().openapi({ example: "Promotor XYZ" }),
     promoter_nif: z.string().openapi({ example: "123456789" }),
     category: z.string().openapi({ example: "Música" }),
@@ -253,18 +217,9 @@ export const ResponseEventSchema = z
       option2: z.string().optional(),
     }),
     available: z.boolean().openapi({ example: true }),
-    classification: z
-      .enum(["A", "B", "C"])
-      .openapi({ example: "C" })
-      .optional(),
-    created_at: z
-      .string()
-      .datetime()
-      .openapi({ example: "2024-01-01T00:00:00Z" }),
-    updated_at: z
-      .string()
-      .datetime()
-      .openapi({ example: "2024-01-01T00:00:00Z" }),
+    classification: z.enum(["A", "B", "C"]).openapi({ example: "C" }).optional(),
+    created_at: z.string().datetime().openapi({ example: "2024-01-01T00:00:00Z" }),
+    updated_at: z.string().datetime().openapi({ example: "2024-01-01T00:00:00Z" }),
 
     packages: z
       .array(
@@ -273,9 +228,7 @@ export const ResponseEventSchema = z
           name: z.string().openapi({ example: "Pacote VIP" }),
           price: z.number().openapi({ example: 150.0 }),
           priority: z.number().openapi({ example: 1 }),
-          description: z
-            .string()
-            .openapi({ example: "Acesso VIP com benefícios exclusivos." }),
+          description: z.string().openapi({ example: "Acesso VIP com benefícios exclusivos." }),
         }),
       )
       .optional(),
@@ -285,9 +238,7 @@ export const ResponseEventSchema = z
           id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
           name: z.string().openapi({ example: "João Silva" }),
           user_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
-          permission: z
-            .enum(["MANAGER", "STAFF"])
-            .openapi({ example: "MANAGER" }),
+          permission: z.enum(["MANAGER", "STAFF"]).openapi({ example: "MANAGER" }),
         }),
       )
       .optional(),
@@ -296,10 +247,7 @@ export const ResponseEventSchema = z
         z.object({
           id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
           url: z.string().openapi({ example: "https://example.com/image.jpg" }),
-          priority: z
-            .number()
-            .optional()
-            .openapi({ example: 1 }),
+          priority: z.number().optional().openapi({ example: 1 }),
         }),
       )
       .optional(),
@@ -314,8 +262,6 @@ export const ResponseBadSchema = z.object({
 });
 
 export type ResponseBad = z.infer<typeof ResponseBadSchema>;
-
-
 
 export const MetaSchema = z.object({
   page: z.number().openapi({ example: 1 }),
