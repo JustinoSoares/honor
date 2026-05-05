@@ -76,7 +76,7 @@ A criação do evento é free mas ele pode pagar X na plataforma para ter o seu 
 |
 Um membro manager é responsável por controlar um evento podendo scannear o qrcode e ver o histórico de entradas no evento. $
 |
-Um membro master de um evento poderá acompanhar o processo todo em tempo real adicionar manegers remover, editar dados do evento bloqueiar pessoas do evento, ver o valor e quantas compras foram feitas.
+Um membro master de um evento poderá acompanhar o processo todo em tempo real adicionar manegers remover, editar dados do evento, "ver o valor e quantas compras foram feitas". ??
 |
 estes mesmos usuários vão poder fazer autenticação (senha e email e google) $
 |

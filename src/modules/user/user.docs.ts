@@ -82,7 +82,12 @@ export function registerUserDocs(registry: OpenAPIRegistry) {
           "application/json": { schema: ResponseUserSchema },
         },
       },
-      400: { description: "Dados inválidos" },
+      400: { 
+        description: "Dados inválidos",
+        content: {
+          "application/json": { schema: z.object({ message: z.string() }) },
+        },
+      }
     },
   });
 

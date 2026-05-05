@@ -131,7 +131,7 @@ model guest {
   expiration_email DateTime? // data de expiração do código de confirmação
   status           status_guest @default(PENDING)
   link             String?
-  debt             Float        @default(0)
+  debt             Float        @default(0) // valor devido pelo convidado
   event_id         String
   event            event        @relation(fields: [event_id], references: [id])
   created_at       DateTime     @default(now())
