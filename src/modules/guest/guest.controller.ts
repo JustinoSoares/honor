@@ -1,5 +1,5 @@
 import { GuestService } from "./guest.service";
-import {  Response } from "express";
+import { Response } from "express";
 import * as schema from "./guest.schema";
 import { AuthRequest } from "../../middleware/auth.middleware";
 

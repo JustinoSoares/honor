@@ -84,8 +84,8 @@ model event_category {
 model packages {
   id            String       @id @default(uuid())
   name          String
-  description   String
-  price         Float
+  benefits      Json         @default("[]") // benefícios do pacote, por exemplo: acesso VIP, open bar, etc.
+  price         Float        @default(0)
   default_color String?
   event_id      String
   priority      Int          @default(0)

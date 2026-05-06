@@ -1,4 +1,4 @@
-import {  Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { ZodSchema } from "zod";
 import { AuthRequest } from "./auth.middleware";
 

@@ -23,29 +23,19 @@ export const RegisterSchema = z.object({
 // ─── Outputs ──────────────────────────────────────────────────────────────────
 
 export const ResponseLoginSchema = z.object({
-  accessToken: z
-    .string()
-    .openapi({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }),
-  refreshToken: z
-    .string()
-    .openapi({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }),
+  accessToken: z.string().openapi({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }),
+  refreshToken: z.string().openapi({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }),
 });
 
 export const ResponseRefreshSchema = z.object({
-  accessToken: z
-    .string()
-    .openapi({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }),
-  refreshToken: z
-    .string()
-    .openapi({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }),
+  accessToken: z.string().openapi({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }),
+  refreshToken: z.string().openapi({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }),
 });
 
 export const ResponseBadSchema = z.object({
   message: z.string().openapi({ example: "Email ou senha incorretos" }),
   status: z.number().optional().openapi({ example: 401 }),
 });
-
-
 
 // ─── Tipos inferidos ──────────────────────────────────────────────────────────
 

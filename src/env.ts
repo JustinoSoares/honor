@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { StringValue } from "ms";
-import * as dotenv from 'dotenv';
-dotenv.config(); 
+import * as dotenv from "dotenv";
+dotenv.config();
 
 const envSchema = z.object({
   DATABASE_URL: z.string().url(),

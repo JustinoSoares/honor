@@ -1,4 +1,4 @@
-import { NextFunction,  Response } from "express";
+import { NextFunction, Response } from "express";
 import jwt from "jsonwebtoken";
 import prisma from "../database/prisma";
 import { AuthRequest } from "./auth.middleware";

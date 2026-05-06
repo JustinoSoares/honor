@@ -30,7 +30,7 @@ export class AuthController {
           sameSite: "strict", // CSRF protection
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
         });
-        
+
         return res.status(200).json(result);
       }
     } catch (error) {

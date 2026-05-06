@@ -1,6 +1,6 @@
 import { AuthRequest } from "../../middleware/auth.middleware";
 import { BackofficeService } from "./backoffice.service";
-import {  Response } from "express";
+import { Response } from "express";
 
 const service = new BackofficeService();
 

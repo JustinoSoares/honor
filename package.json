@@ -13,7 +13,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
-    "yarn test" : "eslint . && tsc --noEmit"
+    "yarn test": "eslint . && tsc --noEmit"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.5.0",

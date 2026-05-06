@@ -1,6 +1,6 @@
 import { validate } from "uuid";
 import { EventService } from "./event.service";
-import { Request, Response } from "express";
+import { Response } from "express";
 import { AuthRequest } from "../../middleware/auth.middleware";
 
 const service = new EventService();

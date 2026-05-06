@@ -4,7 +4,7 @@ import helmet from "helmet";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { setupSwagger } from "./config/swagger";
-import cookieParser from 'cookie-parser';
+import cookieParser from "cookie-parser";
 import userRoutes from "./modules/user/user.route";
 import eventRoutes from "./modules/event/event.route";
 import authRoutes from "./modules/auth/auth.route";

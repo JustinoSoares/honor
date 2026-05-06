@@ -61,13 +61,9 @@ export function registerAuthDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: z.object({
-              url: z
-                .string()
-                .url()
-                .openapi({
-                  example:
-                    "https://accounts.google.com/o/oauth2/v2/auth?client_id=...&state=abc123",
-                }),
+              url: z.string().url().openapi({
+                example: "https://accounts.google.com/o/oauth2/v2/auth?client_id=...&state=abc123",
+              }),
               state: z.string().openapi({ example: "a3f1c9e2b7d04512" }),
             }),
           },
@@ -96,38 +92,28 @@ export function registerAuthDocs(registry: OpenAPIRegistry) {
       "`FRONTEND_URL/auth/callback?accessToken=...&refreshToken=...`.",
     request: {
       query: z.object({
-        code: z
-          .string()
-          .openapi({
-            example: "4/0AY0e-g7...",
-            description:
-              "Authorization code retornado pelo Google. Válido por poucos segundos e de uso único.",
-          }),
-        state: z
-          .string()
-          .openapi({
-            example: "a3f1c9e2b7d04512",
-            description:
-              "Valor gerado em /auth/google para prevenção de CSRF. Validado e descartado atomicamente via Valkey (GETDEL).",
-          }),
-        error: z
-          .string()
-          .optional()
-          .openapi({
-            example: "access_denied",
-            description:
-              "Presente quando o utilizador nega a permissão no Google.",
-          }),
+        code: z.string().openapi({
+          example: "4/0AY0e-g7...",
+          description:
+            "Authorization code retornado pelo Google. Válido por poucos segundos e de uso único.",
+        }),
+        state: z.string().openapi({
+          example: "a3f1c9e2b7d04512",
+          description:
+            "Valor gerado em /auth/google para prevenção de CSRF. Validado e descartado atomicamente via Valkey (GETDEL).",
+        }),
+        error: z.string().optional().openapi({
+          example: "access_denied",
+          description: "Presente quando o utilizador nega a permissão no Google.",
+        }),
       }),
     },
     responses: {
       302: {
-        description:
-          "Redireciona o browser para o frontend com os tokens na query string",
+        description: "Redireciona o browser para o frontend com os tokens na query string",
         headers: z.object({
           Location: z.string().openapi({
-            example:
-              "https://meufront.com/auth/callback?accessToken=eyJ...&refreshToken=eyJ...",
+            example: "https://meufront.com/auth/callback?accessToken=eyJ...&refreshToken=eyJ...",
           }),
         }),
       },
@@ -219,9 +205,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: z.object({
-              message: z
-                .string()
-                .openapi({ example: "Logout realizado com sucesso" }),
+              message: z.string().openapi({ example: "Logout realizado com sucesso" }),
             }),
           },
         },

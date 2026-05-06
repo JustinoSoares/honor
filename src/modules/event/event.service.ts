@@ -62,7 +62,7 @@ export class EventService {
 
       const packages = data.packages?.map((pkg) => ({
         name: pkg.name,
-        description: pkg.description,
+        benefits: pkg.benefits as string[],
         price: pkg.price,
         priority: pkg.priority,
       }));
@@ -71,18 +71,9 @@ export class EventService {
         data:
           packages?.map((pkg) => ({
             name: pkg.name,
-            description: pkg.description,
+            benefits: pkg.benefits as string[],
             price: pkg.price,
             priority: pkg.priority,
-            event_id: event.id,
-          })) || [],
-      });
-
-      await prisma.image.createMany({
-        data:
-          data.images?.map((img) => ({
-            url: img.url,
-            priority: img.priority || 0,
             event_id: event.id,
           })) || [],
       });
@@ -101,10 +92,6 @@ export class EventService {
       });
 
       const getMembers = await prisma.member.findMany({
-        where: { event_id: event.id },
-      });
-
-      const getImages = await prisma.image.findMany({
         where: { event_id: event.id },
       });
 
@@ -128,7 +115,7 @@ export class EventService {
         packages: getPackages.map((pkg) => ({
           id: pkg.id,
           name: pkg.name,
-          description: pkg.description,
+          benefits: pkg.benefits as string[],
           price: pkg.price,
           priority: pkg.priority,
         })),
@@ -137,11 +124,6 @@ export class EventService {
           name: member.name,
           user_id: member.user_id,
           permission: member.permission as "MANAGER" | "STAFF",
-        })),
-        images: getImages.map((img) => ({
-          id: img.id,
-          url: img.url,
-          priority: img.priority,
         })),
       };
 
@@ -277,7 +259,7 @@ export class EventService {
         packages: event.packages.map((pkg) => ({
           id: pkg.id,
           name: pkg.name,
-          description: pkg.description,
+          benefits: pkg.benefits as string[],
           price: pkg.price,
           priority: pkg.priority,
         })),
@@ -321,7 +303,6 @@ export class EventService {
         include: {
           packages: true,
           members: true,
-          images: true,
         },
       });
 
@@ -377,7 +358,7 @@ export class EventService {
         packages: event.packages.map((pkg) => ({
           id: pkg.id,
           name: pkg.name,
-          description: pkg.description,
+          benefits: pkg.benefits as string[],
           price: pkg.price,
           priority: pkg.priority,
         })),
@@ -386,11 +367,6 @@ export class EventService {
           name: member.name,
           user_id: member.user_id,
           permission: member.permission as "MANAGER" | "STAFF",
-        })),
-        images: event.images.map((img) => ({
-          id: img.id,
-          url: img.url,
-          priority: img.priority,
         })),
       };
 
@@ -412,7 +388,6 @@ export class EventService {
       include: {
         packages: true,
         members: true,
-        images: true,
       },
     });
 
@@ -461,7 +436,7 @@ export class EventService {
       packages: existingEvent.packages.map((pkg) => ({
         id: pkg.id,
         name: pkg.name,
-        description: pkg.description,
+        benefits: pkg.benefits as string[],
         price: pkg.price,
         priority: pkg.priority,
       })),
@@ -470,11 +445,6 @@ export class EventService {
         name: member.name,
         user_id: member.user_id,
         permission: member.permission as "MANAGER" | "STAFF",
-      })),
-      images: existingEvent.images.map((img) => ({
-        id: img.id,
-        url: img.url,
-        priority: img.priority,
       })),
     };
 
@@ -523,7 +493,7 @@ export class EventService {
     const newPackage = await prisma.packages.create({
       data: {
         name: data.name,
-        description: data.description,
+        benefits: data.benefits,
         price: data.price,
         priority: data.priority,
         event_id,
@@ -533,7 +503,7 @@ export class EventService {
     const dataResponse: schema.ResponsePackage = {
       id: newPackage.id,
       name: newPackage.name,
-      description: newPackage.description,
+      benefits: newPackage.benefits as string[],
       price: newPackage.price,
       priority: newPackage.priority,
     };
@@ -560,7 +530,7 @@ export class EventService {
       where: { id: package_id },
       data: {
         name: data.name,
-        description: data.description,
+        benefits: data.benefits,
         price: data.price,
         priority: data.priority,
       },
@@ -569,7 +539,7 @@ export class EventService {
     const dataResponse: schema.ResponsePackage = {
       id: updatedPackage.id,
       name: updatedPackage.name,
-      description: updatedPackage.description,
+      benefits: updatedPackage.benefits as string[],
       price: updatedPackage.price,
       priority: updatedPackage.priority,
     };
@@ -640,7 +610,7 @@ export class EventService {
     const dataResponse: schema.ResponsePackage[] = packages.map((pkg) => ({
       id: pkg.id,
       name: pkg.name,
-      description: pkg.description,
+      benefits: pkg.benefits as string[],
       price: pkg.price,
       priority: pkg.priority,
     }));
@@ -673,7 +643,7 @@ export class EventService {
     const dataResponse: schema.ResponsePackage = {
       id: existingPackage.id,
       name: existingPackage.name,
-      description: existingPackage.description,
+      benefits: existingPackage.benefits as string[],
       price: existingPackage.price,
       priority: existingPackage.priority,
     };

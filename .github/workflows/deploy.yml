@@ -23,7 +23,6 @@ jobs:
           path: ~/.cache/yarn
           key: yarn-${{ hashFiles('yarn.lock') }}
 
-
   deploy:
     needs: ci
     runs-on: ubuntu-latest

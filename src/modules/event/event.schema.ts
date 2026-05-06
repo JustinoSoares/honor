@@ -16,6 +16,7 @@ export const CreateEventSchema = z.object({
       message: "Data de término inválida",
     })
     .optional(),
+  cover_url: z.string().optional().openapi({ example: "https://example.com/cover.jpg" }),
   promoter: z
     .string("O promotor do evento é obrigatório")
     .min(1, "O promotor do evento é obrigatório"),
@@ -54,18 +55,9 @@ export const CreateEventSchema = z.object({
           .number("A prioridade do pacote deve ser um número inteiro")
           .int()
           .positive("A prioridade do pacote deve ser um número inteiro positivo"),
-        description: z
-          .string("A descrição do pacote é obrigatória")
-          .min(1, "A descrição do pacote é obrigatória"),
-      }),
-    )
-    .optional(),
-
-  images: z
-    .array(
-      z.object({
-        url: z.string("A URL da imagem é obrigatória").min(1, "A URL da imagem é obrigatória"),
-        priority: z.number("A prioridade da imagem deve ser um número inteiro").int().optional(),
+        benefits: z
+          .array(z.string("Cada benefício do pacote é obrigatório"))
+          .min(1, "Pelo menos um benefício do pacote é obrigatório"),
       }),
     )
     .optional(),
@@ -82,9 +74,9 @@ export const CreatePackage = z.object({
     .number("A prioridade do pacote deve ser um número inteiro")
     .int()
     .positive("A prioridade do pacote deve ser um número inteiro positivo"),
-  description: z
-    .string("A descrição do pacote é obrigatória")
-    .min(1, "A descrição do pacote é obrigatória"),
+  benefits: z
+    .array(z.string("Cada benefício do pacote é obrigatório"))
+    .min(1, "Pelo menos um benefício do pacote é obrigatório"),
 });
 
 export type PackageCreate = z.infer<typeof CreatePackage>;
@@ -136,7 +128,7 @@ export const ResponsePackageSchema = z
     name: z.string().openapi({ example: "Pacote VIP" }),
     price: z.number().openapi({ example: 150.0 }),
     priority: z.number().openapi({ example: 1 }),
-    description: z.string().openapi({ example: "Acesso VIP com benefícios exclusivos." }),
+    benefits: z.array(z.string()).openapi({ example: ["Acesso VIP", "Open bar"] }),
   })
   .openapi("ResponsePackage");
 
@@ -203,9 +195,10 @@ export const ResponseEventSchema = z
   .object({
     id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
     title: z.string().openapi({ example: "Evento de Música" }),
-    description: z.string().openapi({ example: "Um evento de música ao vivo com várias bandas." }),
+    description: z.string().openapi({ example: "Descrição do evento" }),
     date_start: z.string().openapi({ example: "2024-01-01T20:00:00Z" }),
     date_end: z.string().optional().openapi({ example: "2024-01-01T23:00:00Z" }),
+    cover_url: z.string().optional().openapi({ example: "https://example.com/cover.jpg" }),
     promoter: z.string().openapi({ example: "Promotor XYZ" }),
     promoter_nif: z.string().openapi({ example: "123456789" }),
     category: z.string().openapi({ example: "Música" }),
@@ -228,7 +221,7 @@ export const ResponseEventSchema = z
           name: z.string().openapi({ example: "Pacote VIP" }),
           price: z.number().openapi({ example: 150.0 }),
           priority: z.number().openapi({ example: 1 }),
-          description: z.string().openapi({ example: "Acesso VIP com benefícios exclusivos." }),
+          benefits: z.array(z.string()).openapi({ example: ["Acesso VIP", "Open bar"] }),
         }),
       )
       .optional(),
@@ -239,15 +232,6 @@ export const ResponseEventSchema = z
           name: z.string().openapi({ example: "João Silva" }),
           user_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
           permission: z.enum(["MANAGER", "STAFF"]).openapi({ example: "MANAGER" }),
-        }),
-      )
-      .optional(),
-    images: z
-      .array(
-        z.object({
-          id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
-          url: z.string().openapi({ example: "https://example.com/image.jpg" }),
-          priority: z.number().optional().openapi({ example: 1 }),
         }),
       )
       .optional(),
