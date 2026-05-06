@@ -9,7 +9,7 @@ import userRoutes from "./modules/user/user.route";
 import eventRoutes from "./modules/event/event.route";
 import authRoutes from "./modules/auth/auth.route";
 import backofficeRoutes from "./modules/backoffice/routes";
-import guestRoutes from "./modules/guest/guest.route";
+import ticketRoutes from "./modules/ticket/ticket.route";
 
 const app = express();
 
@@ -42,7 +42,7 @@ app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/event", eventRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/backoffice", backofficeRoutes);
-app.use("/api/v1/guest", guestRoutes);
+app.use("/api/v1/ticket", ticketRoutes);
 
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {

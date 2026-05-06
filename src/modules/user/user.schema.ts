@@ -16,6 +16,7 @@ export const UserSchema = zod
     phone: zod
       .string("O seu telefone é obrigatório")
       .min(1, "Número de telefone é obrigatório")
+      .regex(/^\+244\s\d{9}$/, "Número de telefone deve estar no formato +244 900 000 000")
       .openapi({ example: "+244 900 000 000" }),
     password: zod
       .string("A sua senha é obrigatória")
@@ -41,6 +42,7 @@ export const UserUpdateSchema = zod
     phone: zod
       .string("O seu telefone é obrigatório")
       .min(1, "Número de telefone é obrigatório")
+      .regex(/^\+244\s\d{9}$/, "Número de telefone deve estar no formato +244 900 000 000")
       .optional()
       .openapi({ example: "+244 900 000 000" }),
     password: zod

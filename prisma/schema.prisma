@@ -27,6 +27,7 @@ model user {
   members      member[]
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
+  tickets      ticket[]
 }
 
 model event {
@@ -39,6 +40,7 @@ model event {
   cover_url    String?
   promoter     String // quem está a realizar o evento ou o nome da empresa
   promoter_nif String // nif do promotor
+  max_guests   Int? // número máximo de convidados para o evento
   duration     Int? // duração do evento em minutos
   contact      Json // contato para mais informações ["example@example.com", "123456789"]
   location     String
@@ -55,7 +57,7 @@ model event {
   guests         guest[]
   packages       packages[]
   members        member[]
-  invitations    invitation[]
+  tickets        ticket[]
 }
 
 model member {
@@ -82,17 +84,17 @@ model event_category {
 }
 
 model packages {
-  id            String       @id @default(uuid())
+  id            String   @id @default(uuid())
   name          String
-  benefits      Json         @default("[]") // benefícios do pacote, por exemplo: acesso VIP, open bar, etc.
-  price         Float        @default(0)
+  benefits      Json     @default("[]") // benefícios do pacote, por exemplo: acesso VIP, open bar, etc.
+  price         Float    @default(0)
   default_color String?
   event_id      String
-  priority      Int          @default(0)
-  event         event        @relation(fields: [event_id], references: [id])
-  created_at    DateTime     @default(now())
-  updated_at    DateTime     @updatedAt
-  invitations   invitation[]
+  priority      Int      @default(0)
+  event         event    @relation(fields: [event_id], references: [id])
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  tickets       ticket[]
 }
 
 model image {
@@ -105,10 +107,10 @@ model image {
   updated_at DateTime @updatedAt
 }
 
-model invitation {
+model ticket {
   id            String   @id @default(uuid())
   package_id    String
-  guest_id      String
+  user_id       String
   package_name  String // nome do pacote, para facilitar a identificação por exemplo: VIP, Pista, etc.
   package_color String? // cor do pacote, para facilitar a identificação por exemplo: vermelho, azul, etc.
   name          String // nome do convidado, para facilitar a identificação por exemplo: João Silva
@@ -119,7 +121,7 @@ model invitation {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
   package       packages @relation(fields: [package_id], references: [id])
-  guest         guest    @relation(fields: [guest_id], references: [id])
+  user          user     @relation(fields: [user_id], references: [id])
   event         event    @relation(fields: [event_id], references: [id])
 }
 
@@ -137,7 +139,6 @@ model guest {
   event            event        @relation(fields: [event_id], references: [id])
   created_at       DateTime     @default(now())
   updated_at       DateTime     @updatedAt
-  invitations      invitation[]
   payments         payment[]
 }
 

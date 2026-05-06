@@ -81,6 +81,6 @@ eventRouter.delete("/delete/image/:image_id", authentication, eventController.de
 
 eventRouter.post("/read/code", authentication, eventController.readCode);
 
-eventRouter.get("/history/:event_id", authentication, eventController.historyInvitationsByEvent);
+eventRouter.get("/history/:event_id", authentication, eventController.historyTicketsByEvent);
 
 export default eventRouter;

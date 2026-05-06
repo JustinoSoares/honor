@@ -17,6 +17,11 @@ export const CreateEventSchema = z.object({
     })
     .optional(),
   cover_url: z.string().optional().openapi({ example: "https://example.com/cover.jpg" }),
+  max_guests: z
+    .number("O número máximo de convidados deve ser um número inteiro")
+    .int("O número máximo de convidados deve ser um número inteiro")
+    .optional()
+    .openapi({ example: 500 }),
   promoter: z
     .string("O promotor do evento é obrigatório")
     .min(1, "O promotor do evento é obrigatório"),
@@ -155,6 +160,12 @@ export const EventUpdateSchema = z.object({
       message: "Data de término inválida",
     })
     .optional(),
+  cover_url: z.string().optional().openapi({ example: "https://example.com/cover.jpg" }),
+  max_guests: z
+    .number("O número máximo de convidados deve ser um número inteiro")
+    .int("O número máximo de convidados deve ser um número inteiro")
+    .optional()
+    .openapi({ example: 500 }),
   promoter: z
     .string("O promotor do evento é obrigatório")
     .min(1, "O promotor do evento é obrigatório")
@@ -199,6 +210,7 @@ export const ResponseEventSchema = z
     date_start: z.string().openapi({ example: "2024-01-01T20:00:00Z" }),
     date_end: z.string().optional().openapi({ example: "2024-01-01T23:00:00Z" }),
     cover_url: z.string().optional().openapi({ example: "https://example.com/cover.jpg" }),
+    max_guests: z.number().optional().openapi({ example: 500 }),
     promoter: z.string().openapi({ example: "Promotor XYZ" }),
     promoter_nif: z.string().openapi({ example: "123456789" }),
     category: z.string().openapi({ example: "Música" }),

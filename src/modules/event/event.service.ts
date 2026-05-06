@@ -1,7 +1,7 @@
 import prisma from "../../database/prisma";
 import { validate } from "uuid";
 import * as schema from "./event.schema";
-import * as schemaGuest from "../guest/guest.schema";
+import * as schemaGuest from "../ticket/ticket.schema";
 import { isImageByExtension } from "../../utils/verify_image";
 import { decryptDefault } from "../../utils/crypt";
 
@@ -13,13 +13,11 @@ export class EventService {
     user_id: string,
   ): Promise<schema.ResponseEvent | { message: string; status: number }> {
     try {
-      if (!user_id || !validate(user_id)) {
-        console.error("Invalid user ID:", user_id);
+      if (!user_id || !validate(user_id))
         return {
           message: "Usuário não autenticado",
           status: 401,
         };
-      }
 
       const existUser = await prisma.user.findFirst({
         where: { id: user_id },
@@ -50,6 +48,8 @@ export class EventService {
           date_start: new Date(data.date_start),
           date_end: data.date_end ? new Date(data.date_end) : null,
           location: data.location,
+          cover_url: data.cover_url,
+          max_guests: data.max_guests,
           promoter: data.promoter,
           promoter_nif: data.promoter_nif,
           category: data.category,
@@ -101,6 +101,8 @@ export class EventService {
         description: event.description,
         date_start: event.date_start.toISOString(),
         date_end: event.date_end ? event.date_end.toISOString() : undefined,
+        cover_url: event.cover_url || undefined,
+        max_guests: event.max_guests || undefined,
         location: event.location,
         promoter: event.promoter,
         promoter_nif: event.promoter_nif,
@@ -228,7 +230,6 @@ export class EventService {
         include: {
           packages: true,
           members: true,
-          images: true,
         },
         orderBy: {
           created_at: "desc",
@@ -245,6 +246,8 @@ export class EventService {
         description: event.description,
         date_start: event.date_start.toISOString(),
         date_end: event.date_end ? event.date_end.toISOString() : undefined,
+        cover_url: event.cover_url || undefined,
+        max_guests: event.max_guests || undefined,
         location: event.location,
         promoter: event.promoter,
         promoter_nif: event.promoter_nif,
@@ -268,11 +271,6 @@ export class EventService {
           name: member.name,
           user_id: member.user_id,
           permission: member.permission as "MANAGER" | "STAFF",
-        })),
-        images: event.images.map((img) => ({
-          id: img.id,
-          url: img.url,
-          priority: img.priority,
         })),
       }));
 
@@ -345,6 +343,8 @@ export class EventService {
         date_start: event.date_start.toISOString(),
         date_end: event.date_end ? event.date_end.toISOString() : undefined,
         location: event.location,
+        cover_url: event.cover_url || undefined,
+        max_guests: event.max_guests || undefined,
         promoter: event.promoter,
         promoter_nif: event.promoter_nif,
         category: event.category,
@@ -405,6 +405,8 @@ export class EventService {
         description: data.description ?? existingEvent.description,
         date_start: data.date_start ? new Date(data.date_start) : existingEvent.date_start,
         date_end: data.date_end ? new Date(data.date_end) : existingEvent.date_end,
+        cover_url: data.cover_url ? data.cover_url : existingEvent.cover_url,
+        max_guests: data.max_guests ? data.max_guests : existingEvent.max_guests,
         location: data.location ?? existingEvent.location,
         promoter: data.promoter ?? existingEvent.promoter,
         promoter_nif: data.promoter_nif ?? existingEvent.promoter_nif,
@@ -423,6 +425,8 @@ export class EventService {
       date_start: updatedEvent.date_start.toISOString(),
       date_end: updatedEvent.date_end ? updatedEvent.date_end.toISOString() : undefined,
       location: updatedEvent.location,
+      cover_url: updatedEvent.cover_url || undefined,
+      max_guests: updatedEvent.max_guests || undefined,
       promoter: updatedEvent.promoter,
       promoter_nif: updatedEvent.promoter_nif,
       category: updatedEvent.category,
@@ -988,32 +992,32 @@ export class EventService {
       };
     }
 
-    const existingInvitation = await prisma.invitation.findFirst({
+    const existingTicket = await prisma.ticket.findFirst({
       where: { id: invitation_id },
     });
 
-    if (!existingInvitation) {
+    if (!existingTicket) {
       return {
         message: "Este convite não existe",
         status: 404,
       };
     }
 
-    if (existingInvitation.is_used) {
+    if (existingTicket.is_used) {
       return {
         message: "Este convite já foi utilizado",
         status: 400,
       };
     }
 
-    if (!existingInvitation.is_paid) {
+    if (!existingTicket.is_paid) {
       return {
         message: "Convite inválido, valide antes de processeguir",
         status: 400,
       };
     }
 
-    await prisma.invitation.update({
+    await prisma.ticket.update({
       where: { id: invitation_id },
       data: {
         is_used: true,
@@ -1026,7 +1030,7 @@ export class EventService {
     };
   }
 
-  async historyInvitationsByEvent(
+  async historyTicketsByEvent(
     event_id: string,
     page: number = 1,
     per_page: number = 10,
@@ -1034,7 +1038,7 @@ export class EventService {
     is_used?: boolean,
   ): Promise<
     | {
-        data: schemaGuest.ResponseInvitationGuest[];
+        data: schemaGuest.ResponseTicket[];
         meta: {
           page: number;
           per_page: number;
@@ -1055,11 +1059,11 @@ export class EventService {
       };
     }
 
-    const invitations = await prisma.invitation.findMany({
+    const tickets = await prisma.ticket.findMany({
       where: { event_id, is_paid: is_paid ?? true, is_used: is_used ?? false },
       include: {
         package: true,
-        guest: true,
+        user: true,
       },
       skip: (page - 1) * per_page,
       take: per_page,
@@ -1068,22 +1072,28 @@ export class EventService {
       },
     });
 
-    const totalGuests = await prisma.invitation.count({
+    const totalTickets = await prisma.ticket.count({
       where: { event_id, is_paid: is_paid ?? true, is_used: is_used ?? false },
     });
-
-    const dataResponse: schemaGuest.ResponseInvitationGuest[] = invitations.map((inv) => ({
+    const dataResponse: schemaGuest.ResponseTicket[] = tickets.map((inv) => ({
+      ticket_id: inv.id,
       event_id: inv.event_id,
       package_id: inv.package_id,
       name: inv.name,
       is_paid: inv.is_paid,
       is_used: inv.is_used,
+      user_id: inv.user_id,
       package_color: inv.package_color || undefined,
       package_name: inv.package_name,
-      guest_id: inv.guest_id,
       qr_code: inv.qr_code || undefined,
-      created_at: inv.created_at.toISOString(),
-      updated_at: inv.updated_at.toISOString(),
+      created_at: inv.created_at?.toISOString() ?? undefined,
+      updated_at: inv.updated_at?.toISOString() ?? undefined,
+      user: {
+        id: inv.user.id,
+        name: inv.user.name,
+        email: inv.user.email,
+        phone: inv.user.phone ?? "",
+      },
     }));
 
     return {
@@ -1091,8 +1101,8 @@ export class EventService {
       meta: {
         page,
         per_page,
-        total: totalGuests,
-        total_pages: Math.ceil(totalGuests / per_page),
+        total: totalTickets,
+        total_pages: Math.ceil(totalTickets / per_page),
       },
     };
   }

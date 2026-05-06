@@ -363,11 +363,11 @@ export class EventController {
     }
   }
 
-  async historyInvitationsByEvent(req: AuthRequest, res: Response) {
+  async historyTicketsByEvent(req: AuthRequest, res: Response) {
     try {
       let { event_id } = req.params;
       event_id = String(event_id);
-      const result = await service.historyInvitationsByEvent(event_id);
+      const result = await service.historyTicketsByEvent(event_id);
       if (!result) {
         return res.status(404).json({ message: "Evento não encontrado" });
       }

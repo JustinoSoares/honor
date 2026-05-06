@@ -2,7 +2,7 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import z from "zod";
 import * as schema from "../../modules/event/event.schema";
-import * as schemaGuest from "../../modules/guest/guest.schema";
+import * as schemaGuest from "../ticket/ticket.schema";
 
 export function registerEventDocs(registry: OpenAPIRegistry) {
   // Regista os schemas
@@ -729,7 +729,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "post",
     path: "/event/read/code",
-    tags: ["Events", "Invitations"],
+    tags: ["Events", "Tickets"],
     summary: "Lê um código por ID",
     security: [{ bearerAuth: [] }],
     request: {
@@ -769,7 +769,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "get",
     path: "/event/history/:event_id",
-    tags: ["Events", "Invitations"],
+    tags: ["Events", "Tickets"],
     summary: "Obtém o histórico de um evento",
     security: [{ bearerAuth: [] }],
     request: {
@@ -790,7 +790,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: z.object({
-              data: z.array(schemaGuest.ResponseInvitationGuest),
+              data: z.array(schemaGuest.ResponseTicket),
               meta: z.object({
                 total: z.number().openapi({ example: 100 }),
                 page: z.number().openapi({ example: 1 }),

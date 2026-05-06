@@ -12,12 +12,10 @@ export const authentication = async (req: AuthRequest, res: Response, next: Next
     return res.status(401).json({ message: "Token de autenticação ausente" });
   }
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
-      userId: string;
-    };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { user_id: string };
 
     const existingUser = await prisma.user.findFirst({
-      where: { id: decoded.userId },
+      where: { id: decoded.user_id },
     });
     if (!existingUser) {
       return res.status(401).json({ message: "Usuário não encontrado" });
