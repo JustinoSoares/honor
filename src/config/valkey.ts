@@ -4,7 +4,7 @@ const valkey = new Valkey({
   host: process.env.VALKEY_HOST ?? "localhost",
   port: Number(process.env.VALKEY_PORT ?? 6379),
   password: process.env.VALKEY_PASSWORD ?? undefined,
-  tls: process.env.NODE_ENV === "production" ? {} : undefined,
+  tls: undefined,
   // Reconexão automática com backoff exponencial
   retryStrategy(times) {
     const delay = Math.min(times * 100, 3000);

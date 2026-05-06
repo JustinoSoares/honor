@@ -1,3 +1,4 @@
+import { promise } from "zod";
 import prisma from "../../database/prisma";
 import { encryptDefault } from "../../utils/crypt";
 import { generateUserQRCode } from "../../utils/generate_qr";
@@ -23,6 +24,22 @@ export class TicketService {
       return {
         status: 404,
         message: "Usuário não encontrado",
+      };
+    }
+
+    const verifyEvent = await Promise.all(
+      data.map(async (inv) => {
+        const event = await prisma.event.findFirst({
+          where: { id: inv.event_id, available: true },
+        });
+        return event;
+      }),
+    );
+
+    if (verifyEvent.includes(null)) {
+      return {
+        status: 400,
+        message: "Evento não encontrado ou não disponível para criação de convites",
       };
     }
 
