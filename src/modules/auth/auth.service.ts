@@ -41,6 +41,7 @@ export class AuthService {
         status: 401,
       };
     }
+
     const payload = {
       user_id: user.id,
       email: user.email,
@@ -49,6 +50,8 @@ export class AuthService {
     };
 
     const tokens = generateTokens(payload);
+
+    await storeRefreshToken(user.id, tokens.refreshToken);
 
     return {
       accessToken: tokens.accessToken,

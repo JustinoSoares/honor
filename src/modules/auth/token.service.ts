@@ -25,5 +25,7 @@ export function verifyAccessToken(token: string): TokenPayload {
 }
 
 export function verifyRefreshToken(token: string): TokenPayload {
-  return jwt.verify(token, env.JWT_REFRESH_SECRET) as TokenPayload;
+  const decoded = jwt.verify(token, env.JWT_REFRESH_SECRET);
+  const { user_id, email, role, verified } = decoded as TokenPayload;
+  return { user_id, email, role, verified } as TokenPayload;
 }

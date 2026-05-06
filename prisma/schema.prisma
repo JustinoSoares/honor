@@ -36,6 +36,7 @@ model event {
   description  String
   date_start   DateTime
   date_end     DateTime?
+  cover_url    String?
   promoter     String // quem está a realizar o evento ou o nome da empresa
   promoter_nif String // nif do promotor
   duration     Int? // duração do evento em minutos

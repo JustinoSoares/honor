@@ -45,11 +45,7 @@ export const ResponseBadSchema = z.object({
   status: z.number().optional().openapi({ example: 401 }),
 });
 
-export const RefreshTokenSchema = z.object({
-  refreshToken: z
-    .string()
-    .openapi({ example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }),
-});
+
 
 // ─── Tipos inferidos ──────────────────────────────────────────────────────────
 
