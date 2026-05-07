@@ -8,15 +8,22 @@ import { registerBackofficeDocs } from "../modules/backoffice/backoffice.docs";
 import { registerTicketDocs } from "../modules/ticket/ticket.docs";
 import { registerAuthDocs } from "../modules/auth/auth.docs";
 import { env } from "../env";
+
 export const registry = new OpenAPIRegistry();
 
+registry.registerComponent("securitySchemes", "bearerAuth", {
+  type: "http",
+  scheme: "bearer",
+  bearerFormat: "JWT",
+});
+
 export function setupSwagger(app: Express) {
-  // Regista os módulos
   registerUserDocs(registry);
   registerEventDocs(registry);
   registerBackofficeDocs(registry);
   registerTicketDocs(registry);
   registerAuthDocs(registry);
+
   const generator = new OpenApiGeneratorV3(registry.definitions);
 
   const document = generator.generateDocument({
@@ -29,11 +36,12 @@ export function setupSwagger(app: Express) {
     servers: [{ url: env.BASE_API_URL || "http://localhost:3000/api/v1" }],
   });
 
+  // UI visual (Swagger)
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(document));
-}
 
-registry.registerComponent("securitySchemes", "bearerAuth", {
-  type: "http",
-  scheme: "bearer",
-  bearerFormat: "JWT",
-});
+  // ✅ Rota JSON pura para o Apidog
+  app.get("/docs/json", (req, res) => {
+    res.setHeader("Content-Type", "application/json");
+    res.json(document);
+  });
+}
