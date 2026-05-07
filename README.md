@@ -89,3 +89,12 @@ Quem quiser um convite deve informar o seu (nome, email, telefone e finalizar o 
 Lhe será enviado um email com um código e esse código expira em uma dia
 |
 com o código e email, ele pode ter acesso ao seu convite e baixar sempre que precisar e pode sempre solicitar o seu convite para baixar como imagem.
+
+coisas que faltam
+    - metricas
+    - revisas as copys (precisa-se de padrão)
+    - api de pagamento
+    - notifications
+    - websocket
+    - tests
+    - observability

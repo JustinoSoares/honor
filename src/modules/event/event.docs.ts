@@ -62,7 +62,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
     method: "get",
     path: "/event/each/{event_id}",
     tags: ["Events"],
-    summary: "Busca um evento por ID",
+    summary: "Busca um evento por id dele",
     request: {
       params: z.object({
         event_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
@@ -214,7 +214,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
     method: "post",
     path: "/event/verify/{event_id}",
     tags: ["Events", "Backoffice"],
-    summary: "Verifica se um evento existe",
+    summary: "Aprovar um determinado evento para estar diponível para o público em geral",
     security: [{ bearerAuth: [] }],
     request: {
       params: z.object({
@@ -733,7 +733,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
     method: "post",
     path: "/event/read/code",
     tags: ["Events", "Tickets"],
-    summary: "Lê um código por ID",
+    summary: "Essa rota é para ler o código qr, e verificar se o ticket é válido ou não",
     security: [{ bearerAuth: [] }],
     request: {
       body: {
@@ -773,7 +773,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
     method: "get",
     path: "/event/history/:event_id",
     tags: ["Events", "Tickets"],
-    summary: "Obtém o histórico de um evento",
+    summary: "Obtém o histórico de entrada no evento",
     security: [{ bearerAuth: [] }],
     request: {
       params: z.object({

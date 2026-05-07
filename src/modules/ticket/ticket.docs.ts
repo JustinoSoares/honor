@@ -15,7 +15,7 @@ export function registerTicketDocs(registry: OpenAPIRegistry) {
     method: "post",
     path: "/ticket/create",
     tags: ["Tickets"],
-    summary: "Cria novos tickets para um evento",
+    summary: "Comprar ingressos para um evento",
     security: [{ bearerAuth: [] }],
     request: {
       body: {
