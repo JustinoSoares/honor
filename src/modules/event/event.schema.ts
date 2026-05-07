@@ -6,13 +6,13 @@ export const CreateEventSchema = z.object({
     .string("A descrição do evento é obrigatória")
     .min(1, "A descrição do evento é obrigatória"),
   date_start: z
-    .date("A data de início do evento é obrigatória")
-    .refine((date) => date > new Date(), {
+    .string("A data de início do evento é obrigatória")
+    .refine((date) => new Date(date) > new Date(), {
       message: "A data de início do evento deve ser no futuro",
     }),
   date_end: z
-    .date("A data de término do evento é obrigatória")
-    .refine((date) => date > new Date(), {
+    .string("A data de término do evento é obrigatória")
+    .refine((date) => new Date(date) > new Date(), {
       message: "A data de término do evento deve ser no futuro",
     })
     .optional(),
