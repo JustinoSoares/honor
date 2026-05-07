@@ -562,30 +562,6 @@ export class EventService {
         };
       }
 
-      if (user_id) {
-        const existingUser = await prisma.user.findFirst({
-          where: { id: user_id },
-        });
-
-        if (!existingUser) {
-          return {
-            message: "Usuário não autenticado",
-            status: 401,
-          };
-        }
-
-        if (existingUser.role === "USER" && !event.available) {
-          return {
-            message: "Evento não disponível",
-            status: 403,
-          };
-        }
-      } else if (!event.available) {
-        return {
-          message: "Evento não disponível",
-          status: 403,
-        };
-      }
 
       const dataResponse: schema.ResponseEvent = {
         id: event.id,
