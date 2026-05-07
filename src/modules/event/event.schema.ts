@@ -63,6 +63,13 @@ export const CreateEventSchema = z.object({
         benefits: z
           .array(z.string("Cada benefício do pacote é obrigatório"))
           .min(1, "Pelo menos um benefício do pacote é obrigatório"),
+        max_tickets: z
+          .number("O número máximo de ingressos para este pacote deve ser um número inteiro")
+          .int()
+          .positive(
+            "O número máximo de ingressos para este pacote deve ser um número inteiro positivo",
+          )
+          .optional(),
       }),
     )
     .optional(),
@@ -82,6 +89,13 @@ export const CreatePackage = z.object({
   benefits: z
     .array(z.string("Cada benefício do pacote é obrigatório"))
     .min(1, "Pelo menos um benefício do pacote é obrigatório"),
+  max_tickets: z
+    .number("O número máximo de ingressos para este pacote deve ser um número inteiro")
+    .int()
+    .positive(
+      "O número máximo de ingressos para este pacote deve ser um número inteiro positivo",
+    )
+    .optional(),
 });
 
 export type PackageCreate = z.infer<typeof CreatePackage>;
@@ -134,6 +148,8 @@ export const ResponsePackageSchema = z
     price: z.number().openapi({ example: 150.0 }),
     priority: z.number().openapi({ example: 1 }),
     benefits: z.array(z.string()).openapi({ example: ["Acesso VIP", "Open bar"] }),
+    max_tickets: z.number().optional().openapi({ example: 100 }),
+    purchased: z.number().optional().openapi({ example: 50 }),
   })
   .openapi("ResponsePackage");
 
@@ -234,6 +250,8 @@ export const ResponseEventSchema = z
           price: z.number().openapi({ example: 150.0 }),
           priority: z.number().openapi({ example: 1 }),
           benefits: z.array(z.string()).openapi({ example: ["Acesso VIP", "Open bar"] }),
+          max_tickets: z.number().optional().openapi({ example: 100 }),
+          purchased: z.number().optional().openapi({ example: 50 }),
         }),
       )
       .optional(),

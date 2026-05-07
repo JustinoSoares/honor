@@ -20,12 +20,15 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
     method: "get",
     path: "/event/list",
     tags: ["Events"],
-    summary: "Lista todos os eventos",
+    summary: "Lista dos eventos, essa lista será usada para o público em geral",
     request: {
       query: z.object({
         page: z.string().optional().openapi({ example: "1" }),
         per_page: z.string().optional().openapi({ example: "10" }),
         search: z.string().optional().openapi({ example: "Música" }),
+        min_price: z.string().optional().openapi({ example: "0" }),
+        max_price: z.string().optional().openapi({ example: "100" }),
+        category: z.string().optional().openapi({ example: "Música" }),
       }),
     },
     responses: {

@@ -40,27 +40,51 @@ export function registerUserDocs(registry: OpenAPIRegistry) {
   });
 
   // GET /user/:id
-  registry.registerPath({
-    method: "get",
-    path: "/user/each/{user_id}",
-    tags: ["Users"],
-    summary: "Busca utilizador por ID",
-    security: [{ bearerAuth: [] }],
-    request: {
-      params: z.object({
-        id: z.string().uuid().openapi({ example: "a1b2c3d4-..." }),
-      }),
-    },
-    responses: {
-      200: {
-        description: "Utilizador encontrado",
-        content: {
-          "application/json": { schema: UserSchema },
-        },
+    registry.registerPath({
+      method: "get",
+      path: "/user/each/{user_id}",
+      tags: ["Users"],
+      summary: "Busca utilizador por ID",
+      security: [{ bearerAuth: [] }],
+      request: {
+        params: z.object({
+          id: z.string().uuid().openapi({ example: "a1b2c3d4-..." }),
+        }),
       },
-      404: { description: "Utilizador não encontrado" },
-    },
-  });
+      responses: {
+        200: {
+          description: "Utilizador encontrado",
+          content: {
+            "application/json": { schema: UserSchema },
+          },
+        },
+        404: { description: "Utilizador não encontrado" },
+      },
+    });
+
+  // GET /user/me
+      registry.registerPath({
+      method: "get",
+      path: "/user/me",
+      tags: ["Users"],
+      summary: "Busca o utilizador autenticado",
+      security: [{ bearerAuth: [] }],
+      request: {
+        params: z.object({
+          id: z.string().uuid().openapi({ example: "a1b2c3d4-..." }),
+        }),
+      },
+      responses: {
+        200: {
+          description: "Utilizador encontrado",
+          content: {
+            "application/json": { schema: UserSchema },
+          },
+        },
+        404: { description: "Utilizador não encontrado" },
+      },
+    });
+
 
   // POST /users
   registry.registerPath({

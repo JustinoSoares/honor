@@ -1,4 +1,4 @@
-import { promise } from "zod";
+import { array, promise } from "zod";
 import prisma from "../../database/prisma";
 import { encryptDefault } from "../../utils/crypt";
 import { generateUserQRCode } from "../../utils/generate_qr";
@@ -6,10 +6,10 @@ import * as schema from "./ticket.schema";
 
 export class TicketService {
   async createTicket(
-    data: schema.CreateTicket,
+    data: schema.TicketArray,
     user_id: string,
   ): Promise<{ data: schema.ResponseTicket[] } | { status: number; message: string }> {
-    if (!data.length) {
+    if (Array.isArray(data) && data.length === 0) {
       return {
         status: 400,
         message: "Pelo menos um convite deve ser criado",
@@ -39,9 +39,11 @@ export class TicketService {
     if (verifyEvent.includes(null)) {
       return {
         status: 400,
-        message: "Evento não encontrado ou não disponível para criação de convites",
+        message: "Evento não encontrado ou não disponível para adição de convites",
       };
     }
+
+    
 
     const existEvent = await prisma.event.findMany({
       where: { id: data[0].event_id },
@@ -54,31 +56,32 @@ export class TicketService {
       };
     }
 
-    const existPackages = await prisma.packages.findMany({
-      where: {
-        id: {
-          in: data.map((inv) => inv.package_id),
-        },
-      },
-    });
+  const verifyPackage = await Promise.all(
+      data.map(async (inv) => {
+        const packageEach = await prisma.packages.findFirst({
+          where: { id: inv.package_id, event_id: inv.event_id },
+        });
+        return packageEach;
+      }),
+    );
 
-    if (existPackages.length !== data.length) {
+    if (verifyPackage.includes(null)) {
       return {
         status: 400,
-        message: "Verifique se os pacotes existem e pertencem ao evento",
+        message: "Pacote não encontrado ou pertence a este evento",
       };
     }
 
     const createTickets = await Promise.all(
       data.map(async (inv) => {
         const packageData = await prisma.packages.findUnique({
-          where: { id: inv.package_id },
+          where: { id: inv.package_id, event_id: inv.event_id },
         });
 
         if (!packageData) {
           return {
             status: 400,
-            message: `Pacote com ID ${inv.package_id} não encontrado`,
+            message: `Pacote não encontrado para este evento`,
           };
         }
 
@@ -123,6 +126,14 @@ export class TicketService {
         };
       }),
     );
+
+    if (createTickets.some((ticket) => "message" in ticket && ticket.status !== 201)) {
+      const errorTicket = createTickets.find((ticket) => "message" in ticket && ticket.status !== 201);
+      return {
+        status: errorTicket?.status || 500,
+        message: errorTicket?.message || "Erro ao criar convites",
+      };
+    }
 
     const formatTicket = createTickets.map((inv) => ({
       event_id: inv.event_id,

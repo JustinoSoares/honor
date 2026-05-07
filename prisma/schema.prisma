@@ -31,25 +31,25 @@ model user {
 }
 
 model event {
-  id           String    @id @default(uuid())
-  title        String
-  category     String
-  description  String
-  date_start   DateTime
-  date_end     DateTime?
-  cover_url    String?
-  promoter     String // quem está a realizar o evento ou o nome da empresa
-  promoter_nif String // nif do promotor
-  max_guests   Int? // número máximo de convidados para o evento
-  duration     Int? // duração do evento em minutos
-  contact      Json // contato para mais informações ["example@example.com", "123456789"]
-  location     String
-  province     String
-  available    Boolean   @default(false)
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
-
-  classification String? // A, B, C
+  id             String          @id @default(uuid())
+  title          String
+  category       String
+  description    String
+  date_start     DateTime
+  date_end       DateTime?
+  cover_url      String?
+  promoter       String // quem está a realizar o evento ou o nome da empresa
+  promoter_nif   String // nif do promotor
+  max_guests     Int? // número máximo de convidados para o evento
+  purchased      Int             @default(0) // número de ingressos já vendidos para o evento
+  duration       Int? // duração do evento em minutos
+  contact        Json // contato para mais informações ["example@example.com", "123456789"]
+  location       String
+  province       String
+  available      Boolean         @default(false)
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+  classification String?         @default("C") // A, B, C
   responsible_id String? // O nosso funcionario responsável por este evento
   responsible    user?           @relation(fields: [responsible_id], references: [id])
   event_category event_category? @relation(fields: [category], references: [name])
@@ -90,6 +90,8 @@ model packages {
   price         Float    @default(0)
   default_color String?
   event_id      String
+  max_tickets   Int? // número máximo de ingressos disponíveis para este pacote
+  purchased     Int      @default(0) // número de ingressos já vendidos para este pacote
   priority      Int      @default(0)
   event         event    @relation(fields: [event_id], references: [id])
   created_at    DateTime @default(now())

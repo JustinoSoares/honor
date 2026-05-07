@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export const CreateTicketSchema = z
+export const CreateTicketSchema = z.object({
+data : z
   .array(
     z.object({
       event_id: z.string("O ID do evento é obrigatório"),
@@ -8,7 +9,19 @@ export const CreateTicketSchema = z
       name: z.string("O nome do convite é obrigatório").min(1, "O nome do convite é obrigatório"),
     }),
   )
-  .min(1, "Pelo menos um convite deve ser criado");
+  .min(1, "Pelo menos um convite deve ser criado")
+});
+
+export const ticketArray  = z.array(
+  z.object({
+    event_id: z.string("O ID do evento é obrigatório"),
+    package_id: z.string("O ID do pacote é obrigatório"),
+    
+    name: z.string("O nome do convite é obrigatório").min(1, "O nome do convite é obrigatório"),
+  }),
+).min(1, "Pelo menos um convite deve ser criado");
+
+export type TicketArray = z.infer<typeof ticketArray>;
 
 export type CreateTicket = z.infer<typeof CreateTicketSchema>;
 

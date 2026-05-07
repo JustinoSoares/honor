@@ -11,14 +11,15 @@ export class TicketController {
 
   async createTicket(req: AuthRequest, res: Response) {
     try {
-      const { data } = req.body;
+      const data  = req.body.data;
+
       const user_id = req.userId as string;
 
       if (!user_id || !validate(user_id)) {
         return res.status(401).json({ message: "Usuário não autenticado" });
       }
 
-      const ticket = await service.createTicket(data as schema.CreateTicket, user_id as string);
+      const ticket = await service.createTicket(data as schema.TicketArray, user_id as string);
       if ("message" in ticket && ticket.status !== 201) {
         return res.status(ticket.status).json({ message: ticket.message });
       }

@@ -4,6 +4,7 @@ import * as schema from "./event.schema";
 import * as schemaGuest from "../ticket/ticket.schema";
 import { isImageByExtension } from "../../utils/verify_image";
 import { decryptDefault } from "../../utils/crypt";
+import { prefault } from "zod";
 
 export class EventService {
   constructor() {}
@@ -65,6 +66,7 @@ export class EventService {
         benefits: pkg.benefits as string[],
         price: pkg.price,
         priority: pkg.priority,
+        max_tickets: pkg.max_tickets,
       }));
 
       await prisma.packages.createMany({
@@ -74,6 +76,7 @@ export class EventService {
             benefits: pkg.benefits as string[],
             price: pkg.price,
             priority: pkg.priority,
+            max_tickets: pkg.max_tickets,
             event_id: event.id,
           })) || [],
       });
@@ -120,6 +123,8 @@ export class EventService {
           benefits: pkg.benefits as string[],
           price: pkg.price,
           priority: pkg.priority,
+          max_tickets: pkg.max_tickets || undefined,
+          purchased: pkg.purchased,
         })),
         members: getMembers.map((member) => ({
           id: member.id,
@@ -178,8 +183,11 @@ export class EventService {
   async getAllEvents(
     page = 1,
     per_page = 10,
-    search = "",
+    search?: string | undefined,
     user_id?: string,
+    min_price: number | undefined = undefined,
+    max_price: number | undefined = undefined,
+    category: string | string[] | undefined = undefined,
   ): Promise<
     | {
         data: schema.ResponseEvent[];
@@ -226,9 +234,28 @@ export class EventService {
       const events = await prisma.event.findMany({
         skip,
         take: per_page,
-        where: whereClause,
+        where: {
+          ...whereClause,
+          event_category: category
+            ? {
+                name: Array.isArray(category) ? { in: category } : category,
+              }
+            : undefined,
+          packages:
+            min_price !== undefined || max_price !== undefined
+              ? {
+                  some: {
+                    price: {
+                      gte: min_price ?? undefined,
+                      lte: max_price ?? undefined,
+                    },
+                  },
+                }
+              : undefined,
+        },
         include: {
           packages: true,
+          event_category: true,
           members: true,
         },
         orderBy: {
@@ -237,7 +264,27 @@ export class EventService {
       });
 
       const totalEvents = await prisma.event.count({
-        where: whereClause,
+        where: {
+          ...whereClause,
+          event_category: category
+            ? {
+                name: Array.isArray(category)
+                  ? { in: category, mode: "insensitive" }
+                  : { equals: category, mode: "insensitive" },
+              }
+            : undefined,
+          packages:
+            min_price !== undefined || max_price !== undefined
+              ? {
+                  some: {
+                    price: {
+                      gte: min_price ?? undefined,
+                      lte: max_price ?? undefined,
+                    },
+                  },
+                }
+              : undefined,
+        },
       });
 
       const dataResponse: schema.ResponseEvent[] = events.map((event) => ({
@@ -265,6 +312,8 @@ export class EventService {
           benefits: pkg.benefits as string[],
           price: pkg.price,
           priority: pkg.priority,
+          max_tickets: pkg.max_tickets || undefined,
+          purchased: pkg.purchased,
         })),
         members: event.members.map((member) => ({
           id: member.id,
@@ -283,7 +332,8 @@ export class EventService {
           total_pages: Math.ceil(totalEvents / per_page),
         },
       };
-    } catch {
+    } catch (error) {
+      console.error("Error fetching events:", error);
       return {
         message: "Erro ao buscar eventos",
         status: 500,
@@ -361,6 +411,8 @@ export class EventService {
           benefits: pkg.benefits as string[],
           price: pkg.price,
           priority: pkg.priority,
+          max_tickets: pkg.max_tickets || undefined,
+          purchased: pkg.purchased,
         })),
         members: event.members.map((member) => ({
           id: member.id,
@@ -443,6 +495,8 @@ export class EventService {
         benefits: pkg.benefits as string[],
         price: pkg.price,
         priority: pkg.priority,
+        max_tickets: pkg.max_tickets || undefined,
+        purchased: pkg.purchased,
       })),
       members: existingEvent.members.map((member) => ({
         id: member.id,
@@ -501,6 +555,7 @@ export class EventService {
         price: data.price,
         priority: data.priority,
         event_id,
+        max_tickets: data.max_tickets,
       },
     });
 
@@ -510,6 +565,8 @@ export class EventService {
       benefits: newPackage.benefits as string[],
       price: newPackage.price,
       priority: newPackage.priority,
+      max_tickets: newPackage.max_tickets || undefined,
+      purchased: 0,
     };
 
     return dataResponse;
@@ -537,6 +594,7 @@ export class EventService {
         benefits: data.benefits,
         price: data.price,
         priority: data.priority,
+        max_tickets: data.max_tickets,
       },
     });
 
@@ -546,6 +604,8 @@ export class EventService {
       benefits: updatedPackage.benefits as string[],
       price: updatedPackage.price,
       priority: updatedPackage.priority,
+      max_tickets: updatedPackage.max_tickets || undefined,
+      purchased: updatedPackage.purchased,
     };
 
     return dataResponse;
@@ -617,6 +677,8 @@ export class EventService {
       benefits: pkg.benefits as string[],
       price: pkg.price,
       priority: pkg.priority,
+      max_tickets: pkg.max_tickets || undefined,
+      purchased: pkg.purchased,
     }));
 
     return {
@@ -650,6 +712,8 @@ export class EventService {
       benefits: existingPackage.benefits as string[],
       price: existingPackage.price,
       priority: existingPackage.priority,
+      max_tickets: existingPackage.max_tickets || undefined,
+      purchased: existingPackage.purchased,
     };
 
     return dataResponse;

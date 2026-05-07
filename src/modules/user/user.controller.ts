@@ -60,6 +60,23 @@ export class UserController {
     }
   }
 
+  async getUserMe(req: AuthRequest, res: Response) {
+    try {
+      const user_id = req.userId;
+      const user = await userService.getUserById(user_id as string);
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      if ("status" in user && user.status !== 200) {
+        return res.status(user.status).json({ message: user.message });
+      }
+      return res.status(200).json(user);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao buscar usuário" });
+    }
+  }
+
   async updateUser(req: AuthRequest, res: Response) {
     try {
       const { user_id } = req.params;

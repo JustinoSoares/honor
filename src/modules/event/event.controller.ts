@@ -51,13 +51,23 @@ export class EventController {
   async getAllEvents(req: AuthRequest, res: Response) {
     const user_id = req.userId;
     try {
-      const { per_page, page, search } = req.query;
+      const { per_page, page, min_price, max_price } = req.query;
+      const search = req.query.search as string | undefined;
+      const category = req.query.category as string | string[] | undefined;
+      const categoryList = !category
+        ? undefined
+        : Array.isArray(category)
+          ? category
+          : String(category).split(",");
 
       const events = await service.getAllEvents(
         Number(page) || 1,
         Number(per_page) || 10,
-        search ? String(search) : "",
+        search ? search as string : undefined,
         user_id,
+        min_price ? Number(min_price) : undefined,
+        max_price ? Number(max_price) : undefined,
+        categoryList,
       );
 
       if ("status" in events && events.status !== 200) {
