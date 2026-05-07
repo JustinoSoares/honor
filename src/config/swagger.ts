@@ -36,12 +36,12 @@ export function setupSwagger(app: Express) {
     servers: [{ url: env.BASE_API_URL || "http://localhost:3000/api/v1" }],
   });
 
-  // UI visual (Swagger)
-  app.use("/docs", swaggerUi.serve, swaggerUi.setup(document));
-
   // ✅ Rota JSON pura para o Apidog
   app.get("/docs/json", (req, res) => {
     res.setHeader("Content-Type", "application/json");
     res.json(document);
   });
+  
+  // UI visual (Swagger)
+  app.use("/docs", swaggerUi.serve, swaggerUi.setup(document));
 }
