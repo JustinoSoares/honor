@@ -511,8 +511,44 @@ export class EventService {
     user_id?: string,
   ): Promise<schema.ResponseEvent | { message: string; status: number }> {
     try {
+
+      let whereClause = {
+      
+      };
+
+      const isMember = await prisma.member.findFirst({
+        where: {
+          event_id,
+          user_id,
+        },      
+      });
+
+      const existUser = await prisma.user.findFirst({
+        where: { id: user_id },
+      });
+
+      if (user_id && !existUser) {
+        return {
+          message: "Usuário não autenticado",
+          status: 401,
+        };
+      }
+
+      if (isMember || (existUser && existUser.role !== "USER")) {
+        whereClause = {
+          id: event_id
+        };
+      }
+      else {
+        whereClause = {
+          id: event_id,
+          available: true,
+        };
+      }
       const event = await prisma.event.findFirst({
-        where: { id: event_id },
+        where: { 
+          ...whereClause
+        },
         include: {
           packages: true,
           members: true,
@@ -521,7 +557,7 @@ export class EventService {
 
       if (!event) {
         return {
-          message: "Evento não encontrado",
+          message: "Evento não encontrado ou não disponível",
           status: 404,
         };
       }
