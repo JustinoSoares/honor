@@ -6,14 +6,14 @@ export const CreateEventSchema = z.object({
     .string("A descrição do evento é obrigatória")
     .min(1, "A descrição do evento é obrigatória"),
   date_start: z
-    .string("A data de início do evento é obrigatória")
-    .refine((date) => !isNaN(Date.parse(date)), {
-      message: "Data de início inválida",
+    .date("A data de início do evento é obrigatória")
+    .refine((date) => date > new Date(), {
+      message: "A data de início do evento deve ser no futuro",
     }),
   date_end: z
-    .string("A data de término do evento é obrigatória")
-    .refine((date) => !isNaN(Date.parse(date)), {
-      message: "Data de término inválida",
+    .date("A data de término do evento é obrigatória")
+    .refine((date) => date > new Date(), {
+      message: "A data de término do evento deve ser no futuro",
     })
     .optional(),
   cover_url: z.string().optional().openapi({ example: "https://example.com/cover.jpg" }),
