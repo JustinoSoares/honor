@@ -16,7 +16,7 @@ export const CreateEventSchema = z.object({
       message: "A data de término do evento deve ser no futuro",
     })
     .optional(),
-  cover_url: z.string().optional().openapi({ example: "https://example.com/cover.jpg" }),
+  cover_url: z.string().openapi({ example: "https://example.com/cover.jpg" }),
   max_guests: z
     .number("O número máximo de convidados deve ser um número inteiro")
     .int("O número máximo de convidados deve ser um número inteiro")

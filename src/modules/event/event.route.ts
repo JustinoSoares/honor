@@ -14,7 +14,7 @@ eventRouter.post(
 );
 
 eventRouter.get("/list", authentication, eventController.getAllEvents);
-
+eventRouter.get("/list/me", authentication, eventController.listEventsByUser);
 eventRouter.get("/each/:event_id", authentication, eventController.getEventById);
 
 eventRouter.put(

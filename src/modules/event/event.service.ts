@@ -341,6 +341,171 @@ export class EventService {
     }
   }
 
+  async listEventsByUser(
+    user_id: string,
+    page = 1,
+    per_page = 10,
+    search?: string | undefined,
+    min_price: number | undefined = undefined,
+    max_price: number | undefined = undefined,
+    category: string | string[] | undefined = undefined,
+  ): Promise<
+    | {
+        data: schema.ResponseEvent[];
+        meta: {
+          total: number;
+          page: number;
+          per_page: number;
+          total_pages: number;
+        };
+      }
+    | { message: string; status: number }
+  > {
+    const skip = (page - 1) * per_page;
+
+    let whereClause = {};
+    if (search && search !== "undefined") {
+      whereClause = {
+        title: {
+          contains: search,
+          mode: "insensitive",
+        },
+      };
+    }
+
+    const existingUser = await prisma.user.findFirst({
+      where: { id: user_id },
+    });
+
+    if (!existingUser) {
+      return {
+        message: "Usuário não autenticado",
+        status: 401,
+      };
+    }
+
+    if ((existingUser && existingUser.role === "USER") || !user_id) {
+      whereClause = {
+        ...whereClause,
+      };
+    }
+
+    try {
+      const events = await prisma.event.findMany({
+        skip,
+        take: per_page,
+        where: {
+          ...whereClause,
+          event_category: category
+            ? {
+                name: Array.isArray(category) ? { in: category } : category,
+              }
+            : undefined,
+          packages:
+            min_price !== undefined || max_price !== undefined
+              ? {
+                  some: {
+                    price: {
+                      gte: min_price ?? undefined,
+                      lte: max_price ?? undefined,
+                    },
+                  },
+                }
+              : undefined,
+          members: {
+            some: {
+              user_id,
+            },
+          },
+        },
+        include: {
+          packages: true,
+          event_category: true,
+          members: true,
+        },
+        orderBy: {
+          created_at: "desc",
+        },
+      });
+
+      const totalEvents = await prisma.event.count({
+        where: {
+          ...whereClause,
+          event_category: category
+            ? {
+                name: Array.isArray(category)
+                  ? { in: category, mode: "insensitive" }
+                  : { equals: category, mode: "insensitive" },
+              }
+            : undefined,
+          packages:
+            min_price !== undefined || max_price !== undefined
+              ? {
+                  some: {
+                    price: {
+                      gte: min_price ?? undefined,
+                      lte: max_price ?? undefined,
+                    },
+                  },
+                }
+              : undefined,
+        },
+      });
+
+      const dataResponse: schema.ResponseEvent[] = events.map((event) => ({
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        date_start: event.date_start.toISOString(),
+        date_end: event.date_end ? event.date_end.toISOString() : undefined,
+        cover_url: event.cover_url || undefined,
+        max_guests: event.max_guests || undefined,
+        location: event.location,
+        promoter: event.promoter,
+        promoter_nif: event.promoter_nif,
+        category: event.category,
+        duration: event.duration || undefined,
+        province: event.province,
+        contact: event.contact as { option: string; option2?: string },
+        classification: event.classification as "A" | "B" | "C",
+        available: event.available,
+        created_at: event.created_at.toISOString(),
+        updated_at: event.updated_at.toISOString(),
+        packages: event.packages.map((pkg) => ({
+          id: pkg.id,
+          name: pkg.name,
+          benefits: pkg.benefits as string[],
+          price: pkg.price,
+          priority: pkg.priority,
+          max_tickets: pkg.max_tickets || undefined,
+          purchased: pkg.purchased,
+        })),
+        members: event.members.map((member) => ({
+          id: member.id,
+          name: member.name,
+          user_id: member.user_id,
+          permission: member.permission as "MANAGER" | "STAFF",
+        })),
+      }));
+
+      return {
+        data: dataResponse,
+        meta: {
+          total: totalEvents,
+          page,
+          per_page,
+          total_pages: Math.ceil(totalEvents / per_page),
+        },
+      };
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      return {
+        message: "Erro ao buscar eventos",
+        status: 500,
+      };
+    }
+  }
+
   async getEventById(
     event_id: string,
     user_id?: string,

@@ -57,6 +57,48 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
     },
   });
 
+    // ─── GET /events/list ────────────────────────────────────────────────────────
+  registry.registerPath({
+    method: "get",
+    path: "/event/list/me",
+    tags: ["Events"],
+    summary: "Lista dos os meus eventos",
+    request: {
+      query: z.object({
+        page: z.string().optional().openapi({ example: "1" }),
+        per_page: z.string().optional().openapi({ example: "10" }),
+        search: z.string().optional().openapi({ example: "Música" }),
+        min_price: z.string().optional().openapi({ example: "0" }),
+        max_price: z.string().optional().openapi({ example: "100" }),
+        category: z.string().optional().openapi({ example: "Música" }),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Lista de eventos retornada com sucesso",
+        content: {
+          "application/json": {
+            schema: z.object({
+              data: z.array(schema.ResponseEventSchema),
+              meta: z.object({
+                total: z.number().openapi({ example: 100 }),
+                page: z.number().openapi({ example: 1 }),
+                per_page: z.number().openapi({ example: 10 }),
+                total_pages: z.number().openapi({ example: 10 }),
+              }),
+            }),
+          },
+        },
+      },
+      500: {
+        description: "Erro interno do servidor",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+    },
+  });
+
   // ─── GET /event/each/:id ────────────────────────────────────────────────────────
   registry.registerPath({
     method: "get",

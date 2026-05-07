@@ -81,6 +81,42 @@ export class EventController {
     }
   }
 
+  async listEventsByUser(req: AuthRequest, res: Response) {
+    const user_id = req.userId;
+    try {
+      if (!user_id || validate(user_id) === false) {
+        return res.status(401).json({ message: "Usuário não autenticado" });
+      }
+      const { per_page, page, min_price, max_price } = req.query;
+      const search = req.query.search as string | undefined;
+      const category = req.query.category as string | string[] | undefined;
+      const categoryList = !category
+        ? undefined
+        : Array.isArray(category)
+          ? category
+          : String(category).split(",");
+
+      const events = await service.listEventsByUser(
+        user_id,
+        Number(page) || 1,
+        Number(per_page) || 10,
+        search ? search as string : undefined,
+        min_price ? Number(min_price) : undefined,
+        max_price ? Number(max_price) : undefined,
+        categoryList,
+      );
+
+      if ("status" in events && events.status !== 200) {
+        return res.status(events.status).json({ message: events.message });
+      }
+
+      return res.status(200).json(events);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao buscar eventos do usuário" });
+    }
+  }
+
   async getEventById(req: AuthRequest, res: Response) {
     try {
       const { event_id } = req.params;
