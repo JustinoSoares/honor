@@ -92,13 +92,12 @@ com o código e email, ele pode ter acesso ao seu convite e baixar sempre que pr
 
 coisas que faltam
     - metricas
-    - revisas as copys (precisa-se de padrão)
     - api de pagamento
-    - notifications
-    - websocket
+
+    - revisas as copys (precisa-se de padrão)
+    - rota para listar is membros do evento
     - tests
     - observability
-    - 
 
 
 

@@ -15,6 +15,8 @@ import {
 } from "./refreshToken.service";
 import { generateCode } from "../../utils/generate_code";
 import { sendVerificationEmail } from "../../utils/send-mail";
+import { notify } from "../../utils/notify";
+
 
 const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 
@@ -62,6 +64,19 @@ export class AuthService {
   }
 
   async sendCodeOnEmail(email: string) {
+
+    const user = await prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      return {
+        message: "Usuário não encontrado para recuperar código",
+        status: 404,
+      };
+    }
 
     const code = generateCode();
 
@@ -131,9 +146,7 @@ export class AuthService {
     }
 
     await prisma.user.update({
-      where: {
-        email,
-      },
+      where: { email },
       data: {
         reset_code: null,
         reset_expire: null,
@@ -141,8 +154,13 @@ export class AuthService {
       },
     });
 
+    // Notifica o utilizador que a conta foi verificada com sucesso
+    await notify(user.id, "A sua conta foi verificada com sucesso! Bem-vindo à Honor.", {
+      type: "account_verified",
+    });
+
     return {
-      message: "Código válido",
+      message: "Verificação realizada com sucesso",
       status: 200,
     };
   }

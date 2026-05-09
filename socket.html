@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <title>WebSocket Tester</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: monospace; background: #0f0f0f; color: #e0e0e0; padding: 2rem; min-height: 100vh; }
+    h1 { font-size: 1rem; color: #888; margin-bottom: 1.5rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+
+    label { font-size: 0.75rem; color: #666; display: block; margin-bottom: 4px; }
+    input, select {
+      width: 100%; padding: 8px 10px; background: #1a1a1a; border: 1px solid #2a2a2a;
+      color: #e0e0e0; font-family: monospace; font-size: 0.85rem; border-radius: 4px; outline: none;
+    }
+    input:focus, select:focus { border-color: #444; }
+
+    textarea {
+      width: 100%; padding: 8px 10px; background: #1a1a1a; border: 1px solid #2a2a2a;
+      color: #e0e0e0; font-family: monospace; font-size: 0.85rem; border-radius: 4px;
+      resize: vertical; outline: none; min-height: 80px;
+    }
+    textarea:focus { border-color: #444; }
+
+    .row { display: flex; gap: 8px; margin-bottom: 1rem; align-items: flex-end; }
+    .row > div { flex: 1; }
+
+    button {
+      padding: 8px 16px; font-family: monospace; font-size: 0.85rem; border-radius: 4px;
+      cursor: pointer; border: 1px solid #2a2a2a; background: #1a1a1a; color: #e0e0e0;
+      white-space: nowrap;
+    }
+    button:hover { background: #222; border-color: #444; }
+    button.primary { background: #1a3a1a; border-color: #2a5a2a; color: #6dff6d; }
+    button.primary:hover { background: #1e451e; }
+    button.danger { background: #3a1a1a; border-color: #5a2a2a; color: #ff6d6d; }
+    button.danger:hover { background: #451e1e; }
+
+    .status {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.75rem; padding: 4px 10px; border-radius: 999px;
+      border: 1px solid #2a2a2a; background: #1a1a1a; margin-bottom: 1rem;
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #444; }
+    .dot.connected { background: #6dff6d; box-shadow: 0 0 6px #6dff6d88; }
+    .dot.disconnected { background: #ff6d6d; }
+
+    #log {
+      background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px;
+      padding: 1rem; height: 320px; overflow-y: auto; font-size: 0.8rem; line-height: 1.7;
+    }
+    .log-in  { color: #6dff6d; }
+    .log-out { color: #6db8ff; }
+    .log-err { color: #ff6d6d; }
+    .log-sys { color: #888; font-style: italic; }
+
+    .divider { border: none; border-top: 1px solid #1e1e1e; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+
+<h1>⬡ WebSocket Tester</h1>
+
+<div class="row">
+  <div>
+    <label>URL do servidor</label>
+    <input id="url" value="http://localhost:3000" />
+  </div>
+  <button class="primary" id="btn-connect" onclick="toggleConnect()">Conectar</button>
+</div>
+
+<div class="status">
+  <div class="dot disconnected" id="dot"></div>
+  <span id="status-text">desconectado</span>
+</div>
+
+<hr class="divider" />
+
+<div class="grid">
+  <div>
+    <label>Evento (emit)</label>
+    <input id="emit-event" value="user:identify" />
+  </div>
+  <div>
+    <label>Evento (listen)</label>
+    <input id="listen-event" value="notification" />
+  </div>
+</div>
+
+<div style="margin-bottom: 1rem;">
+  <label>Payload (JSON ou string simples)</label>
+  <textarea id="payload">"user-123"</textarea>
+</div>
+
+<div style="display: flex; gap: 8px; margin-bottom: 1.5rem;">
+  <button onclick="sendEmit()">↑ Emitir</button>
+  <button onclick="addListener()">+ Ouvir evento</button>
+  <button class="danger" onclick="clearLog()">Limpar log</button>
+</div>
+
+<hr class="divider" />
+
+<div id="log"><span class="log-sys">aguardando conexão...</span></div>
+
+<script>
+  let socket = null;
+  let listeners = {};
+
+  function log(msg, type = "sys") {
+    const el = document.getElementById("log");
+    const time = new Date().toLocaleTimeString("pt-BR");
+    el.innerHTML += `<div class="log-${type}"><span style="color:#444">[${time}]</span> ${msg}</div>`;
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function setStatus(connected) {
+    document.getElementById("dot").className = "dot " + (connected ? "connected" : "disconnected");
+    document.getElementById("status-text").textContent = connected ? "conectado" : "desconectado";
+    document.getElementById("btn-connect").textContent = connected ? "Desconectar" : "Conectar";
+    document.getElementById("btn-connect").className = connected ? "danger" : "primary";
+  }
+
+  function toggleConnect() {
+    if (socket && socket.connected) {
+      socket.disconnect();
+      return;
+    }
+    const url = document.getElementById("url").value.trim();
+    socket = io(url, { transports: ["websocket"] });
+
+    socket.on("connect", () => {
+      setStatus(true);
+      log(`conectado — id: ${socket.id}`, "sys");
+    });
+
+    socket.on("disconnect", (reason) => {
+      setStatus(false);
+      log(`desconectado — ${reason}`, "err");
+      listeners = {};
+    });
+
+    socket.on("connect_error", (err) => {
+      log(`erro de conexão: ${err.message}`, "err");
+    });
+  }
+
+  function sendEmit() {
+    if (!socket || !socket.connected) { log("não conectado", "err"); return; }
+    const event = document.getElementById("emit-event").value.trim();
+    const raw = document.getElementById("payload").value.trim();
+    let payload;
+    try { payload = JSON.parse(raw); } catch { payload = raw; }
+    socket.emit(event, payload);
+    log(`↑ <b>${event}</b> → ${JSON.stringify(payload)}`, "out");
+  }
+
+  function addListener() {
+    if (!socket || !socket.connected) { log("não conectado", "err"); return; }
+    const event = document.getElementById("listen-event").value.trim();
+    if (listeners[event]) { log(`já ouvindo "${event}"`, "sys"); return; }
+    socket.on(event, (data) => {
+      log(`↓ <b>${event}</b> ← ${JSON.stringify(data)}`, "in");
+    });
+    listeners[event] = true;
+    log(`ouvindo evento "${event}"`, "sys");
+  }
+
+  function clearLog() {
+    document.getElementById("log").innerHTML = "";
+  }
+</script>
+</body>
+</html>

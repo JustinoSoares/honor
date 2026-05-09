@@ -13,21 +13,22 @@ datasource db {
 }
 
 model user {
-  id           String    @id @default(uuid())
-  name         String
-  email        String    @unique
-  phone        String?
-  password     String
-  refreshToken String? // token para manter o usuário logado
-  role         role      @default(USER)
-  verified     Boolean   @default(false)
-  reset_code   String?
-  reset_expire DateTime?
-  events       event[]
-  members      member[]
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
-  tickets      ticket[]
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  phone         String?
+  password      String
+  refreshToken  String? // token para manter o usuário logado
+  role          role           @default(USER)
+  verified      Boolean        @default(false)
+  reset_code    String?
+  reset_expire  DateTime?
+  events        event[]
+  members       member[]
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  tickets       ticket[]
+  notifications notification[]
 }
 
 model event {
@@ -155,6 +156,17 @@ model payment {
   updated_at DateTime       @updatedAt
 
   guest guest @relation(fields: [guest_id], references: [id])
+}
+
+model notification {
+  id         String    @id @default(uuid())
+  user_id    String
+  message    String
+  read       Boolean   @default(false)
+  read_at    DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  user       user      @relation(fields: [user_id], references: [id])
 }
 
 enum role {

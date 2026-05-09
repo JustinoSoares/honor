@@ -5,6 +5,8 @@ import * as schemaGuest from "../ticket/ticket.schema";
 import { isImageByExtension } from "../../utils/verify_image";
 import { decryptDefault } from "../../utils/crypt";
 import { prefault } from "zod";
+import { notify } from "../../utils/notify";
+
 
 export class EventService {
   constructor() { }
@@ -144,6 +146,12 @@ export class EventService {
         })),
       };
 
+      // Notifica o criador que o evento foi criado com sucesso
+      await notify(user_id, `O seu evento "${event.title}" foi criado com sucesso e aguarda aprovação.`, {
+        type: "event_created",
+        event_id: event.id,
+      });
+
       return dataResponse;
     } catch (error) {
       console.error("Error creating event:", error);
@@ -183,6 +191,19 @@ export class EventService {
         responsible_id: user_id,
       },
     });
+
+    // Notifica os membros do evento sobre a alteração de disponibilidade
+    const members = await prisma.member.findMany({ where: { event_id } });
+    const statusLabel = available ? "disponível ao público" : "indisponível temporariamente";
+    await Promise.all(
+      members.map((m) =>
+        notify(m.user_id, `O evento "${existEvent.title}" está agora ${statusLabel}.`, {
+          type: "event_status_changed",
+          event_id,
+          available,
+        }),
+      ),
+    );
 
     return {
       message: "Evento atualizado com sucesso",
@@ -1024,6 +1045,13 @@ export class EventService {
       permission: newMember.permission as "MANAGER" | "STAFF",
     };
 
+    // Notifica o novo membro que foi adicionado ao evento
+    await notify(existingUser.id, `Foste adicionado como membro do evento "${existingEvent.title}".`, {
+      type: "member_added",
+      event_id,
+      permission: data.permission,
+    });
+
     return dataResponse;
   }
 
@@ -1074,6 +1102,12 @@ export class EventService {
 
     await prisma.member.delete({
       where: { id: existingMember.id },
+    });
+
+    // Notifica o membro removido
+    await notify(existingMember.user_id, `A sua participação no evento "${existingEvent.title}" foi removida.`, {
+      type: "member_removed",
+      event_id,
     });
 
     return {

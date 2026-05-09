@@ -20,6 +20,10 @@ export const authentication = async (req: AuthRequest, res: Response, next: Next
     if (!existingUser) {
       return res.status(401).json({ message: "Usuário não encontrado" });
     }
+    if (!existingUser.verified) {
+      return res.status(400).json({ message: "Usuário não verificado" });
+    }
+
     req.userId = existingUser.id;
 
     next();

@@ -3,6 +3,8 @@ import prisma from "../../database/prisma";
 import { encryptDefault } from "../../utils/crypt";
 import { generateUserQRCode } from "../../utils/generate_qr";
 import * as schema from "./ticket.schema";
+import { notify } from "../../utils/notify";
+
 
 export class TicketService {
   async createTicket(
@@ -154,6 +156,14 @@ export class TicketService {
         phone: existUser.phone,
       },
     }));
+
+    // Notifica o utilizador que os tickets foram criados
+    const eventTitle = verifyEvent[0]?.title ?? "evento";
+    await notify(user_id, `${formatTicket.length} ticket(s) para o evento "${eventTitle}" criado(s) com sucesso.`, {
+      type: "ticket_created",
+      event_id: data[0].event_id,
+      count: formatTicket.length,
+    });
 
     return {
       data: formatTicket,
