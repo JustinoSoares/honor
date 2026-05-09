@@ -62,7 +62,7 @@ export const CreateEventSchema = z.object({
           .positive("A prioridade do pacote deve ser um número inteiro positivo"),
         benefits: z
           .array(z.string("Cada benefício do pacote é obrigatório"))
-          .min(1, "Pelo menos um benefício do pacote é obrigatório"),
+          .min(3, "O pacote deve ter no mínimo 3 benefícios"),
         max_tickets: z
           .number("O número máximo de ingressos para este pacote deve ser um número inteiro")
           .int()
@@ -88,7 +88,7 @@ export const CreatePackage = z.object({
     .positive("A prioridade do pacote deve ser um número inteiro positivo"),
   benefits: z
     .array(z.string("Cada benefício do pacote é obrigatório"))
-    .min(1, "Pelo menos um benefício do pacote é obrigatório"),
+    .min(3, "O pacote deve ter no mínimo 3 benefícios"),
   max_tickets: z
     .number("O número máximo de ingressos para este pacote deve ser um número inteiro")
     .int()

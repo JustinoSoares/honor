@@ -13,11 +13,13 @@ import {
   validateRefreshToken,
   revokeRefreshToken,
 } from "./refreshToken.service";
+import { generateCode } from "../../utils/generate_code";
+import { sendVerificationEmail } from "../../utils/send-mail";
 
 const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 
 export class AuthService {
-  constructor() {}
+  constructor() { }
 
   async login(data: schema.LoginData) {
     const user = await prisma.user.findFirst({
@@ -57,6 +59,92 @@ export class AuthService {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     } as schema.ResponseLogin;
+  }
+
+  async sendCodeOnEmail(email: string) {
+
+    const code = generateCode();
+
+    await sendVerificationEmail(email, code);
+
+    await prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        reset_code: await bcrypt.hash(code, 10),
+        reset_expire: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
+
+    return {
+      message: "Código enviado com sucesso",
+      status: 200,
+    };
+  }
+
+  async checkCode(email: string, code: string) {
+
+    const user = await prisma.user.findFirst({
+      where: {
+        email
+      },
+    });
+
+    if (!user) {
+      return {
+        message: "Email ou código inválido",
+        status: 401,
+      };
+    }
+
+    if (user.verified) {
+      return {
+        message: "Email já verificado",
+        status: 400,
+      };
+    }
+
+    const isCodeValid = await bcrypt.compare(code, user?.reset_code ?? "");
+
+    if (!isCodeValid) {
+      return {
+        message: "Código inválido ou expirado",
+        status: 401,
+      };
+    }
+
+    if (user?.reset_expire && user.reset_expire < new Date()) {
+      await prisma.user.update({
+        where: {
+          email,
+        },
+        data: {
+          reset_code: null,
+          reset_expire: null
+        },
+      });
+      return {
+        message: "Código expirado",
+        status: 401,
+      };
+    }
+
+    await prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        reset_code: null,
+        reset_expire: null,
+        verified: true,
+      },
+    });
+
+    return {
+      message: "Código válido",
+      status: 200,
+    };
   }
 
   async googleAuth() {

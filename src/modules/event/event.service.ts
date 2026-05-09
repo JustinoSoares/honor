@@ -7,7 +7,7 @@ import { decryptDefault } from "../../utils/crypt";
 import { prefault } from "zod";
 
 export class EventService {
-  constructor() {}
+  constructor() { }
 
   async createEvent(
     data: schema.EventCreate,
@@ -31,6 +31,7 @@ export class EventService {
         };
       }
 
+
       const existCategory = await prisma.event_category.findFirst({
         where: { name: data.category },
       });
@@ -38,6 +39,23 @@ export class EventService {
       if (!existCategory) {
         return {
           message: "Categoria de evento inválida",
+          status: 400,
+        };
+      }
+
+      const packages = data.packages?.map((pkg) => ({
+        name: pkg.name,
+        benefits: pkg.benefits as string[],
+        price: pkg.price,
+        priority: pkg.priority,
+        max_tickets: pkg.max_tickets,
+      }));
+
+      const names = packages?.map((pkg) => pkg.name) ?? [];
+      const duplicates = names.filter((name, index) => names.indexOf(name) !== index);
+      if (duplicates && duplicates.length > 0) {
+        return {
+          message: `Pacotes do mesmo evento não podem ter o mesmo nome, ${duplicates[0]} é um exemplo`,
           status: 400,
         };
       }
@@ -60,14 +78,6 @@ export class EventService {
           classification: data.classification,
         },
       });
-
-      const packages = data.packages?.map((pkg) => ({
-        name: pkg.name,
-        benefits: pkg.benefits as string[],
-        price: pkg.price,
-        priority: pkg.priority,
-        max_tickets: pkg.max_tickets,
-      }));
 
       await prisma.packages.createMany({
         data:
@@ -190,14 +200,14 @@ export class EventService {
     category: string | string[] | undefined = undefined,
   ): Promise<
     | {
-        data: schema.ResponseEvent[];
-        meta: {
-          total: number;
-          page: number;
-          per_page: number;
-          total_pages: number;
-        };
-      }
+      data: schema.ResponseEvent[];
+      meta: {
+        total: number;
+        page: number;
+        per_page: number;
+        total_pages: number;
+      };
+    }
     | { message: string; status: number }
   > {
     const skip = (page - 1) * per_page;
@@ -238,19 +248,19 @@ export class EventService {
           ...whereClause,
           event_category: category
             ? {
-                name: Array.isArray(category) ? { in: category } : category,
-              }
+              name: Array.isArray(category) ? { in: category } : category,
+            }
             : undefined,
           packages:
             min_price !== undefined || max_price !== undefined
               ? {
-                  some: {
-                    price: {
-                      gte: min_price ?? undefined,
-                      lte: max_price ?? undefined,
-                    },
+                some: {
+                  price: {
+                    gte: min_price ?? undefined,
+                    lte: max_price ?? undefined,
                   },
-                }
+                },
+              }
               : undefined,
         },
         include: {
@@ -268,21 +278,21 @@ export class EventService {
           ...whereClause,
           event_category: category
             ? {
-                name: Array.isArray(category)
-                  ? { in: category, mode: "insensitive" }
-                  : { equals: category, mode: "insensitive" },
-              }
+              name: Array.isArray(category)
+                ? { in: category, mode: "insensitive" }
+                : { equals: category, mode: "insensitive" },
+            }
             : undefined,
           packages:
             min_price !== undefined || max_price !== undefined
               ? {
-                  some: {
-                    price: {
-                      gte: min_price ?? undefined,
-                      lte: max_price ?? undefined,
-                    },
+                some: {
+                  price: {
+                    gte: min_price ?? undefined,
+                    lte: max_price ?? undefined,
                   },
-                }
+                },
+              }
               : undefined,
         },
       });
@@ -351,14 +361,14 @@ export class EventService {
     category: string | string[] | undefined = undefined,
   ): Promise<
     | {
-        data: schema.ResponseEvent[];
-        meta: {
-          total: number;
-          page: number;
-          per_page: number;
-          total_pages: number;
-        };
-      }
+      data: schema.ResponseEvent[];
+      meta: {
+        total: number;
+        page: number;
+        per_page: number;
+        total_pages: number;
+      };
+    }
     | { message: string; status: number }
   > {
     const skip = (page - 1) * per_page;
@@ -398,19 +408,19 @@ export class EventService {
           ...whereClause,
           event_category: category
             ? {
-                name: Array.isArray(category) ? { in: category } : category,
-              }
+              name: Array.isArray(category) ? { in: category } : category,
+            }
             : undefined,
           packages:
             min_price !== undefined || max_price !== undefined
               ? {
-                  some: {
-                    price: {
-                      gte: min_price ?? undefined,
-                      lte: max_price ?? undefined,
-                    },
+                some: {
+                  price: {
+                    gte: min_price ?? undefined,
+                    lte: max_price ?? undefined,
                   },
-                }
+                },
+              }
               : undefined,
           members: {
             some: {
@@ -433,21 +443,21 @@ export class EventService {
           ...whereClause,
           event_category: category
             ? {
-                name: Array.isArray(category)
-                  ? { in: category, mode: "insensitive" }
-                  : { equals: category, mode: "insensitive" },
-              }
+              name: Array.isArray(category)
+                ? { in: category, mode: "insensitive" }
+                : { equals: category, mode: "insensitive" },
+            }
             : undefined,
           packages:
             min_price !== undefined || max_price !== undefined
               ? {
-                  some: {
-                    price: {
-                      gte: min_price ?? undefined,
-                      lte: max_price ?? undefined,
-                    },
+                some: {
+                  price: {
+                    gte: min_price ?? undefined,
+                    lte: max_price ?? undefined,
                   },
-                }
+                },
+              }
               : undefined,
         },
       });
@@ -513,14 +523,14 @@ export class EventService {
     try {
 
       let whereClause = {
-      
+
       };
 
       const isMember = await prisma.member.findFirst({
         where: {
           event_id,
           user_id,
-        },      
+        },
       });
 
       const existUser = await prisma.user.findFirst({
@@ -546,7 +556,7 @@ export class EventService {
         };
       }
       const event = await prisma.event.findFirst({
-        where: { 
+        where: {
           ...whereClause
         },
         include: {
@@ -725,6 +735,14 @@ export class EventService {
       };
     }
 
+    const existPackageWithSameName = existingEvent.packages.some((pkg) => pkg.name === data.name);
+    if (existPackageWithSameName) {
+      return {
+        message: `Pacote com o mesmo nome ${data.name}, favor alterar o nome do pacote`,
+        status: 400,
+      };
+    }
+
     const newPackage = await prisma.packages.create({
       data: {
         name: data.name,
@@ -764,6 +782,21 @@ export class EventService {
       };
     }
 
+    const existingPackageWithSameName = await prisma.packages.findFirst({
+      where: {
+        event_id: existingPackage.event_id,
+        name: data.name,
+        id: { not: package_id },
+      },
+    });
+
+    if (existingPackageWithSameName) {
+      return {
+        message: `Pacote com o mesmo nome ${data.name}, favor alterar o nome do pacote`,
+        status: 400,
+      };
+    }
+
     const updatedPackage = await prisma.packages.update({
       where: { id: package_id },
       data: {
@@ -795,14 +828,14 @@ export class EventService {
     search = "",
   ): Promise<
     | {
-        data: schema.ResponsePackage[];
-        meta: {
-          total: number;
-          page: number;
-          per_page: number;
-          total_pages: number;
-        };
-      }
+      data: schema.ResponsePackage[];
+      meta: {
+        total: number;
+        page: number;
+        per_page: number;
+        total_pages: number;
+      };
+    }
     | { message: string; status: number }
   > {
     const skip = (page - 1) * per_page;
@@ -1279,14 +1312,14 @@ export class EventService {
     is_used?: boolean,
   ): Promise<
     | {
-        data: schemaGuest.ResponseTicket[];
-        meta: {
-          page: number;
-          per_page: number;
-          total: number;
-          total_pages: number;
-        };
-      }
+      data: schemaGuest.ResponseTicket[];
+      meta: {
+        page: number;
+        per_page: number;
+        total: number;
+        total_pages: number;
+      };
+    }
     | { message: string; status: number }
   > {
     const existingEvent = await prisma.event.findUnique({

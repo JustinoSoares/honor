@@ -98,3 +98,9 @@ coisas que faltam
     - websocket
     - tests
     - observability
+    - 
+
+
+
+não pode existir pacotes com o mesmo nome no mesmo evento
+os pacotes devem ter no mínomo 3 benefícios

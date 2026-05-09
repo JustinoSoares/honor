@@ -14,7 +14,7 @@ const COOKIE_OPTIONS = {
 };
 
 export class AuthController {
-  constructor() {}
+  constructor() { }
 
   async login(req: AuthRequest, res: Response) {
     try {
@@ -36,6 +36,44 @@ export class AuthController {
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Erro ao realizar login" });
+    }
+  }
+
+  async sendCodeOnEmail(req: AuthRequest, res: Response) {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email é obrigatório" });
+    }
+    try {
+      const result = await authService.sendCodeOnEmail(email);
+      if ("status" in result && result.status !== 200) {
+        return res.status(result.status).json({ message: result.message });
+      }
+
+      return res.status(200).json({ message: "Código enviado com sucesso" });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao enviar código" });
+    }
+  }
+
+  async checkCode(req: AuthRequest, res: Response) {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return res.status(400).json({ message: "Email e código são obrigatórios" });
+    }
+    try {
+      const result = await authService.checkCode(email, code);
+      if ("status" in result && result.status !== 200) {
+        return res.status(result.status).json({ message: result.message });
+      }
+
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao verificar código" });
     }
   }
 

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { StringValue } from "ms";
 import * as dotenv from "dotenv";
+
 dotenv.config();
 
 const envSchema = z.object({
@@ -28,6 +29,10 @@ const envSchema = z.object({
   VALKEY_HOST: z.string().min(1),
   VALKEY_PORT: z.string().transform(Number),
   VALKEY_PASSWORD: z.string().optional(),
+
+  SMTP_USER: z.string().min(1),
+  SMTP_PASS: z.string().min(1),
 });
+
 
 export const env = envSchema.parse(process.env);

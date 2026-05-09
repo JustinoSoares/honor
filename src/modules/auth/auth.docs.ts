@@ -7,6 +7,8 @@ export function registerAuthDocs(registry: OpenAPIRegistry) {
   // Regista os schemas
   registry.register("LoginData", schema.LoginSchema);
   registry.register("RegisterData", schema.RegisterSchema);
+  registry.register("SendCodeData", schema.SendCodeSchema);
+  registry.register("CheckCodeData", schema.CheckCodeSchema);
   registry.register("ResponseLogin", schema.ResponseLoginSchema);
   registry.register("ResponseRefresh", schema.ResponseRefreshSchema);
   registry.register("ResponseBadAuth", schema.ResponseBadSchema);
@@ -33,6 +35,90 @@ export function registerAuthDocs(registry: OpenAPIRegistry) {
       },
       401: {
         description: "Email ou senha incorretos",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+      500: {
+        description: "Erro interno do servidor",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+    },
+  });
+
+  // ─── POST /auth/send-code ─────────────────────────────────────────────────────────
+  registry.registerPath({
+    method: "post",
+    path: "/auth/send-code",
+    tags: ["Auth"],
+    summary: "Envia um código de verificação para o email",
+    request: {
+      body: {
+        content: {
+          "application/json": { schema: schema.SendCodeSchema },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Código enviado com sucesso",
+        content: {
+          "application/json": {
+            schema: z.object({
+              message: z.string().openapi({ example: "Código enviado com sucesso" }),
+            }),
+          },
+        },
+      },
+      400: {
+        description: "Requisição inválida",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+      500: {
+        description: "Erro interno do servidor",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+    },
+  });
+
+  // ─── POST /auth/check-code ─────────────────────────────────────────────────────────
+  registry.registerPath({
+    method: "post",
+    path: "/auth/check-code",
+    tags: ["Auth"],
+    summary: "Verifica se o código enviado para o email é válido",
+    request: {
+      body: {
+        content: {
+          "application/json": { schema: schema.CheckCodeSchema },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Código válido",
+        content: {
+          "application/json": {
+            schema: z.object({
+              message: z.string().openapi({ example: "Código válido" }),
+            }),
+          },
+        },
+      },
+      400: {
+        description: "Email já verificado",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+      401: {
+        description: "Email, código inválido ou expirado",
         content: {
           "application/json": { schema: schema.ResponseBadSchema },
         },

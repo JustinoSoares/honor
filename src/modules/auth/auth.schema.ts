@@ -20,6 +20,16 @@ export const RegisterSchema = z.object({
   phone: z.string().optional().openapi({ example: "+244923000000" }),
 });
 
+export const SendCodeSchema = z.object({
+  email: z.string().email().openapi({ example: "user@email.com" }),
+});
+
+export const CheckCodeSchema = z.object({
+  email: z.string().email().openapi({ example: "user@email.com" }),
+  code: z.string().min(6).openapi({ example: "123456" }),
+});
+
+
 // ─── Outputs ──────────────────────────────────────────────────────────────────
 
 export const ResponseLoginSchema = z.object({
@@ -44,3 +54,5 @@ export type ResponseBad = z.infer<typeof ResponseBadSchema>;
 export type LoginData = z.infer<typeof LoginSchema>;
 export type RegisterData = z.infer<typeof RegisterSchema>;
 export type ResponseLogin = z.infer<typeof ResponseLoginSchema>;
+export type SendCodeData = z.infer<typeof SendCodeSchema>;
+export type CheckCodeData = z.infer<typeof CheckCodeSchema>;

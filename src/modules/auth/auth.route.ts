@@ -8,6 +8,10 @@ const authController = new AuthController();
 
 router.post("/login", validate(auth.LoginSchema), authController.login);
 
+router.post("/send-code", validate(auth.SendCodeSchema), authController.sendCodeOnEmail);
+
+router.post("/check-code", validate(auth.CheckCodeSchema), authController.checkCode);
+
 router.get("/google", authController.googleAuth);
 
 router.get("/google/callback", authController.googleCallback);
