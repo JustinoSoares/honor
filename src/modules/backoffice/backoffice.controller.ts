@@ -80,4 +80,14 @@ export class BackofficeController {
       return res.status(500).json({ message: "Erro ao alternar categoria" });
     }
   }
+
+  async getMetrics(req: AuthRequest, res: Response) {
+    try {
+      const metrics = await service.getAdminMetrics();
+      return res.status(200).json(metrics);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao buscar métricas do admin" });
+    }
+  }
 }

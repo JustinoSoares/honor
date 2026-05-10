@@ -30,5 +30,6 @@ backofficeRouter.put(
 );
 
 backofficeRouter.patch("/category/toggle", authentication, backofficeController.toggleCategory);
+backofficeRouter.get("/metrics", authentication, backofficeController.getMetrics);
 
 export default backofficeRouter;

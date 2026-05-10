@@ -167,4 +167,61 @@ export class BackofficeService {
       message: "Categoria atualizada com sucesso",
     };
   }
+
+  async getAdminMetrics(): Promise<schema.AdminMetricsDTO> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [
+      totalEvents,
+      totalUsers,
+      activeEvents,
+      pendingEvents,
+      rejectedEvents,
+      eventsCreatedToday,
+      totalAdmins,
+      totalManagers,
+      newUsersToday,
+      totalCategories,
+      galleryImages,
+    ] = await Promise.all([
+      prisma.event.count(),
+      prisma.user.count(),
+      prisma.event.count({ where: { status_event: "ACTIVE" } }),
+      prisma.event.count({ where: { status_event: "PENDING" } }),
+      prisma.event.count({ where: { status_event: "REJECTED" } }),
+      prisma.event.count({ where: { created_at: { gte: today } } }),
+      prisma.user.count({ where: { role: "ADMIN" } }),
+      prisma.user.count({ where: { role: "MANAGER" } }),
+      prisma.user.count({ where: { created_at: { gte: today } } }),
+      prisma.event_category.count(),
+      prisma.image.count(),
+    ]);
+
+    return {
+      general: {
+        total_events: totalEvents,
+        total_users: totalUsers,
+        monthly_sales_growth: [10, 20, 15, 30, 25, 40], // Mockado
+      },
+      event_management: {
+        active_events: activeEvents,
+        pending_events: pendingEvents,
+        rejected_events: rejectedEvents,
+        events_created_today: eventsCreatedToday,
+      },
+      user_management: {
+        total_users: totalUsers,
+        total_admins: totalAdmins,
+        total_managers: totalManagers,
+        new_users_today: newUsersToday,
+      },
+      content_management: {
+        total_categories: totalCategories,
+        pending_requests: pendingEvents,
+        gallery_images: galleryImages,
+        service_fee: 10,
+      },
+    };
+  }
 }

@@ -39,12 +39,41 @@ const ErrorResponseSchema = z
   })
   .openapi("ErrorResponse");
 
+const AdminMetricsSchema = z
+  .object({
+    general: z.object({
+      total_events: z.number().openapi({ example: 150 }),
+      total_users: z.number().openapi({ example: 1200 }),
+      monthly_sales_growth: z.array(z.number()).openapi({ example: [10, 20, 15, 30, 25, 40] }),
+    }),
+    event_management: z.object({
+      active_events: z.number().openapi({ example: 45 }),
+      pending_events: z.number().openapi({ example: 12 }),
+      rejected_events: z.number().openapi({ example: 5 }),
+      events_created_today: z.number().openapi({ example: 3 }),
+    }),
+    user_management: z.object({
+      total_users: z.number().openapi({ example: 1200 }),
+      total_admins: z.number().openapi({ example: 5 }),
+      total_managers: z.number().openapi({ example: 25 }),
+      new_users_today: z.number().openapi({ example: 10 }),
+    }),
+    content_management: z.object({
+      total_categories: z.number().openapi({ example: 15 }),
+      pending_requests: z.number().openapi({ example: 12 }),
+      gallery_images: z.number().openapi({ example: 450 }),
+      service_fee: z.number().openapi({ example: 10 }),
+    }),
+  })
+  .openapi("AdminMetrics");
+
 // ─── Registo ──────────────────────────────────────────────────────────────────
 
 export function registerBackofficeDocs(registry: OpenAPIRegistry) {
   registry.register("CreateCategory", CreateCategorySchema);
   registry.register("ResponseCategory", ResponseCategorySchema);
   registry.register("BaseResponse", BaseResponseSchema);
+  registry.register("AdminMetrics", AdminMetricsSchema);
 
   // POST /backoffice/category/create
   registry.registerPath({
@@ -218,6 +247,30 @@ export function registerBackofficeDocs(registry: OpenAPIRegistry) {
         description: "Categoria não encontrada",
         content: {
           "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+      401: {
+        description: "Não autorizado",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+    },
+  });
+
+  // GET /backoffice/metrics
+  registry.registerPath({
+    method: "get",
+    path: "/backoffice/metrics",
+    tags: ["Backoffice - Métricas"],
+    summary: "Obter métricas do administrador",
+    description: "Retorna métricas gerais, de eventos, de usuários e de conteúdo.",
+    security: [{ bearerAuth: [] }],
+    responses: {
+      200: {
+        description: "Métricas obtidas com sucesso",
+        content: {
+          "application/json": { schema: AdminMetricsSchema },
         },
       },
       401: {
