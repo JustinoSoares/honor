@@ -16,7 +16,10 @@ export const UserSchema = zod
     phone: zod
       .string("O seu telefone é obrigatório")
       .min(1, "Número de telefone é obrigatório")
-      .regex(/^\+244\s\d{3}\s\d{3}\s\d{3}$/, "Número de telefone deve estar no formato +244 900 000 000")
+      .regex(
+        /^\+244\s\d{3}\s\d{3}\s\d{3}$/,
+        "Número de telefone deve estar no formato +244 900 000 000",
+      )
       .openapi({ example: "+244 900 000 000" }),
     password: zod
       .string("A sua senha é obrigatória")
@@ -42,7 +45,10 @@ export const UserUpdateSchema = zod
     phone: zod
       .string("O seu telefone é obrigatório")
       .min(1, "Número de telefone é obrigatório")
-      .regex(/^\+244\s\d{3}\s\d{3}\s\d{3}$/, "Número de telefone deve estar no formato +244 900 000 000")
+      .regex(
+        /^\+244\s\d{3}\s\d{3}\s\d{3}$/,
+        "Número de telefone deve estar no formato +244 900 000 000",
+      )
       .optional()
       .openapi({ example: "+244 900 000 000" }),
     password: zod
@@ -62,6 +68,7 @@ export const ResponseUserSchema = zod
     email: zod.string().openapi({ example: "justino@email.com" }),
     phone: zod.string().openapi({ example: "+244 900 000 000" }),
     role: zod.enum(["USER", "ADMIN", "MANAGER"]).openapi({ example: "USER" }),
+    verified: zod.boolean().openapi({ example: false }),
     created_at: zod.string().datetime().openapi({ example: "2024-01-01T00:00:00Z" }),
     updated_at: zod.string().datetime().openapi({ example: "2024-01-01T00:00:00Z" }),
   })

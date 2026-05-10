@@ -29,7 +29,6 @@ export const CheckCodeSchema = z.object({
   code: z.string().min(6).openapi({ example: "123456" }),
 });
 
-
 // ─── Outputs ──────────────────────────────────────────────────────────────────
 
 export const ResponseLoginSchema = z.object({

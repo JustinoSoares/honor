@@ -13,7 +13,8 @@ export function registerNotificationDocs(registry: OpenAPIRegistry) {
     path: "/notification/me",
     tags: ["Notification"],
     summary: "Lista as notificações do utilizador autenticado",
-    description: "Retorna uma lista paginada de notificações em ordem descendente (mais recentes primeiro).",
+    description:
+      "Retorna uma lista paginada de notificações em ordem descendente (mais recentes primeiro).",
     security: [{ bearerAuth: [] }],
     responses: {
       200: {

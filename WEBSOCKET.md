@@ -12,7 +12,7 @@ Esta documentação descreve como o front-end deve interagir com o servidor via 
 import { io } from "socket.io-client";
 
 const socket = io("http://localhost:3000", {
-  transports: ["websocket"]
+  transports: ["websocket"],
 });
 ```
 
@@ -23,6 +23,7 @@ const socket = io("http://localhost:3000", {
 Após o login bem-sucedido, o front-end **deve** enviar o evento de identificação para entrar na sua "room" privada e receber notificações pessoais.
 
 ### Evento: `user:identify`
+
 - **Payload**: `userId` (string)
 
 ```javascript
@@ -30,7 +31,9 @@ socket.emit("user:identify", user.id);
 ```
 
 ### Resposta: `user:ready`
+
 O servidor confirma que o utilizador está pronto para receber eventos.
+
 ```javascript
 socket.on("user:ready", ({ userId }) => {
   console.log(`Pronto para receber notificações do utilizador ${userId}`);
@@ -44,6 +47,7 @@ socket.on("user:ready", ({ userId }) => {
 Sempre que uma nova notificação é criada (ex: novo convite, alteração de estado de evento, etc.), o servidor emite o evento `notification`.
 
 ### Evento: `notification`
+
 - **Payload**: Objeto Notification
 
 ```javascript
@@ -60,6 +64,7 @@ socket.on("notification", (data) => {
 Se o front-end estiver numa página de detalhe de um bilhete/convite (ex: aguardando pagamento ou check-in), pode entrar na room do bilhete.
 
 ### Eventos: `ticket:watch` / `ticket:unwatch`
+
 - **Payload**: `ticketId` (string)
 
 ```javascript
@@ -77,6 +82,7 @@ socket.emit("ticket:unwatch", "uuid-do-bilhete");
 Útil para atualizações de stock de pacotes ou lotação em tempo real.
 
 ### Evento: `event:join` / `event:leave`
+
 - **Payload**: `eventId` (string)
 
 ```javascript
@@ -92,15 +98,15 @@ socket.emit("event:leave", "uuid-do-evento");
 
 ## 📝 Resumo de Eventos
 
-| Evento | Direção | Payload | Descrição |
-| :--- | :--- | :--- | :--- |
-| `user:identify` | Client -> Server | `userId` | Identifica o utilizador e entra na room privada. |
-| `user:ready` | Server -> Client | `{ userId }` | Confirmação de identificação. |
-| `notification` | Server -> Client | `{ id, message, read, created_at, ... }` | Nova notificação recebida. |
-| `ticket:watch` | Client -> Server | `ticketId` | Entra na room de um bilhete específico. |
-| `ticket:unwatch` | Client -> Server | `ticketId` | Sai da room de um bilhete específico. |
-| `event:join` | Client -> Server | `eventId` | Entra na room de um evento específico. |
-| `event:leave` | Client -> Server | `eventId` | Sai da room de um evento específico. |
+| Evento           | Direção          | Payload                                  | Descrição                                        |
+| :--------------- | :--------------- | :--------------------------------------- | :----------------------------------------------- |
+| `user:identify`  | Client -> Server | `userId`                                 | Identifica o utilizador e entra na room privada. |
+| `user:ready`     | Server -> Client | `{ userId }`                             | Confirmação de identificação.                    |
+| `notification`   | Server -> Client | `{ id, message, read, created_at, ... }` | Nova notificação recebida.                       |
+| `ticket:watch`   | Client -> Server | `ticketId`                               | Entra na room de um bilhete específico.          |
+| `ticket:unwatch` | Client -> Server | `ticketId`                               | Sai da room de um bilhete específico.            |
+| `event:join`     | Client -> Server | `eventId`                                | Entra na room de um evento específico.           |
+| `event:leave`    | Client -> Server | `eventId`                                | Sai da room de um evento específico.             |
 
 ---
 

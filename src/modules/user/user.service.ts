@@ -34,6 +34,7 @@ export class UserService {
       email: user.email,
       phone: user.phone,
       role: user.role as role,
+      verified: user.verified,
       created_at: user.created_at.toISOString(),
       updated_at: user.updated_at.toISOString(),
     } as schema.ResponseUser;
@@ -71,6 +72,7 @@ export class UserService {
         email: user.email,
         phone: user.phone,
         role: user.role as role,
+        verified: user.verified,
         created_at: user.created_at.toISOString(),
         updated_at: user.updated_at.toISOString(),
       })) as schema.ResponseUser[],
@@ -96,6 +98,7 @@ export class UserService {
       email: user.email,
       phone: user.phone,
       role: user.role as role,
+      verified: user.verified,
       created_at: user.created_at.toISOString(),
       updated_at: user.updated_at.toISOString(),
     } as schema.ResponseUser;
@@ -135,6 +138,7 @@ export class UserService {
       email: updatedUser.email,
       phone: updatedUser.phone,
       role: updatedUser.role as role,
+      verified: updatedUser.verified,
       created_at: updatedUser.created_at.toISOString(),
       updated_at: updatedUser.updated_at.toISOString(),
     } as schema.ResponseUser;

@@ -2,7 +2,6 @@ import express from "express";
 import { AuthController } from "./auth.controller";
 import { validate } from "../../middleware/validate";
 import * as auth from "./auth.schema";
-import { broadcast } from "../../config/socket";
 
 const router = express.Router();
 const authController = new AuthController();

@@ -3,7 +3,7 @@ import { validate } from "uuid";
 import * as schema from "./backoffice.schema";
 
 export class BackofficeService {
-  constructor() {}
+  constructor() { }
 
   async addCategory(data: schema.CreateCategoryDTO) {
     const existingCategory = await prisma.event_category.findFirst({
@@ -37,14 +37,14 @@ export class BackofficeService {
     search?: string,
   ): Promise<
     | {
-        data: schema.ResponseCategoryDTO[];
-        meta: {
-          page: number;
-          per_page: number;
-          total: number;
-          total_pages: number;
-        };
-      }
+      data: schema.ResponseCategoryDTO[];
+      meta: {
+        page: number;
+        per_page: number;
+        total: number;
+        total_pages: number;
+      };
+    }
     | { message: string; status: number }
   > {
     let whereClause = {};
@@ -87,9 +87,9 @@ export class BackofficeService {
   }
 
   async getCategoryById(
-    name: string,
+    category_id: string,
   ): Promise<schema.ResponseCategoryDTO | { message: string; status: number }> {
-    if (!validate(name)) {
+    if (!validate(category_id)) {
       return {
         message: "Não encontrámos a categoria que procura. Verifique o nome e tente novamente.",
 
@@ -97,13 +97,14 @@ export class BackofficeService {
       };
     }
 
-    const category = await prisma.event_category.findUnique({
-      where: { name },
+    const category = await prisma.event_category.findFirst({
+      where: { OR: [{ id: category_id }, { name: { contains: category_id } }] },
     });
 
     if (!category) {
       return {
-        message: "Não encontrámos a categoria que procura. Pode ter sido removida ou o nome está errado.",
+        message:
+          "Não encontrámos a categoria que procura. Pode ter sido removida ou o nome está errado.",
 
         status: 404,
       };
@@ -120,7 +121,8 @@ export class BackofficeService {
   async updateCategory(id: string, name: string) {
     if (!validate(id)) {
       return {
-        message: "Não foi possível identificar a categoria para atualizar. Verifique e tente novamente.",
+        message:
+          "Não foi possível identificar a categoria para atualizar. Verifique e tente novamente.",
 
         status: 400,
       };
@@ -146,7 +148,8 @@ export class BackofficeService {
 
     if (!existingCategory) {
       return {
-        message: "Não encontrámos a categoria que procura. Pode ter sido removida ou o nome está errado.",
+        message:
+          "Não encontrámos a categoria que procura. Pode ter sido removida ou o nome está errado.",
 
         status: 404,
       };

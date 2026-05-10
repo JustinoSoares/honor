@@ -1,10 +1,8 @@
-import { array, promise } from "zod";
 import prisma from "../../database/prisma";
 import { encryptDefault } from "../../utils/crypt";
 import { generateUserQRCode } from "../../utils/generate_qr";
 import * as schema from "./ticket.schema";
 import { notify } from "../../utils/notify";
-
 
 export class TicketService {
   async createTicket(
@@ -32,7 +30,7 @@ export class TicketService {
     const verifyEvent = await Promise.all(
       data.map(async (inv) => {
         const event = await prisma.event.findFirst({
-          where: { id: inv.event_id, available: true },
+          where: { id: inv.event_id, available: true, status_event: "ACTIVE" },
         });
         return event;
       }),
@@ -41,11 +39,10 @@ export class TicketService {
     if (verifyEvent.includes(null)) {
       return {
         status: 400,
-        message: "Um ou mais eventos selecionados não existem ou não estão disponíveis para compra de convites.",
+        message:
+          "Um ou mais eventos selecionados não existem ou não estão disponíveis para compra de convites.",
       };
     }
-
-    
 
     const existEvent = await prisma.event.findMany({
       where: { id: data[0].event_id },
@@ -58,7 +55,7 @@ export class TicketService {
       };
     }
 
-  const verifyPackage = await Promise.all(
+    const verifyPackage = await Promise.all(
       data.map(async (inv) => {
         const packageEach = await prisma.packages.findFirst({
           where: { id: inv.package_id, event_id: inv.event_id },
@@ -68,10 +65,11 @@ export class TicketService {
     );
 
     if (verifyPackage.includes(null)) {
-          return {
-            status: 400,
-            message: "O pacote selecionado não pertence a este evento. Por favor, escolha um pacote válido.",
-          };
+      return {
+        status: 400,
+        message:
+          "O pacote selecionado não pertence a este evento. Por favor, escolha um pacote válido.",
+      };
     }
 
     const createTickets = await Promise.all(
@@ -130,7 +128,9 @@ export class TicketService {
     );
 
     if (createTickets.some((ticket) => "message" in ticket && ticket.status !== 201)) {
-      const errorTicket = createTickets.find((ticket) => "message" in ticket && ticket.status !== 201);
+      const errorTicket = createTickets.find(
+        (ticket) => "message" in ticket && ticket.status !== 201,
+      );
       return {
         status: errorTicket?.status || 500,
         message: errorTicket?.message || "Erro ao criar convites",
@@ -159,11 +159,15 @@ export class TicketService {
 
     // Notifica o utilizador que os tickets foram criados
     const eventTitle = verifyEvent[0]?.title ?? "evento";
-    await notify(user_id, `${formatTicket.length} ticket(s) para o evento "${eventTitle}" criado(s) com sucesso.`, {
-      type: "ticket_created",
-      event_id: data[0].event_id,
-      count: formatTicket.length,
-    });
+    await notify(
+      user_id,
+      `${formatTicket.length} ticket(s) para o evento "${eventTitle}" criado(s) com sucesso.`,
+      {
+        type: "ticket_created",
+        event_id: data[0].event_id,
+        count: formatTicket.length,
+      },
+    );
 
     return {
       data: formatTicket,

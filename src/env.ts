@@ -34,5 +34,4 @@ const envSchema = z.object({
   SMTP_PASS: z.string().min(1),
 });
 
-
 export const env = envSchema.parse(process.env);

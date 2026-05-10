@@ -110,14 +110,14 @@ export function registerBackofficeDocs(registry: OpenAPIRegistry) {
   // GET /backoffice/category/each/:name
   registry.registerPath({
     method: "get",
-    path: "/backoffice/category/each/{name}",
+    path: "/backoffice/category/each/{category_id}",
     tags: ["Backoffice - Categorias"],
     summary: "Buscar categoria por ID",
     description: "Retorna uma categoria pelo seu ID.",
     security: [{ bearerAuth: [] }],
     request: {
       params: z.object({
-        name: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }),
+        category_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }),
       }),
     },
     responses: {
@@ -145,14 +145,14 @@ export function registerBackofficeDocs(registry: OpenAPIRegistry) {
   // PUT /backoffice/category/update/:name
   registry.registerPath({
     method: "put",
-    path: "/backoffice/category/update/{name}",
+    path: "/backoffice/category/update/{category_id}",
     tags: ["Backoffice - Categorias"],
     summary: "Atualizar categoria",
     description: "Atualiza os dados de uma categoria pelo seu ID.",
     security: [{ bearerAuth: [] }],
     request: {
       params: z.object({
-        name: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }),
+        category_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }),
       }),
       body: {
         content: {
@@ -191,15 +191,21 @@ export function registerBackofficeDocs(registry: OpenAPIRegistry) {
   // PATCH /backoffice/category/toggle/:category_name
   registry.registerPath({
     method: "patch",
-    path: "/backoffice/category/toggle/{category_name}",
+    path: "/backoffice/category/toggle",
     tags: ["Backoffice - Categorias"],
     summary: "Ativar/Desativar categoria",
     description: "Alterna o estado activo/inactivo de uma categoria pelo nome.",
     security: [{ bearerAuth: [] }],
     request: {
-      params: z.object({
-        category_name: z.string().openapi({ example: "Música" }),
-      }),
+      body: {
+        content: {
+          "application/json": {
+            schema: z.object({
+              name: z.string().openapi({ example: "Música" }),
+            }),
+          },
+        },
+      },
     },
     responses: {
       200: {

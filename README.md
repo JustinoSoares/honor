@@ -90,14 +90,10 @@ Lhe será enviado um email com um código e esse código expira em uma dia
 |
 com o código e email, ele pode ter acesso ao seu convite e baixar sempre que precisar e pode sempre solicitar o seu convite para baixar como imagem.
 
-coisas que faltam
-    - metricas
-    - api de pagamento
+coisas que faltam - metricas - api de pagamento
 
     - tests
     - observability
-
-
 
 não pode existir pacotes com o mesmo nome no mesmo evento
 os pacotes devem ter no mínomo 3 benefícios

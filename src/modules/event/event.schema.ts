@@ -92,9 +92,7 @@ export const CreatePackage = z.object({
   max_tickets: z
     .number("O número máximo de ingressos para este pacote deve ser um número inteiro")
     .int()
-    .positive(
-      "O número máximo de ingressos para este pacote deve ser um número inteiro positivo",
-    )
+    .positive("O número máximo de ingressos para este pacote deve ser um número inteiro positivo")
     .optional(),
 });
 
@@ -226,6 +224,10 @@ export const EventUpdateSchema = z.object({
     })
     .optional(),
   classification: z.enum(["A", "B", "C"]).openapi({ example: "C" }).optional(),
+  status_event: z
+    .enum(["PENDING", "ACTIVE", "BLOCKED", "REJECTED", "CANCELLED", "FINISH"])
+    .optional()
+    .openapi({ example: "ACTIVE" }),
 });
 
 export type EventUpdate = z.infer<typeof EventUpdateSchema>;
@@ -251,6 +253,14 @@ export const ResponseEventSchema = z
     }),
     available: z.boolean().openapi({ example: true }),
     classification: z.enum(["A", "B", "C"]).openapi({ example: "C" }).optional(),
+    status_event: z
+      .enum(["PENDING", "ACTIVE", "BLOCKED", "REJECTED", "CANCELLED", "FINISH"])
+      .openapi({ example: "PENDING" }),
+    reason_rejection: z
+      .string()
+      .nullable()
+      .optional()
+      .openapi({ example: "Evento com informações incompletas" }),
     created_at: z.string().datetime().openapi({ example: "2024-01-01T00:00:00Z" }),
     updated_at: z.string().datetime().openapi({ example: "2024-01-01T00:00:00Z" }),
 
@@ -277,6 +287,20 @@ export const ResponseEventSchema = z
         }),
       )
       .optional(),
+    avaliations: z
+      .array(
+        z.object({
+          id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+          user_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+          rating: z.number().openapi({ example: 5 }),
+          comment: z.string().nullable().openapi({ example: "Evento incrível!" }),
+          user: z.object({
+            name: z.string().openapi({ example: "João Silva" }),
+          }),
+          created_at: z.string().datetime().openapi({ example: "2024-01-01T00:00:00Z" }),
+        }),
+      )
+      .optional(),
   })
   .openapi("ResponseEvent");
 
@@ -297,3 +321,11 @@ export const MetaSchema = z.object({
 });
 
 export type Meta = z.infer<typeof MetaSchema>;
+
+export const RejectEventSchema = z.object({
+  reason_rejection: z
+    .string("O motivo da rejeição é obrigatório")
+    .min(1, "O motivo da rejeição é obrigatório"),
+});
+
+export type RejectEvent = z.infer<typeof RejectEventSchema>;

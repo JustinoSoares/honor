@@ -15,6 +15,10 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.register("ResponseMember", schema.ResponseMemberSchema);
   registry.register("ResponseMemberList", schema.ResponseMemberListSchema);
   registry.register("AddMemberToEvent", schema.addMemberToEventSchema);
+  registry.register("ResponseImage", schema.ResponseImageSchema);
+  registry.register("CreateImage", schema.CreateImageSchema);
+  registry.register("RejectEvent", schema.RejectEventSchema);
+  registry.register("Meta", schema.MetaSchema);
 
   // ─── GET /events/list ────────────────────────────────────────────────────────
   registry.registerPath({
@@ -30,6 +34,9 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
         min_price: z.string().optional().openapi({ example: "0" }),
         max_price: z.string().optional().openapi({ example: "100" }),
         category: z.string().optional().openapi({ example: "Música" }),
+        start_date: z.string().optional().openapi({ example: "2024-01-01" }),
+        end_date: z.string().optional().openapi({ example: "2024-12-31" }),
+        status_event: z.string().optional().openapi({ example: "ACTIVE" }),
       }),
     },
     responses: {
@@ -58,7 +65,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
     },
   });
 
-    // ─── GET /events/list ────────────────────────────────────────────────────────
+  // ─── GET /events/list ────────────────────────────────────────────────────────
   registry.registerPath({
     method: "get",
     path: "/event/list/me",
@@ -72,6 +79,9 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
         min_price: z.string().optional().openapi({ example: "0" }),
         max_price: z.string().optional().openapi({ example: "100" }),
         category: z.string().optional().openapi({ example: "Música" }),
+        start_date: z.string().optional().openapi({ example: "2024-01-01" }),
+        end_date: z.string().optional().openapi({ example: "2024-12-31" }),
+        status_event: z.string().optional().openapi({ example: "ACTIVE" }),
       }),
     },
     responses: {
@@ -293,6 +303,49 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
     },
   });
 
+  // ─── POST /event/reject/{event_id} ───────────────────────────────────────────────────────
+  registry.registerPath({
+    method: "post",
+    path: "/event/reject/{event_id}",
+    tags: ["Events", "Backoffice"],
+    summary: "Rejeitar um determinado evento pendente",
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: z.object({
+        event_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+      }),
+      body: {
+        content: {
+          "application/json": { schema: schema.RejectEventSchema },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Evento rejeitado com sucesso",
+        content: {
+          "application/json": {
+            schema: z.object({
+              message: z.string().openapi({ example: "Evento rejeitado com sucesso" }),
+            }),
+          },
+        },
+      },
+      400: {
+        description: "Apenas eventos pendentes podem ser rejeitados",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+      404: {
+        description: "Evento não encontrado",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+    },
+  });
+
   // ─── POST /event/:id/packages ───────────────────────────────────────────────
   registry.registerPath({
     method: "post",
@@ -302,7 +355,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
     security: [{ bearerAuth: [] }],
     request: {
       params: z.object({
-        id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+        event_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
       }),
       body: {
         content: {
@@ -341,7 +394,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   // ─── PUT /event/update/package/:event_id
   registry.registerPath({
     method: "put",
-    path: "/event/update/package/:event_id",
+    path: "/event/update/package/{event_id}",
     tags: ["Events", "Packages"],
     summary: "Edita um pacote de um evento",
     security: [{ bearerAuth: [] }],
@@ -386,7 +439,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   // ─── GET /event/list/package/:event_id ──────────────────────────────────────
   registry.registerPath({
     method: "get",
-    path: "/event/list/package/:event_id",
+    path: "/event/list/package/{event_id}",
     tags: ["Events", "Packages"],
     summary: "Lista os pacotes de um evento",
     security: [{ bearerAuth: [] }],
@@ -421,7 +474,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: "get",
-    path: "/event/get/package/:package_id",
+    path: "/event/get/package/{package_id}",
     tags: ["Events", "Packages"],
     summary: "Obtém um pacote por ID",
     security: [{ bearerAuth: [] }],
@@ -455,14 +508,13 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   // ─── DELETE /event/:id/packages/:packageId ──────────────────────────────────
   registry.registerPath({
     method: "delete",
-    path: "/events/delete/package/:package_id",
+    path: "/event/delete/package/{package_id}",
     tags: ["Events", "Packages"],
     summary: "Remove um pacote de um evento",
     security: [{ bearerAuth: [] }],
     request: {
       params: z.object({
-        id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
-        packageId: z.string().uuid().openapi({ example: "b2c3d4e5-f6a7-..." }),
+        package_id: z.string().uuid().openapi({ example: "b2c3d4e5-f6a7-..." }),
       }),
     },
     responses: {
@@ -494,7 +546,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   // ─── POST /event/add/member/:event_id"
   registry.registerPath({
     method: "post",
-    path: "/event/add/member/:event_id",
+    path: "/event/add/member/{event_id}",
     tags: ["Events", "Members"],
     summary: "Adiciona um membro a um evento",
     security: [{ bearerAuth: [] }],
@@ -539,7 +591,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   // ─── DELETE /event/remove/member/:event_id/:user_id"
   registry.registerPath({
     method: "delete",
-    path: "/event/remove/member/:event_id/:user_id",
+    path: "/event/remove/member/{event_id}/{user_id}",
     tags: ["Events", "Members"],
     summary: "Remove um membro de um evento",
     security: [{ bearerAuth: [] }],
@@ -650,7 +702,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   // POST event/add/image/:event_id
   registry.registerPath({
     method: "post",
-    path: "/event/add/image/:event_id",
+    path: "/event/add/image/{event_id}",
     tags: ["Events", "Images"],
     summary: "Adiciona uma imagem a um evento",
     security: [{ bearerAuth: [] }],
@@ -695,7 +747,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   // GET /event/list/image/:event_id
   registry.registerPath({
     method: "get",
-    path: "/event/list/image/:event_id",
+    path: "/event/list/image/{event_id}",
     tags: ["Events", "Images"],
     summary: "Lista as imagens de um evento",
     security: [{ bearerAuth: [] }],
@@ -729,7 +781,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   // GET /event/get/image/:image_id
   registry.registerPath({
     method: "get",
-    path: "/event/get/image/:image_id",
+    path: "/event/get/image/{image_id}",
     tags: ["Events", "Images"],
     summary: "Obtém uma imagem por ID",
     security: [{ bearerAuth: [] }],
@@ -763,7 +815,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   // PUT - /event/update/image/:image_id
   registry.registerPath({
     method: "put",
-    path: "/event/update/image/:image_id",
+    path: "/event/update/image/{image_id}",
     tags: ["Events", "Images"],
     summary: "Atualiza uma imagem por ID",
     security: [{ bearerAuth: [] }],
@@ -808,7 +860,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   // DELETE /event/delete/image/:image_id
   registry.registerPath({
     method: "delete",
-    path: "/event/delete/image/:image_id",
+    path: "/event/delete/image/{image_id}",
     tags: ["Events", "Images"],
     summary: "Remove uma imagem por ID",
     security: [{ bearerAuth: [] }],
@@ -886,7 +938,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   // GET /event/history/:event_id
   registry.registerPath({
     method: "get",
-    path: "/event/history/:event_id",
+    path: "/event/history/{event_id}",
     tags: ["Events", "Tickets"],
     summary: "Obtém o histórico de entrada no evento",
     security: [{ bearerAuth: [] }],

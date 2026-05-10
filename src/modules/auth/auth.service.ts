@@ -17,11 +17,10 @@ import { generateCode } from "../../utils/generate_code";
 import { sendVerificationEmail } from "../../utils/send-mail";
 import { notify } from "../../utils/notify";
 
-
 const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 
 export class AuthService {
-  constructor() { }
+  constructor() {}
 
   async login(data: schema.LoginData) {
     const user = await prisma.user.findFirst({
@@ -64,7 +63,6 @@ export class AuthService {
   }
 
   async sendCodeOnEmail(email: string) {
-
     const user = await prisma.user.findFirst({
       where: {
         email,
@@ -73,7 +71,8 @@ export class AuthService {
 
     if (!user) {
       return {
-        message: "Não encontramos nenhuma conta com este email. Verifique o email e tente novamente.",
+        message:
+          "Não encontramos nenhuma conta com este email. Verifique o email e tente novamente.",
         status: 404,
       };
     }
@@ -99,16 +98,16 @@ export class AuthService {
   }
 
   async checkCode(email: string, code: string) {
-
     const user = await prisma.user.findFirst({
       where: {
-        email
+        email,
       },
     });
 
     if (!user) {
       return {
-        message: "Não encontramos nenhuma conta com este email. Verifique o email e tente novamente.",
+        message:
+          "Não encontramos nenhuma conta com este email. Verifique o email e tente novamente.",
         status: 401,
       };
     }
@@ -136,7 +135,7 @@ export class AuthService {
         },
         data: {
           reset_code: null,
-          reset_expire: null
+          reset_expire: null,
         },
       });
       return {
@@ -184,7 +183,8 @@ export class AuthService {
     const stateValid = await consumeState(state as string);
     if (!stateValid) {
       return {
-        message: "Sessão de login expirada ou inválida. Por favor, tente iniciar a autenticação com o Google novamente.",
+        message:
+          "Sessão de login expirada ou inválida. Por favor, tente iniciar a autenticação com o Google novamente.",
 
         status: 400,
       };
@@ -203,7 +203,8 @@ export class AuthService {
 
     if (!email) {
       return {
-        message: "Não foi possível obter o seu email do Google. Certifique-se de que a sua conta Google tem um email público.",
+        message:
+          "Não foi possível obter o seu email do Google. Certifique-se de que a sua conta Google tem um email público.",
 
         status: 400,
       };

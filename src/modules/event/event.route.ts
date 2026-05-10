@@ -32,6 +32,13 @@ eventRouter.post(
 );
 
 eventRouter.post(
+  "/reject/:event_id",
+  authentication,
+  validate(schema.RejectEventSchema),
+  eventController.rejectEvent,
+);
+
+eventRouter.post(
   "/add/package/:event_id",
   authentication,
   validate(schema.CreatePackage),

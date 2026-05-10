@@ -4,9 +4,7 @@ import * as schema from "./event.schema";
 import * as schemaGuest from "../ticket/ticket.schema";
 import { isImageByExtension } from "../../utils/verify_image";
 import { decryptDefault } from "../../utils/crypt";
-import { prefault } from "zod";
 import { notify } from "../../utils/notify";
-
 
 export class EventService {
   constructor() { }
@@ -14,13 +12,12 @@ export class EventService {
   private async checkPermission(
     user_id: string,
     event_id: string,
-    required: "MANAGER" | "STAFF"
+    required: "MANAGER" | "STAFF",
   ): Promise<boolean> {
     // 1. Check global ADMIN role first
     const user = await prisma.user.findUnique({ where: { id: user_id } });
     if (!user) return false;
     if (user.role === "ADMIN") return true;
-
 
     const existEvent = await prisma.event.findUnique({ where: { id: event_id } });
     if (!existEvent) return false;
@@ -61,14 +58,14 @@ export class EventService {
         };
       }
 
-
       const existCategory = await prisma.event_category.findFirst({
         where: { name: data.category },
       });
 
       if (!existCategory) {
         return {
-          message: "A categoria de evento selecionada não existe. Escolha uma categoria válida da lista disponível.",
+          message:
+            "A categoria de evento selecionada não existe. Escolha uma categoria válida da lista disponível.",
 
           status: 400,
         };
@@ -156,6 +153,14 @@ export class EventService {
         available: event.available,
         contact: data.contact as { option: string; option2?: string },
         classification: event.classification as "A" | "B" | "C",
+        status_event: event.status_event as
+          | "PENDING"
+          | "ACTIVE"
+          | "BLOCKED"
+          | "REJECTED"
+          | "CANCELLED"
+          | "FINISH",
+        reason_rejection: event.reason_rejection,
         created_at: event.created_at.toISOString(),
         updated_at: event.updated_at.toISOString(),
         packages: getPackages.map((pkg) => ({
@@ -173,13 +178,18 @@ export class EventService {
           user_id: member.user_id,
           permission: member.permission as "MANAGER" | "STAFF",
         })),
+        avaliations: [],
       };
 
       // Notifica o criador que o evento foi criado com sucesso
-      await notify(user_id, `O seu evento "${event.title}" foi criado com sucesso e aguarda aprovação.`, {
-        type: "event_created",
-        event_id: event.id,
-      });
+      await notify(
+        user_id,
+        `O seu evento "${event.title}" foi criado com sucesso e aguarda aprovação.`,
+        {
+          type: "event_created",
+          event_id: event.id,
+        },
+      );
 
       return dataResponse;
     } catch (error) {
@@ -218,6 +228,7 @@ export class EventService {
       data: {
         available: available,
         responsible_id: user_id,
+        status_event: available ? "ACTIVE" : "REJECTED",
       },
     });
 
@@ -240,6 +251,67 @@ export class EventService {
     };
   }
 
+  async rejectEvent(
+    event_id: string,
+    user_id: string,
+    reason_rejection: string,
+  ): Promise<{ message: string; status: number }> {
+    if (!validate(event_id) || !validate(user_id)) {
+      return {
+        message: "ID de evento ou usuário inválido",
+        status: 400,
+      };
+    }
+
+    const existEvent = await prisma.event.findUnique({
+      where: { id: event_id },
+      include: { members: { where: { permission: "MANAGER" } } },
+    });
+
+    if (!existEvent) {
+      return {
+        message: "Evento não encontrado",
+        status: 404,
+      };
+    }
+
+    if (existEvent.status_event !== "PENDING") {
+      return {
+        message: "Apenas eventos pendentes podem ser rejeitados",
+        status: 400,
+      };
+    }
+
+    await prisma.event.update({
+      where: { id: event_id },
+      data: {
+        status_event: "REJECTED",
+        reason_rejection,
+        available: false,
+        responsible_id: user_id,
+      },
+    });
+
+    // Notifica o gestor do evento sobre a rejeição
+    const manager = existEvent.members[0];
+    if (manager) {
+      await notify(
+        manager.user_id,
+        `O seu evento "${existEvent.title}" foi rejeitado. Motivo: ${reason_rejection}`,
+        {
+          type: "event_rejected",
+          event_id,
+          reason_rejection,
+        },
+      );
+    }
+
+    return {
+      message: "Evento rejeitado com sucesso",
+      status: 200,
+    };
+  }
+
   async getAllEvents(
     page = 1,
     per_page = 10,
@@ -248,6 +320,9 @@ export class EventService {
     min_price: number | undefined = undefined,
     max_price: number | undefined = undefined,
     category: string | string[] | undefined = undefined,
+    start_date?: string,
+    end_date?: string,
+    status_event?: string | string[],
   ): Promise<
     | {
       data: schema.ResponseEvent[];
@@ -265,9 +340,20 @@ export class EventService {
     let whereClause = {};
     if (search && search !== "undefined") {
       whereClause = {
+        ...whereClause,
         title: {
           contains: search,
           mode: "insensitive",
+        },
+      };
+    }
+
+    if (start_date || end_date) {
+      whereClause = {
+        ...whereClause,
+        created_at: {
+          gte: start_date ? new Date(start_date) : undefined,
+          lte: end_date ? new Date(end_date) : undefined,
         },
       };
     }
@@ -288,6 +374,14 @@ export class EventService {
       whereClause = {
         ...whereClause,
         available: true,
+        status_event: "ACTIVE",
+      };
+    } else if (status_event) {
+      whereClause = {
+        ...whereClause,
+        status_event: Array.isArray(status_event)
+          ? { in: status_event }
+          : status_event,
       };
     }
 
@@ -318,6 +412,13 @@ export class EventService {
           packages: true,
           event_category: true,
           members: true,
+          avaliations: {
+            include: {
+              user: {
+                select: { name: true },
+              },
+            },
+          },
         },
         orderBy: {
           created_at: "desc",
@@ -365,6 +466,14 @@ export class EventService {
         contact: event.contact as { option: string; option2?: string },
         classification: event.classification as "A" | "B" | "C",
         available: event.available,
+        status_event: event.status_event as
+          | "PENDING"
+          | "ACTIVE"
+          | "BLOCKED"
+          | "REJECTED"
+          | "CANCELLED"
+          | "FINISH",
+        reason_rejection: event.reason_rejection,
         created_at: event.created_at.toISOString(),
         updated_at: event.updated_at.toISOString(),
         packages: event.packages.map((pkg) => ({
@@ -381,6 +490,14 @@ export class EventService {
           name: member.name,
           user_id: member.user_id,
           permission: member.permission as "MANAGER" | "STAFF",
+        })),
+        avaliations: event.avaliations.map((a) => ({
+          id: a.id,
+          user_id: a.user_id,
+          rating: a.rating,
+          comment: a.comment,
+          user: { name: a.user.name },
+          created_at: a.created_at.toISOString(),
         })),
       }));
 
@@ -410,6 +527,9 @@ export class EventService {
     min_price: number | undefined = undefined,
     max_price: number | undefined = undefined,
     category: string | string[] | undefined = undefined,
+    start_date?: string,
+    end_date?: string,
+    status_event?: string | string[],
   ): Promise<
     | {
       data: schema.ResponseEvent[];
@@ -427,10 +547,30 @@ export class EventService {
     let whereClause = {};
     if (search && search !== "undefined") {
       whereClause = {
+        ...whereClause,
         title: {
           contains: search,
           mode: "insensitive",
         },
+      };
+    }
+
+    if (start_date || end_date) {
+      whereClause = {
+        ...whereClause,
+        created_at: {
+          gte: start_date ? new Date(start_date) : undefined,
+          lte: end_date ? new Date(end_date) : undefined,
+        },
+      };
+    }
+
+    if (status_event) {
+      whereClause = {
+        ...whereClause,
+        status_event: Array.isArray(status_event)
+          ? { in: status_event }
+          : status_event,
       };
     }
 
@@ -484,6 +624,13 @@ export class EventService {
           packages: true,
           event_category: true,
           members: true,
+          avaliations: {
+            include: {
+              user: {
+                select: { name: true },
+              },
+            },
+          },
         },
         orderBy: {
           created_at: "desc",
@@ -531,6 +678,14 @@ export class EventService {
         contact: event.contact as { option: string; option2?: string },
         classification: event.classification as "A" | "B" | "C",
         available: event.available,
+        status_event: event.status_event as
+          | "PENDING"
+          | "ACTIVE"
+          | "BLOCKED"
+          | "REJECTED"
+          | "CANCELLED"
+          | "FINISH",
+        reason_rejection: event.reason_rejection,
         created_at: event.created_at.toISOString(),
         updated_at: event.updated_at.toISOString(),
         packages: event.packages.map((pkg) => ({
@@ -547,6 +702,14 @@ export class EventService {
           name: member.name,
           user_id: member.user_id,
           permission: member.permission as "MANAGER" | "STAFF",
+        })),
+        avaliations: event.avaliations.map((a) => ({
+          id: a.id,
+          user_id: a.user_id,
+          rating: a.rating,
+          comment: a.comment,
+          user: { name: a.user.name },
+          created_at: a.created_at.toISOString(),
         })),
       }));
 
@@ -573,10 +736,7 @@ export class EventService {
     user_id?: string,
   ): Promise<schema.ResponseEvent | { message: string; status: number }> {
     try {
-
-      let whereClause = {
-
-      };
+      let whereClause = {};
 
       const isMember = await prisma.member.findFirst({
         where: {
@@ -599,22 +759,29 @@ export class EventService {
 
       if (isMember || (existUser && existUser.role !== "USER")) {
         whereClause = {
-          id: event_id
+          id: event_id,
         };
-      }
-      else {
+      } else {
         whereClause = {
           id: event_id,
           available: true,
+          status_event: "ACTIVE",
         };
       }
       const event = await prisma.event.findFirst({
         where: {
-          ...whereClause
+          ...whereClause,
         },
         include: {
           packages: true,
           members: true,
+          avaliations: {
+            include: {
+              user: {
+                select: { name: true },
+              },
+            },
+          },
         },
       });
 
@@ -625,7 +792,6 @@ export class EventService {
           status: 404,
         };
       }
-
 
       const dataResponse: schema.ResponseEvent = {
         id: event.id,
@@ -644,6 +810,14 @@ export class EventService {
         contact: event.contact as { option: string; option2?: string },
         classification: event.classification as "A" | "B" | "C",
         available: event.available,
+        status_event: event.status_event as
+          | "PENDING"
+          | "ACTIVE"
+          | "BLOCKED"
+          | "REJECTED"
+          | "CANCELLED"
+          | "FINISH",
+        reason_rejection: event.reason_rejection,
         created_at: event.created_at.toISOString(),
         updated_at: event.updated_at.toISOString(),
         packages: event.packages.map((pkg) => ({
@@ -661,6 +835,14 @@ export class EventService {
           user_id: member.user_id,
           permission: member.permission as "MANAGER" | "STAFF",
         })),
+        avaliations: event.avaliations.map((a) => ({
+          id: a.id,
+          user_id: a.user_id,
+          rating: a.rating,
+          comment: a.comment,
+          user: { name: a.user.name },
+          created_at: a.created_at.toISOString(),
+        })),
       };
 
       return dataResponse;
@@ -677,8 +859,6 @@ export class EventService {
     data: schema.EventUpdate,
     user_id: string,
   ): Promise<schema.ResponseEvent | { message: string; status: number }> {
-
-
     const existingEvent = await prisma.event.findUnique({
       where: { id: event_id },
       include: {
@@ -697,7 +877,8 @@ export class EventService {
     const canUpdate = await this.checkPermission(user_id, event_id, "MANAGER");
     if (!canUpdate) {
       return {
-        message: "Não tens permissão para atualizar este evento. Apenas o gestor do evento pode fazê-lo.",
+        message:
+          "Não tens permissão para atualizar este evento. Apenas o gestor do evento pode fazê-lo.",
         status: 403,
       };
     }
@@ -719,6 +900,7 @@ export class EventService {
         province: data.province ?? existingEvent.province,
         contact: (data.contact as { option: string; option2?: string }) ?? existingEvent.contact,
         classification: data.classification ?? existingEvent.classification,
+        status_event: data.status_event ?? existingEvent.status_event,
       },
     });
 
@@ -739,6 +921,14 @@ export class EventService {
       contact: updatedEvent.contact as { option: string; option2?: string },
       classification: updatedEvent.classification as "A" | "B" | "C",
       available: updatedEvent.available,
+      status_event: updatedEvent.status_event as
+        | "PENDING"
+        | "ACTIVE"
+        | "BLOCKED"
+        | "REJECTED"
+        | "CANCELLED"
+        | "FINISH",
+      reason_rejection: updatedEvent.reason_rejection,
       created_at: updatedEvent.created_at.toISOString(),
       updated_at: updatedEvent.updated_at.toISOString(),
       packages: existingEvent.packages.map((pkg) => ({
@@ -761,11 +951,15 @@ export class EventService {
     return dataResponse;
   }
 
-  async deleteEvent(event_id: string, user_id: string): Promise<{ message: string; status: number }> {
+  async deleteEvent(
+    event_id: string,
+    user_id: string,
+  ): Promise<{ message: string; status: number }> {
     const canDelete = await this.checkPermission(user_id, event_id, "MANAGER");
     if (!canDelete) {
       return {
-        message: "Não tens permissão para eliminar este evento. Apenas o gestor do evento pode fazê-lo.",
+        message:
+          "Não tens permissão para eliminar este evento. Apenas o gestor do evento pode fazê-lo.",
         status: 403,
       };
     }
@@ -797,7 +991,8 @@ export class EventService {
     const canAdd = await this.checkPermission(user_id, event_id, "MANAGER");
     if (!canAdd) {
       return {
-        message: "Não tens permissão para adicionar pacotes a este evento. Apenas o gestor do evento pode fazê-lo.",
+        message:
+          "Não tens permissão para adicionar pacotes a este evento. Apenas o gestor do evento pode fazê-lo.",
         status: 403,
       };
     }
@@ -868,7 +1063,8 @@ export class EventService {
     const canEdit = await this.checkPermission(user_id, existingPackage.event_id, "MANAGER");
     if (!canEdit) {
       return {
-        message: "Não tens permissão para editar pacotes deste evento. Apenas o gestor do evento pode fazê-lo.",
+        message:
+          "Não tens permissão para editar pacotes deste evento. Apenas o gestor do evento pode fazê-lo.",
         status: 403,
       };
     }
@@ -1020,7 +1216,10 @@ export class EventService {
     return dataResponse;
   }
 
-  async deletePackage(package_id: string, user_id: string): Promise<{ message: string; status: number }> {
+  async deletePackage(
+    package_id: string,
+    user_id: string,
+  ): Promise<{ message: string; status: number }> {
     const existingPackage = await prisma.packages.findUnique({
       where: { id: package_id },
     });
@@ -1035,7 +1234,8 @@ export class EventService {
     const canDelete = await this.checkPermission(user_id, existingPackage.event_id, "MANAGER");
     if (!canDelete) {
       return {
-        message: "Não tens permissão para eliminar pacotes deste evento. Apenas o gestor do evento pode fazê-lo.",
+        message:
+          "Não tens permissão para eliminar pacotes deste evento. Apenas o gestor do evento pode fazê-lo.",
         status: 403,
       };
     }
@@ -1070,7 +1270,8 @@ export class EventService {
 
     if (!hasPermission) {
       return {
-        message: "Não tens permissão para adicionar membros neste evento. Apenas o gestor do evento pode fazê-lo.",
+        message:
+          "Não tens permissão para adicionar membros neste evento. Apenas o gestor do evento pode fazê-lo.",
 
         status: 403,
       };
@@ -1082,7 +1283,10 @@ export class EventService {
 
     if (!existingUser) {
       return {
-        message: "Não encontramos nenhuma conta com o email '" + data.email + "'. Verifique se o email está correto.",
+        message:
+          "Não encontramos nenhuma conta com o email '" +
+          data.email +
+          "'. Verifique se o email está correto.",
 
         status: 404,
       };
@@ -1121,11 +1325,15 @@ export class EventService {
     };
 
     // Notifica o novo membro que foi adicionado ao evento
-    await notify(existingUser.id, `Foste adicionado como membro do evento "${existingEvent.title}".`, {
-      type: "member_added",
-      event_id,
-      permission: data.permission,
-    });
+    await notify(
+      existingUser.id,
+      `Foste adicionado como membro do evento "${existingEvent.title}".`,
+      {
+        type: "member_added",
+        event_id,
+        permission: data.permission,
+      },
+    );
 
     return dataResponse;
   }
@@ -1150,7 +1358,8 @@ export class EventService {
 
     if (!hasPermission) {
       return {
-        message: "Não tens permissão para remover membros neste evento. Apenas o gestor do evento pode fazê-lo.",
+        message:
+          "Não tens permissão para remover membros neste evento. Apenas o gestor do evento pode fazê-lo.",
 
         status: 403,
       };
@@ -1176,10 +1385,14 @@ export class EventService {
     });
 
     // Notifica o membro removido
-    await notify(existingMember.user_id, `A sua participação no evento "${existingEvent.title}" foi removida.`, {
-      type: "member_removed",
-      event_id,
-    });
+    await notify(
+      existingMember.user_id,
+      `A sua participação no evento "${existingEvent.title}" foi removida.`,
+      {
+        type: "member_removed",
+        event_id,
+      },
+    );
 
     return {
       message: "Membro removido com sucesso",
@@ -1280,7 +1493,8 @@ export class EventService {
     const canAdd = await this.checkPermission(user_id, event_id, "MANAGER");
     if (!canAdd) {
       return {
-        message: "Não tens permissão para adicionar imagens a este evento. Apenas o gestor do evento pode fazê-lo.",
+        message:
+          "Não tens permissão para adicionar imagens a este evento. Apenas o gestor do evento pode fazê-lo.",
         status: 403,
       };
     }
@@ -1298,7 +1512,8 @@ export class EventService {
 
     if (isImageByExtension(data.url) == false) {
       return {
-        message: "O formato da URL da imagem não é válido. Use um link que termine em .jpg, .jpeg, .png, .webp ou .gif.",
+        message:
+          "O formato da URL da imagem não é válido. Use um link que termine em .jpg, .jpeg, .png, .webp ou .gif.",
 
         status: 400,
       };
@@ -1407,14 +1622,16 @@ export class EventService {
     const canUpdate = await this.checkPermission(user_id, existingImage.event_id, "MANAGER");
     if (!canUpdate) {
       return {
-        message: "Não tens permissão para atualizar imagens deste evento. Apenas o gestor do evento pode fazê-lo.",
+        message:
+          "Não tens permissão para atualizar imagens deste evento. Apenas o gestor do evento pode fazê-lo.",
         status: 403,
       };
     }
 
     if (data.url && isImageByExtension(data.url) == false) {
       return {
-        message: "O formato da URL da imagem não é válido. Use um link que termine em .jpg, .jpeg, .png, .webp ou .gif.",
+        message:
+          "O formato da URL da imagem não é válido. Use um link que termine em .jpg, .jpeg, .png, .webp ou .gif.",
 
         status: 400,
       };
@@ -1437,7 +1654,10 @@ export class EventService {
     return dataResponse;
   }
 
-  async deleteImage(image_id: string, user_id: string): Promise<{ message: string; status: number }> {
+  async deleteImage(
+    image_id: string,
+    user_id: string,
+  ): Promise<{ message: string; status: number }> {
     const existingImage = await prisma.image.findUnique({
       where: { id: image_id },
     });
@@ -1452,7 +1672,8 @@ export class EventService {
     const canDelete = await this.checkPermission(user_id, existingImage.event_id, "MANAGER");
     if (!canDelete) {
       return {
-        message: "Não tens permissão para eliminar imagens deste evento. Apenas o gestor do evento pode fazê-lo.",
+        message:
+          "Não tens permissão para eliminar imagens deste evento. Apenas o gestor do evento pode fazê-lo.",
         status: 403,
       };
     }
@@ -1479,7 +1700,8 @@ export class EventService {
 
     if (!invitation_id || !validate(invitation_id)) {
       return {
-        message: "O código de entrada lido é inválido. Por favor, verifique o QR Code e tente novamente.",
+        message:
+          "O código de entrada lido é inválido. Por favor, verifique o QR Code e tente novamente.",
 
         status: 400,
       };
@@ -1499,7 +1721,8 @@ export class EventService {
     const canScan = await this.checkPermission(user_id, existingTicket.event_id, "STAFF");
     if (!canScan) {
       return {
-        message: "Não tens permissão para validar entradas neste evento. Apenas membros da equipa podem fazê-lo.",
+        message:
+          "Não tens permissão para validar entradas neste evento. Apenas membros da equipa podem fazê-lo.",
         status: 403,
       };
     }

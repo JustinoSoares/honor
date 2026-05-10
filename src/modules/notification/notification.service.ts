@@ -5,7 +5,7 @@ export class NotificationService {
   async getNotificationsByUserId(
     user_id: string,
     page: number = 1,
-    per_page: number = 10
+    per_page: number = 10,
   ): Promise<schema.NotificationListResponse> {
     const skip = (page - 1) * per_page;
 
@@ -36,7 +36,7 @@ export class NotificationService {
 
   async getNotificationById(
     id: string,
-    user_id: string
+    user_id: string,
   ): Promise<schema.NotificationResponse | { message: string; status: number }> {
     const notification = await prisma.notification.findUnique({
       where: { id },
