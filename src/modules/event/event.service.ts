@@ -24,6 +24,7 @@ export class EventService {
 
     // Se o evento estiver bloqueado, apenas ADMINs (já verificados acima) têm acesso
     if (existEvent.status_event === "BLOCKED") return false;
+    if (existEvent.status_event === "CANCELLED") return false;
 
     // 2. Check event membership
     const member = await prisma.member.findFirst({
@@ -389,19 +390,54 @@ export class EventService {
       };
     }
 
-    if ((existingUser && existingUser.role === "USER") || !user_id) {
-      whereClause = {
-        ...whereClause,
-        available: true,
+    if (existingUser && existingUser.role === "ADMIN") {
+      if (status_event) {
+        whereClause = {
+          ...whereClause,
+          status_event: Array.isArray(status_event)
+            ? { in: status_event }
+            : status_event,
+        };
+      }
+    } else {
+      const publicCondition = {
         status_event: "ACTIVE",
       };
-    } else if (status_event) {
-      whereClause = {
-        ...whereClause,
-        status_event: Array.isArray(status_event)
-          ? { in: status_event }
-          : status_event,
-      };
+
+      if (user_id) {
+        whereClause = {
+          ...whereClause,
+          OR: [
+            publicCondition,
+            {
+              members: { some: { user_id } },
+              status_event: { in: ["PENDING", "REJECTED", "BLOCKED", "FINISH"] },
+            },
+          ],
+        };
+      } else {
+        whereClause = {
+          ...whereClause,
+          ...publicCondition,
+          available: true,
+        };
+      }
+
+      if (status_event) {
+        const statuses = Array.isArray(status_event) ? status_event : [status_event];
+        const allowedStatuses = statuses.filter((s) => s !== "CANCELLED");
+        if (allowedStatuses.length > 0) {
+          whereClause = {
+            ...whereClause,
+            status_event: { in: allowedStatuses },
+          };
+        } else {
+          whereClause = {
+            ...whereClause,
+            status_event: "ACTIVE",
+          };
+        }
+      }
     }
 
     try {
@@ -583,15 +619,6 @@ export class EventService {
       };
     }
 
-    if (status_event) {
-      whereClause = {
-        ...whereClause,
-        status_event: Array.isArray(status_event)
-          ? { in: status_event }
-          : status_event,
-      };
-    }
-
     const existingUser = await prisma.user.findFirst({
       where: { id: user_id },
     });
@@ -599,15 +626,40 @@ export class EventService {
     if (!existingUser) {
       return {
         message: "Precisa de fazer login para ver os seus eventos.",
-
         status: 401,
       };
     }
 
-    if ((existingUser && existingUser.role === "USER") || !user_id) {
-      whereClause = {
-        ...whereClause,
-      };
+    if (existingUser && existingUser.role === "ADMIN") {
+      if (status_event) {
+        whereClause = {
+          ...whereClause,
+          status_event: Array.isArray(status_event)
+            ? { in: status_event }
+            : status_event,
+        };
+      }
+    } else {
+      if (status_event) {
+        const statuses = Array.isArray(status_event) ? status_event : [status_event];
+        const allowedStatuses = statuses.filter((s) => s !== "CANCELLED");
+        if (allowedStatuses.length > 0) {
+          whereClause = {
+            ...whereClause,
+            status_event: { in: allowedStatuses },
+          };
+        } else {
+          whereClause = {
+            ...whereClause,
+            status_event: "ACTIVE",
+          };
+        }
+      } else {
+        whereClause = {
+          ...whereClause,
+          status_event: { not: "CANCELLED" },
+        };
+      }
     }
 
     try {
@@ -774,9 +826,14 @@ export class EventService {
         };
       }
 
-      if (isMember || (existUser && existUser.role !== "USER")) {
+      if (existUser && existUser.role === "ADMIN") {
         whereClause = {
           id: event_id,
+        };
+      } else if (isMember) {
+        whereClause = {
+          id: event_id,
+          status_event: { not: "CANCELLED" },
         };
       } else {
         whereClause = {
@@ -991,19 +1048,13 @@ export class EventService {
       };
     }
 
-    const guests = await prisma.guest.findMany({ where: { event_id } });
-    const guestIds = guests.map((g) => g.id);
-
-    await prisma.$transaction([
-      ...(guestIds.length > 0 ? [prisma.payment.deleteMany({ where: { guest_id: { in: guestIds } } })] : []),
-      prisma.comment.deleteMany({ where: { event_id } }),
-      prisma.ticket.deleteMany({ where: { event_id } }),
-      prisma.guest.deleteMany({ where: { event_id } }),
-      prisma.image.deleteMany({ where: { event_id } }),
-      prisma.packages.deleteMany({ where: { event_id } }),
-      prisma.member.deleteMany({ where: { event_id } }),
-      prisma.event.delete({ where: { id: event_id } }),
-    ]);
+    await prisma.event.update({
+      where: { id: event_id },
+      data: {
+        status_event: "CANCELLED",
+        available: false,
+      },
+    });
 
     return {
       message: "Evento deletado com sucesso",
