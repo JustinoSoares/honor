@@ -11,6 +11,32 @@ import { notify } from "../../utils/notify";
 export class EventService {
   constructor() { }
 
+  private async checkPermission(
+    user_id: string,
+    event_id: string,
+    required: "MANAGER" | "STAFF"
+  ): Promise<boolean> {
+    // 1. Check global ADMIN role first
+    const user = await prisma.user.findUnique({ where: { id: user_id } });
+    if (!user) return false;
+    if (user.role === "ADMIN") return true;
+
+
+    const existEvent = await prisma.event.findUnique({ where: { id: event_id } });
+    if (!existEvent) return false;
+
+    // 2. Check event membership
+    const member = await prisma.member.findFirst({
+      where: { user_id, event_id },
+    });
+
+    if (!member) return false;
+
+    if (required === "MANAGER" && member.permission !== "MANAGER") return false;
+    // STAFF requirement is satisfied by both STAFF and MANAGER permissions
+    return true;
+  }
+
   async createEvent(
     data: schema.EventCreate,
     user_id: string,
@@ -649,7 +675,10 @@ export class EventService {
   async updateEvent(
     event_id: string,
     data: schema.EventUpdate,
+    user_id: string,
   ): Promise<schema.ResponseEvent | { message: string; status: number }> {
+
+
     const existingEvent = await prisma.event.findUnique({
       where: { id: event_id },
       include: {
@@ -662,6 +691,14 @@ export class EventService {
       return {
         message: "Evento não encontrado",
         status: 404,
+      };
+    }
+
+    const canUpdate = await this.checkPermission(user_id, event_id, "MANAGER");
+    if (!canUpdate) {
+      return {
+        message: "Não tens permissão para atualizar este evento. Apenas o gestor do evento pode fazê-lo.",
+        status: 403,
       };
     }
 
@@ -724,7 +761,15 @@ export class EventService {
     return dataResponse;
   }
 
-  async deleteEvent(event_id: string): Promise<{ message: string; status: number }> {
+  async deleteEvent(event_id: string, user_id: string): Promise<{ message: string; status: number }> {
+    const canDelete = await this.checkPermission(user_id, event_id, "MANAGER");
+    if (!canDelete) {
+      return {
+        message: "Não tens permissão para eliminar este evento. Apenas o gestor do evento pode fazê-lo.",
+        status: 403,
+      };
+    }
+
     const existingEvent = await prisma.event.findUnique({
       where: { id: event_id },
     });
@@ -747,7 +792,16 @@ export class EventService {
   async addPackageToEvent(
     event_id: string,
     data: schema.PackageCreate,
+    user_id: string,
   ): Promise<schema.ResponsePackage | { message: string; status: number }> {
+    const canAdd = await this.checkPermission(user_id, event_id, "MANAGER");
+    if (!canAdd) {
+      return {
+        message: "Não tens permissão para adicionar pacotes a este evento. Apenas o gestor do evento pode fazê-lo.",
+        status: 403,
+      };
+    }
+
     const existingEvent = await prisma.event.findUnique({
       where: { id: event_id },
       include: {
@@ -798,6 +852,7 @@ export class EventService {
   async editarPackage(
     package_id: string,
     data: schema.PackageCreate,
+    user_id: string,
   ): Promise<schema.ResponsePackage | { message: string; status: number }> {
     const existingPackage = await prisma.packages.findUnique({
       where: { id: package_id },
@@ -807,6 +862,14 @@ export class EventService {
       return {
         message: "Pacote não encontrado",
         status: 404,
+      };
+    }
+
+    const canEdit = await this.checkPermission(user_id, existingPackage.event_id, "MANAGER");
+    if (!canEdit) {
+      return {
+        message: "Não tens permissão para editar pacotes deste evento. Apenas o gestor do evento pode fazê-lo.",
+        status: 403,
       };
     }
 
@@ -957,7 +1020,7 @@ export class EventService {
     return dataResponse;
   }
 
-  async deletePackage(package_id: string): Promise<{ message: string; status: number }> {
+  async deletePackage(package_id: string, user_id: string): Promise<{ message: string; status: number }> {
     const existingPackage = await prisma.packages.findUnique({
       where: { id: package_id },
     });
@@ -966,6 +1029,14 @@ export class EventService {
       return {
         message: "Pacote não encontrado",
         status: 404,
+      };
+    }
+
+    const canDelete = await this.checkPermission(user_id, existingPackage.event_id, "MANAGER");
+    if (!canDelete) {
+      return {
+        message: "Não tens permissão para eliminar pacotes deste evento. Apenas o gestor do evento pode fazê-lo.",
+        status: 403,
       };
     }
 
@@ -995,13 +1066,7 @@ export class EventService {
       };
     }
 
-    const hasPermission = await prisma.member.findFirst({
-      where: {
-        event_id,
-        user_id: user_id,
-        permission: "MANAGER",
-      },
-    });
+    const hasPermission = await this.checkPermission(user_id, event_id, "MANAGER");
 
     if (!hasPermission) {
       return {
@@ -1017,7 +1082,7 @@ export class EventService {
 
     if (!existingUser) {
       return {
-        message: "Não encontramos nenhuma conta com o email '"+data.email+"'. Verifique se o email está correto.",
+        message: "Não encontramos nenhuma conta com o email '" + data.email + "'. Verifique se o email está correto.",
 
         status: 404,
       };
@@ -1081,13 +1146,7 @@ export class EventService {
       };
     }
 
-    const hasPermission = await prisma.member.findFirst({
-      where: {
-        event_id,
-        user_id: authed_id,
-        permission: "MANAGER",
-      },
-    });
+    const hasPermission = await this.checkPermission(authed_id, event_id, "MANAGER");
 
     if (!hasPermission) {
       return {
@@ -1130,9 +1189,18 @@ export class EventService {
 
   async listMembersByEvent(
     event_id: string,
+    user_id: string,
     page: number = 1,
     per_page: number = 10,
   ): Promise<schema.ResponseMemberList | { message: string; status: number }> {
+    const canView = await this.checkPermission(user_id, event_id, "STAFF");
+    if (!canView) {
+      return {
+        message: "Não tens permissão para ver a lista de membros deste evento.",
+        status: 403,
+      };
+    }
+
     const existingEvent = await prisma.event.findUnique({
       where: { id: event_id },
     });
@@ -1174,6 +1242,7 @@ export class EventService {
 
   async getMemberById(
     member_id: string,
+    user_id: string,
   ): Promise<schema.ResponseMember | { message: string; status: number }> {
     const member = await prisma.member.findUnique({
       where: { id: member_id },
@@ -1183,6 +1252,14 @@ export class EventService {
       return {
         message: "Membro não encontrado",
         status: 404,
+      };
+    }
+
+    const canView = await this.checkPermission(user_id, member.event_id, "STAFF");
+    if (!canView) {
+      return {
+        message: "Não tens permissão para ver detalhes deste membro.",
+        status: 403,
       };
     }
 
@@ -1198,7 +1275,16 @@ export class EventService {
   async addImageToEvent(
     event_id: string,
     data: schema.CreateImage,
+    user_id: string,
   ): Promise<schema.ResponseImage | { message: string; status: number }> {
+    const canAdd = await this.checkPermission(user_id, event_id, "MANAGER");
+    if (!canAdd) {
+      return {
+        message: "Não tens permissão para adicionar imagens a este evento. Apenas o gestor do evento pode fazê-lo.",
+        status: 403,
+      };
+    }
+
     const existingEvent = await prisma.event.findUnique({
       where: { id: event_id },
     });
@@ -1305,6 +1391,7 @@ export class EventService {
   async updateImage(
     image_id: string,
     data: schema.CreateImage,
+    user_id: string,
   ): Promise<schema.ResponseImage | { message: string; status: number }> {
     const existingImage = await prisma.image.findUnique({
       where: { id: image_id },
@@ -1314,6 +1401,14 @@ export class EventService {
       return {
         message: "Imagem não encontrada",
         status: 404,
+      };
+    }
+
+    const canUpdate = await this.checkPermission(user_id, existingImage.event_id, "MANAGER");
+    if (!canUpdate) {
+      return {
+        message: "Não tens permissão para atualizar imagens deste evento. Apenas o gestor do evento pode fazê-lo.",
+        status: 403,
       };
     }
 
@@ -1342,7 +1437,7 @@ export class EventService {
     return dataResponse;
   }
 
-  async deleteImage(image_id: string): Promise<{ message: string; status: number }> {
+  async deleteImage(image_id: string, user_id: string): Promise<{ message: string; status: number }> {
     const existingImage = await prisma.image.findUnique({
       where: { id: image_id },
     });
@@ -1351,6 +1446,14 @@ export class EventService {
       return {
         message: "Imagem não encontrada",
         status: 404,
+      };
+    }
+
+    const canDelete = await this.checkPermission(user_id, existingImage.event_id, "MANAGER");
+    if (!canDelete) {
+      return {
+        message: "Não tens permissão para eliminar imagens deste evento. Apenas o gestor do evento pode fazê-lo.",
+        status: 403,
       };
     }
 
@@ -1364,7 +1467,7 @@ export class EventService {
     };
   }
 
-  async readCode(code: string): Promise<{ message: string; status: number }> {
+  async readCode(code: string, user_id: string): Promise<{ message: string; status: number }> {
     if (!code) {
       return {
         message: "Código é obrigatório",
@@ -1390,6 +1493,14 @@ export class EventService {
       return {
         message: "Este convite não existe",
         status: 404,
+      };
+    }
+
+    const canScan = await this.checkPermission(user_id, existingTicket.event_id, "STAFF");
+    if (!canScan) {
+      return {
+        message: "Não tens permissão para validar entradas neste evento. Apenas membros da equipa podem fazê-lo.",
+        status: 403,
       };
     }
 
@@ -1424,6 +1535,7 @@ export class EventService {
 
   async historyTicketsByEvent(
     event_id: string,
+    user_id: string,
     page: number = 1,
     per_page: number = 10,
     is_paid?: boolean,
@@ -1440,6 +1552,14 @@ export class EventService {
     }
     | { message: string; status: number }
   > {
+    const canView = await this.checkPermission(user_id, event_id, "STAFF");
+    if (!canView) {
+      return {
+        message: "Não tens permissão para ver o histórico de entradas deste evento.",
+        status: 403,
+      };
+    }
+
     const existingEvent = await prisma.event.findUnique({
       where: { id: event_id },
     });

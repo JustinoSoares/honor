@@ -140,7 +140,7 @@ export class EventController {
     try {
       const { event_id } = req.params;
       const eventData = req.body;
-      const event = await service.updateEvent(event_id as string, eventData);
+      const event = await service.updateEvent(event_id as string, eventData, req.userId as string);
       if (!event) {
         return res.status(404).json({ message: "Evento não encontrado" });
       }
@@ -157,7 +157,7 @@ export class EventController {
   async deleteEvent(req: AuthRequest, res: Response) {
     try {
       const { event_id } = req.params;
-      const result = await service.deleteEvent(event_id as string);
+      const result = await service.deleteEvent(event_id as string, req.userId as string);
       if (!result) {
         return res.status(404).json({ message: "Não encontrámos o evento que pretende eliminar." });
       }
@@ -177,7 +177,7 @@ export class EventController {
     try {
       const { event_id } = req.params;
       const packageData = req.body;
-      const result = await service.addPackageToEvent(event_id as string, packageData);
+      const result = await service.addPackageToEvent(event_id as string, packageData, req.userId as string);
       if (!result) {
         return res.status(404).json({ message: "Evento não encontrado" });
       }
@@ -195,7 +195,7 @@ export class EventController {
     const { package_id } = req.params;
     const packageData = req.body;
     try {
-      const result = await service.editarPackage(package_id as string, packageData);
+      const result = await service.editarPackage(package_id as string, packageData, req.userId as string);
       if (!result) {
         return res.status(404).json({ message: "Não encontrámos o pacote ou evento que pretende editar." });
       }
@@ -246,7 +246,7 @@ export class EventController {
   async deletePackage(req: AuthRequest, res: Response) {
     try {
       const { package_id } = req.params;
-      const result = await service.deletePackage(package_id as string);
+      const result = await service.deletePackage(package_id as string, req.userId as string);
       if (!result) {
         return res.status(404).json({ message: "Pacote não encontrado" });
       }
@@ -311,6 +311,7 @@ export class EventController {
 
       const result = await service.listMembersByEvent(
         event_id as string,
+        req.userId as string,
         Number(page) || 1,
         Number(per_page) || 10,
       );
@@ -330,7 +331,7 @@ export class EventController {
     try {
       const { member_id } = req.params;
 
-      const result = await service.getMemberById(member_id as string);
+      const result = await service.getMemberById(member_id as string, req.userId as string);
 
       if ("status" in result && result.status !== 200) {
         return res.status(result.status!).json({ message: result.message });
@@ -346,7 +347,7 @@ export class EventController {
   async addImageToEvent(req: AuthRequest, res: Response) {
     try {
       const { event_id } = req.params;
-      const result = await service.addImageToEvent(event_id as string, req.body);
+      const result = await service.addImageToEvent(event_id as string, req.body, req.userId as string);
       if (!result) {
         return res.status(404).json({ message: "Evento não encontrado" });
       }
@@ -399,7 +400,7 @@ export class EventController {
   async updateImage(req: AuthRequest, res: Response) {
     try {
       const { image_id } = req.params;
-      const result = await service.updateImage(image_id as string, req.body);
+      const result = await service.updateImage(image_id as string, req.body, req.userId as string);
       if (!result) {
         return res.status(404).json({ message: "Imagem não encontrada" });
       }
@@ -416,7 +417,7 @@ export class EventController {
   async deleteImage(req: AuthRequest, res: Response) {
     try {
       const { image_id } = req.params;
-      const result = await service.deleteImage(image_id as string);
+      const result = await service.deleteImage(image_id as string, req.userId as string);
       if (!result) {
         return res.status(404).json({ message: "Imagem não encontrada" });
       }
@@ -434,7 +435,7 @@ export class EventController {
     try {
       let { code } = req.body;
       code = String(code);
-      const result = await service.readCode(code);
+      const result = await service.readCode(code, req.userId as string);
       if (!result) {
         return res.status(404).json({ message: "O código QR lido não corresponde a nenhum convite válido." });
       }
@@ -452,7 +453,7 @@ export class EventController {
     try {
       let { event_id } = req.params;
       event_id = String(event_id);
-      const result = await service.historyTicketsByEvent(event_id);
+      const result = await service.historyTicketsByEvent(event_id, req.userId as string);
       if (!result) {
         return res.status(404).json({ message: "Evento não encontrado" });
       }

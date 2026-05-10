@@ -94,8 +94,6 @@ coisas que faltam
     - metricas
     - api de pagamento
 
-    - revisas as copys (precisa-se de padrão)
-    - rota para listar os membros do evento
     - tests
     - observability
 
