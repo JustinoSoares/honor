@@ -990,9 +990,21 @@ export class EventService {
         status: 404,
       };
     }
-    await prisma.event.delete({
-      where: { id: event_id },
-    });
+
+    const guests = await prisma.guest.findMany({ where: { event_id } });
+    const guestIds = guests.map((g) => g.id);
+
+    await prisma.$transaction([
+      ...(guestIds.length > 0 ? [prisma.payment.deleteMany({ where: { guest_id: { in: guestIds } } })] : []),
+      prisma.comment.deleteMany({ where: { event_id } }),
+      prisma.ticket.deleteMany({ where: { event_id } }),
+      prisma.guest.deleteMany({ where: { event_id } }),
+      prisma.image.deleteMany({ where: { event_id } }),
+      prisma.packages.deleteMany({ where: { event_id } }),
+      prisma.member.deleteMany({ where: { event_id } }),
+      prisma.event.delete({ where: { id: event_id } }),
+    ]);
+
     return {
       message: "Evento deletado com sucesso",
       status: 200,
@@ -1256,9 +1268,10 @@ export class EventService {
       };
     }
 
-    await prisma.packages.delete({
-      where: { id: package_id },
-    });
+    await prisma.$transaction([
+      prisma.ticket.deleteMany({ where: { package_id: package_id } }),
+      prisma.packages.delete({ where: { id: package_id } }),
+    ]);
 
     return {
       message: "Pacote deletado com sucesso",

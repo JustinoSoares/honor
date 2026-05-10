@@ -156,7 +156,17 @@ export class UserService {
       };
     }
 
-    await prisma.user.delete({ where: { id } });
+    await prisma.$transaction([
+      prisma.notification.deleteMany({ where: { user_id: id } }),
+      prisma.ticket.deleteMany({ where: { user_id: id } }),
+      prisma.comment.deleteMany({ where: { user_id: id } }),
+      prisma.member.deleteMany({ where: { user_id: id } }),
+      prisma.event.updateMany({
+        where: { responsible_id: id },
+        data: { responsible_id: null },
+      }),
+      prisma.user.delete({ where: { id } }),
+    ]);
 
     return {
       message: "Usuário deletado com sucesso",
