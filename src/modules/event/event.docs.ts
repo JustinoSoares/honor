@@ -266,7 +266,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "post",
     path: "/event/verify/{event_id}",
-    tags: ["Events", "Backoffice"],
+    tags: ["Backoffice"],
     summary: "Aprovar um determinado evento para estar diponível para o público em geral",
     security: [{ bearerAuth: [] }],
     request: {
@@ -307,7 +307,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "post",
     path: "/event/reject/{event_id}",
-    tags: ["Events", "Backoffice"],
+    tags: ["Backoffice"],
     summary: "Rejeitar um determinado evento pendente",
     security: [{ bearerAuth: [] }],
     request: {
@@ -350,7 +350,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "post",
     path: "/event/add/package/{event_id}",
-    tags: ["Events", "Packages"],
+    tags: ["Packages"],
     summary: "Adiciona um pacote a um evento",
     security: [{ bearerAuth: [] }],
     request: {
@@ -395,7 +395,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "put",
     path: "/event/update/package/{event_id}",
-    tags: ["Events", "Packages"],
+    tags: ["Packages"],
     summary: "Edita um pacote de um evento",
     security: [{ bearerAuth: [] }],
     request: {
@@ -440,7 +440,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "get",
     path: "/event/list/package/{event_id}",
-    tags: ["Events", "Packages"],
+    tags: ["Packages"],
     summary: "Lista os pacotes de um evento",
     security: [{ bearerAuth: [] }],
     request: {
@@ -475,7 +475,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "get",
     path: "/event/get/package/{package_id}",
-    tags: ["Events", "Packages"],
+    tags: ["Packages"],
     summary: "Obtém um pacote por ID",
     security: [{ bearerAuth: [] }],
     request: {
@@ -509,7 +509,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "delete",
     path: "/event/delete/package/{package_id}",
-    tags: ["Events", "Packages"],
+    tags: ["Packages"],
     summary: "Remove um pacote de um evento",
     security: [{ bearerAuth: [] }],
     request: {
@@ -547,7 +547,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "post",
     path: "/event/add/member/{event_id}",
-    tags: ["Events", "Members"],
+    tags: ["Members"],
     summary: "Adiciona um membro a um evento",
     security: [{ bearerAuth: [] }],
     request: {
@@ -592,7 +592,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "delete",
     path: "/event/remove/member/{event_id}/{user_id}",
-    tags: ["Events", "Members"],
+    tags: ["Members"],
     summary: "Remove um membro de um evento",
     security: [{ bearerAuth: [] }],
     request: {
@@ -631,7 +631,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "get",
     path: "/event/list/member/{event_id}",
-    tags: ["Events", "Members"],
+    tags: ["Members"],
     summary: "Lista os membros de um evento",
     security: [{ bearerAuth: [] }],
     request: {
@@ -669,7 +669,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "get",
     path: "/event/get/member/{member_id}",
-    tags: ["Events", "Members"],
+    tags: ["Members"],
     summary: "Obtém um membro por ID",
     security: [{ bearerAuth: [] }],
     request: {
@@ -703,7 +703,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "post",
     path: "/event/add/image/{event_id}",
-    tags: ["Events", "Images"],
+    tags: ["Images"],
     summary: "Adiciona uma imagem a um evento",
     security: [{ bearerAuth: [] }],
     request: {
@@ -748,7 +748,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "get",
     path: "/event/list/image/{event_id}",
-    tags: ["Events", "Images"],
+    tags: ["Images"],
     summary: "Lista as imagens de um evento",
     security: [{ bearerAuth: [] }],
     request: {
@@ -782,7 +782,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "get",
     path: "/event/get/image/{image_id}",
-    tags: ["Events", "Images"],
+    tags: ["Images"],
     summary: "Obtém uma imagem por ID",
     security: [{ bearerAuth: [] }],
     request: {
@@ -816,7 +816,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "put",
     path: "/event/update/image/{image_id}",
-    tags: ["Events", "Images"],
+    tags: ["Images"],
     summary: "Atualiza uma imagem por ID",
     security: [{ bearerAuth: [] }],
     request: {
@@ -861,7 +861,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "delete",
     path: "/event/delete/image/{image_id}",
-    tags: ["Events", "Images"],
+    tags: ["Images"],
     summary: "Remove uma imagem por ID",
     security: [{ bearerAuth: [] }],
     request: {
@@ -899,7 +899,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "post",
     path: "/event/read/code",
-    tags: ["Events", "Tickets"],
+    tags: ["Tickets"],
     summary: "Essa rota é para ler o código qr, e verificar se o ticket é válido ou não",
     security: [{ bearerAuth: [] }],
     request: {
@@ -939,7 +939,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "get",
     path: "/event/history/{event_id}",
-    tags: ["Events", "Tickets"],
+    tags: ["Tickets"],
     summary: "Obtém o histórico de entrada no evento",
     security: [{ bearerAuth: [] }],
     request: {
