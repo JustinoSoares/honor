@@ -8,7 +8,7 @@ import { registerBackofficeDocs } from "../modules/backoffice/backoffice.docs";
 import { registerTicketDocs } from "../modules/ticket/ticket.docs";
 import { registerAuthDocs } from "../modules/auth/auth.docs";
 import { registerNotificationDocs } from "../modules/notification/notification.docs";
-import { registerAvaliationDocs } from "../modules/avaliation/avaliation.docs";
+import { registerCommentDocs } from "../modules/comment/comment.docs";
 import { env } from "../env";
 
 export const registry = new OpenAPIRegistry();
@@ -26,7 +26,7 @@ export function setupSwagger(app: Express) {
   registerTicketDocs(registry);
   registerAuthDocs(registry);
   registerNotificationDocs(registry);
-  registerAvaliationDocs(registry);
+  registerCommentDocs(registry);
 
   const generator = new OpenApiGeneratorV3(registry.definitions);
 

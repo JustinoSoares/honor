@@ -178,6 +178,7 @@ export class BackofficeService {
       activeEvents,
       pendingEvents,
       rejectedEvents,
+      blockedEvents,
       eventsCreatedToday,
       totalAdmins,
       totalManagers,
@@ -190,6 +191,7 @@ export class BackofficeService {
       prisma.event.count({ where: { status_event: "ACTIVE" } }),
       prisma.event.count({ where: { status_event: "PENDING" } }),
       prisma.event.count({ where: { status_event: "REJECTED" } }),
+      prisma.event.count({ where: { status_event: "BLOCKED" } }),
       prisma.event.count({ where: { created_at: { gte: today } } }),
       prisma.user.count({ where: { role: "ADMIN" } }),
       prisma.user.count({ where: { role: "MANAGER" } }),
@@ -208,6 +210,7 @@ export class BackofficeService {
         active_events: activeEvents,
         pending_events: pendingEvents,
         rejected_events: rejectedEvents,
+        blocked_events: blockedEvents,
         events_created_today: eventsCreatedToday,
       },
       user_management: {

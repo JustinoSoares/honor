@@ -1,7 +1,7 @@
 import * as schema from "./event.schema";
 import { validate } from "../../middleware/validate";
 import { EventController } from "./event.controller";
-import { authentication } from "../../middleware/authorization";
+import { authentication, authenticationAdmin } from "../../middleware/authorization";
 import { Router } from "express";
 const eventController = new EventController();
 const eventRouter = Router();
@@ -27,16 +27,25 @@ eventRouter.delete("/delete/:event_id", authentication, eventController.deleteEv
 
 eventRouter.post(
   "/verify/:event_id",
-  authentication, // verify admin
+  authenticationAdmin, // verify admin
   eventController.verifyEvent,
 );
 
 eventRouter.post(
   "/reject/:event_id",
-  authentication,
+  authenticationAdmin,
   validate(schema.RejectEventSchema),
   eventController.rejectEvent,
 );
+
+eventRouter.post(
+  "/block/:event_id",
+  authenticationAdmin,
+  validate(schema.BlockEventSchema),
+  eventController.blockEvent,
+);
+
+eventRouter.post("/unblock/:event_id", authenticationAdmin, eventController.unblockEvent);
 
 eventRouter.post(
   "/add/package/:event_id",

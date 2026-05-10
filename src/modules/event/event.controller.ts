@@ -604,4 +604,43 @@ export class EventController {
         });
     }
   }
+
+  async blockEvent(req: AuthRequest, res: Response) {
+    const user_id = req.userId;
+    try {
+      if (!user_id || validate(user_id) === false) {
+        return res.status(401).json({ message: "Usuário não autenticado" });
+      }
+      const { event_id } = req.params;
+      const { reason } = req.body;
+      const result = await service.blockEvent(event_id as string, reason, user_id);
+
+      if ("status" in result && result.status !== 200) {
+        return res.status(result.status!).json({ message: result.message });
+      }
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao bloquear evento" });
+    }
+  }
+
+  async unblockEvent(req: AuthRequest, res: Response) {
+    const user_id = req.userId;
+    try {
+      if (!user_id || validate(user_id) === false) {
+        return res.status(401).json({ message: "Usuário não autenticado" });
+      }
+      const { event_id } = req.params;
+      const result = await service.unblockEvent(event_id as string, user_id);
+
+      if ("status" in result && result.status !== 200) {
+        return res.status(result.status!).json({ message: result.message });
+      }
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao desbloquear evento" });
+    }
+  }
 }

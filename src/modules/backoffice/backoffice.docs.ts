@@ -50,6 +50,7 @@ const AdminMetricsSchema = z
       active_events: z.number().openapi({ example: 45 }),
       pending_events: z.number().openapi({ example: 12 }),
       rejected_events: z.number().openapi({ example: 5 }),
+      blocked_events: z.number().openapi({ example: 3 }),
       events_created_today: z.number().openapi({ example: 3 }),
     }),
     user_management: z.object({

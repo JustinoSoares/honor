@@ -18,6 +18,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.register("ResponseImage", schema.ResponseImageSchema);
   registry.register("CreateImage", schema.CreateImageSchema);
   registry.register("RejectEvent", schema.RejectEventSchema);
+  registry.register("BlockEvent", schema.BlockEventSchema);
   registry.register("Meta", schema.MetaSchema);
 
   // ─── GET /events/list ────────────────────────────────────────────────────────
@@ -335,6 +336,75 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
         description: "Apenas eventos pendentes podem ser rejeitados",
         content: {
           "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+      404: {
+        description: "Evento não encontrado",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+    },
+  });
+
+  // ─── POST /event/block/{event_id} ───────────────────────────────────────────────────────
+  registry.registerPath({
+    method: "post",
+    path: "/event/block/{event_id}",
+    tags: ["Backoffice"],
+    summary: "Bloquear um determinado evento",
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: z.object({
+        event_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+      }),
+      body: {
+        content: {
+          "application/json": { schema: schema.BlockEventSchema },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Evento bloqueado com sucesso",
+        content: {
+          "application/json": {
+            schema: z.object({
+              message: z.string().openapi({ example: "Evento bloqueado com sucesso" }),
+            }),
+          },
+        },
+      },
+      404: {
+        description: "Evento não encontrado",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+    },
+  });
+
+  // ─── POST /event/unblock/{event_id} ───────────────────────────────────────────────────────
+  registry.registerPath({
+    method: "post",
+    path: "/event/unblock/{event_id}",
+    tags: ["Backoffice"],
+    summary: "Desbloquear um determinado evento",
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: z.object({
+        event_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Evento desbloqueado com sucesso",
+        content: {
+          "application/json": {
+            schema: z.object({
+              message: z.string().openapi({ example: "Evento desbloqueado com sucesso" }),
+            }),
+          },
         },
       },
       404: {

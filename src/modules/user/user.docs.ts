@@ -55,7 +55,7 @@ export function registerUserDocs(registry: OpenAPIRegistry) {
       200: {
         description: "Utilizador encontrado",
         content: {
-          "application/json": { schema: UserSchema },
+          "application/json": { schema: ResponseUserSchema },
         },
       },
       404: { description: "Utilizador não encontrado" },
@@ -73,7 +73,7 @@ export function registerUserDocs(registry: OpenAPIRegistry) {
       200: {
         description: "Utilizador encontrado",
         content: {
-          "application/json": { schema: UserSchema },
+          "application/json": { schema: ResponseUserSchema },
         },
       },
       404: { description: "Utilizador não encontrado" },

@@ -287,13 +287,12 @@ export const ResponseEventSchema = z
         }),
       )
       .optional(),
-    avaliations: z
+    comments: z
       .array(
         z.object({
           id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
           user_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
-          rating: z.number().openapi({ example: 5 }),
-          comment: z.string().nullable().openapi({ example: "Evento incrível!" }),
+          content: z.string().nullable().openapi({ example: "Evento incrível!" }),
           user: z.object({
             name: z.string().openapi({ example: "João Silva" }),
           }),
@@ -329,3 +328,9 @@ export const RejectEventSchema = z.object({
 });
 
 export type RejectEvent = z.infer<typeof RejectEventSchema>;
+
+export const BlockEventSchema = z.object({
+  reason: z.string("O motivo do bloqueio é obrigatório").min(1, "O motivo do bloqueio é obrigatório"),
+});
+
+export type BlockEvent = z.infer<typeof BlockEventSchema>;

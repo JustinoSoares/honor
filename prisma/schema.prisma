@@ -29,7 +29,7 @@ model user {
   updated_at    DateTime       @updatedAt
   tickets       ticket[]
   notifications notification[]
-  avaliations   avaliation[]
+  comments      comment[]
 }
 
 model event {
@@ -62,15 +62,14 @@ model event {
   packages         packages[]
   members          member[]
   tickets          ticket[]
-  avaliations      avaliation[]
+  comments      comment[]
 }
 
-model avaliation {
+model comment {
   id         String   @id @default(uuid())
   event_id   String
   user_id    String
-  rating     Int
-  comment    String?
+  content    String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   event      event    @relation(fields: [event_id], references: [id])

@@ -34,6 +34,7 @@ export const AdminMetricsSchema = z.object({
     active_events: z.number(),
     pending_events: z.number(),
     rejected_events: z.number(),
+    blocked_events: z.number(),
     events_created_today: z.number(),
   }),
   user_management: z.object({

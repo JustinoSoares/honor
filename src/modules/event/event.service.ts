@@ -22,6 +22,9 @@ export class EventService {
     const existEvent = await prisma.event.findUnique({ where: { id: event_id } });
     if (!existEvent) return false;
 
+    // Se o evento estiver bloqueado, apenas ADMINs (já verificados acima) têm acesso
+    if (existEvent.status_event === "BLOCKED") return false;
+
     // 2. Check event membership
     const member = await prisma.member.findFirst({
       where: { user_id, event_id },
@@ -178,7 +181,7 @@ export class EventService {
           user_id: member.user_id,
           permission: member.permission as "MANAGER" | "STAFF",
         })),
-        avaliations: [],
+        comments: [],
       };
 
       // Notifica o criador que o evento foi criado com sucesso
@@ -206,6 +209,14 @@ export class EventService {
     user_id: string,
     available: boolean,
   ): Promise<{ message: string; status: number }> {
+    const user = await prisma.user.findUnique({ where: { id: user_id } });
+    if (!user || user.role !== "ADMIN") {
+      return {
+        message: "Não tem permissão para realizar esta operação",
+        status: 403,
+      };
+    }
+
     if (!validate(event_id) || !validate(user_id)) {
       return {
         message: "ID de evento ou usuário inválido",
@@ -256,6 +267,14 @@ export class EventService {
     user_id: string,
     reason_rejection: string,
   ): Promise<{ message: string; status: number }> {
+    const user = await prisma.user.findUnique({ where: { id: user_id } });
+    if (!user || user.role !== "ADMIN") {
+      return {
+        message: "Não tem permissão para realizar esta operação",
+        status: 403,
+      };
+    }
+
     if (!validate(event_id) || !validate(user_id)) {
       return {
         message: "ID de evento ou usuário inválido",
@@ -412,7 +431,7 @@ export class EventService {
           packages: true,
           event_category: true,
           members: true,
-          avaliations: {
+          comments: {
             include: {
               user: {
                 select: { name: true },
@@ -491,11 +510,10 @@ export class EventService {
           user_id: member.user_id,
           permission: member.permission as "MANAGER" | "STAFF",
         })),
-        avaliations: event.avaliations.map((a) => ({
+        comments: event.comments.map((a) => ({
           id: a.id,
           user_id: a.user_id,
-          rating: a.rating,
-          comment: a.comment,
+          content: a.content,
           user: { name: a.user.name },
           created_at: a.created_at.toISOString(),
         })),
@@ -624,7 +642,7 @@ export class EventService {
           packages: true,
           event_category: true,
           members: true,
-          avaliations: {
+          comments: {
             include: {
               user: {
                 select: { name: true },
@@ -703,11 +721,10 @@ export class EventService {
           user_id: member.user_id,
           permission: member.permission as "MANAGER" | "STAFF",
         })),
-        avaliations: event.avaliations.map((a) => ({
+        comments: event.comments.map((a) => ({
           id: a.id,
           user_id: a.user_id,
-          rating: a.rating,
-          comment: a.comment,
+          content: a.content,
           user: { name: a.user.name },
           created_at: a.created_at.toISOString(),
         })),
@@ -775,7 +792,7 @@ export class EventService {
         include: {
           packages: true,
           members: true,
-          avaliations: {
+          comments: {
             include: {
               user: {
                 select: { name: true },
@@ -835,11 +852,10 @@ export class EventService {
           user_id: member.user_id,
           permission: member.permission as "MANAGER" | "STAFF",
         })),
-        avaliations: event.avaliations.map((a) => ({
+        comments: event.comments.map((a) => ({
           id: a.id,
           user_id: a.user_id,
-          rating: a.rating,
-          comment: a.comment,
+          content: a.content,
           user: { name: a.user.name },
           created_at: a.created_at.toISOString(),
         })),
@@ -1709,12 +1725,20 @@ export class EventService {
 
     const existingTicket = await prisma.ticket.findFirst({
       where: { id: invitation_id },
+      include: { event: true },
     });
 
     if (!existingTicket) {
       return {
         message: "Este convite não existe",
         status: 404,
+      };
+    }
+
+    if (existingTicket.event.status_event === "BLOCKED") {
+      return {
+        message: "Este evento está bloqueado. A validação de convites está suspensa.",
+        status: 403,
       };
     }
 
@@ -1840,5 +1864,93 @@ export class EventService {
         total_pages: Math.ceil(totalTickets / per_page),
       },
     };
+  }
+
+  async blockEvent(
+    event_id: string,
+    reason: string,
+    user_id: string,
+  ): Promise<{ message: string; status: number }> {
+    try {
+      const user = await prisma.user.findUnique({ where: { id: user_id } });
+      if (!user || user.role !== "ADMIN") {
+        return { message: "Não autorizado", status: 401 };
+      }
+
+      const event = await prisma.event.findUnique({
+        where: { id: event_id },
+        include: { members: true },
+      });
+
+      if (!event) {
+        return { message: "Evento não encontrado", status: 404 };
+      }
+
+      await prisma.event.update({
+        where: { id: event_id },
+        data: {
+          status_event: "BLOCKED",
+          reason_rejection: reason,
+          available: false,
+        },
+      });
+
+      // Notificar membros do evento
+      for (const member of event.members) {
+        await notify(
+          member.user_id,
+          `O evento "${event.title}" foi bloqueado. Motivo: ${reason}`,
+          { event_id, type: "event_blocked" },
+        );
+      }
+
+      return { message: "Evento bloqueado com sucesso", status: 200 };
+    } catch (error) {
+      console.error(error);
+      return { message: "Erro ao bloquear evento", status: 500 };
+    }
+  }
+
+  async unblockEvent(
+    event_id: string,
+    user_id: string,
+  ): Promise<{ message: string; status: number }> {
+    try {
+      const user = await prisma.user.findUnique({ where: { id: user_id } });
+      if (!user || user.role !== "ADMIN") {
+        return { message: "Não autorizado", status: 401 };
+      }
+
+      const event = await prisma.event.findUnique({
+        where: { id: event_id },
+        include: { members: true },
+      });
+
+      if (!event) {
+        return { message: "Evento não encontrado", status: 404 };
+      }
+
+      await prisma.event.update({
+        where: { id: event_id },
+        data: {
+          status_event: "ACTIVE",
+          available: true,
+          reason_rejection: null,
+        },
+      });
+
+      // Notificar membros do evento
+      for (const member of event.members) {
+        await notify(member.user_id, `O evento "${event.title}" foi desbloqueado e está ativo.`, {
+          event_id,
+          type: "event_unblocked",
+        });
+      }
+
+      return { message: "Evento desbloqueado com sucesso", status: 200 };
+    } catch (error) {
+      console.error(error);
+      return { message: "Erro ao desbloquear evento", status: 500 };
+    }
   }
 }
