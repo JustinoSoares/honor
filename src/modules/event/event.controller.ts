@@ -21,7 +21,7 @@ export class EventController {
       return res.status(201).json(event);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao criar evento" });
+      return res.status(500).json({ message: "Não foi possível criar o evento. Por favor, tente novamente." });
     }
   }
 
@@ -36,7 +36,7 @@ export class EventController {
       const result = await service.verifyEvent(event_id as string, user_id, available);
 
       if (!result) {
-        return res.status(404).json({ message: "Evento não encontrado" });
+        return res.status(404).json({ message: "Não encontrámos o evento que pretende alterar." });
       }
       if ("status" in result) {
         return res.status(result.status!).json({ message: result.message });
@@ -44,7 +44,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao verificar evento" });
+      return res.status(500).json({ message: "Não foi possível alterar a disponibilidade do evento. Por favor, tente novamente." });
     }
   }
 
@@ -77,7 +77,7 @@ export class EventController {
       return res.status(200).json(events);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao buscar eventos" });
+      return res.status(500).json({ message: "Não foi possível carregar os eventos. Por favor, tente novamente." });
     }
   }
 
@@ -113,7 +113,7 @@ export class EventController {
       return res.status(200).json(events);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao buscar eventos do usuário" });
+      return res.status(500).json({ message: "Não foi possível carregar os seus eventos. Por favor, tente novamente." });
     }
   }
 
@@ -123,7 +123,7 @@ export class EventController {
       const event = await service.getEventById(event_id as string);
 
       if (!event) {
-        return res.status(404).json({ message: "Evento não encontrado" });
+        return res.status(404).json({ message: "Não encontrámos o evento que procura." });
       }
 
       if ("status" in event && event.status !== 200) {
@@ -132,7 +132,7 @@ export class EventController {
       return res.status(200).json(event);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao buscar evento" });
+      return res.status(500).json({ message: "Não foi possível carregar os detalhes do evento. Por favor, tente novamente." });
     }
   }
 
@@ -150,7 +150,7 @@ export class EventController {
       return res.status(200).json(event);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao atualizar evento" });
+      return res.status(500).json({ message: "Não foi possível guardar as alterações no evento. Por favor, tente novamente." });
     }
   }
 
@@ -159,7 +159,7 @@ export class EventController {
       const { event_id } = req.params;
       const result = await service.deleteEvent(event_id as string);
       if (!result) {
-        return res.status(404).json({ message: "Evento não encontrado" });
+        return res.status(404).json({ message: "Não encontrámos o evento que pretende eliminar." });
       }
 
       if ("status" in result && result.status !== 200) {
@@ -169,7 +169,7 @@ export class EventController {
       return res.status(result.status!).json({ message: result.message });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao deletar evento" });
+      return res.status(500).json({ message: "Não foi possível eliminar o evento. Por favor, tente novamente." });
     }
   }
 
@@ -187,7 +187,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao adicionar pacote ao evento" });
+      return res.status(500).json({ message: "Não foi possível adicionar o pacote ao evento. Por favor, tente novamente." });
     }
   }
 
@@ -197,7 +197,7 @@ export class EventController {
     try {
       const result = await service.editarPackage(package_id as string, packageData);
       if (!result) {
-        return res.status(404).json({ message: "Evento ou pacote não encontrado" });
+        return res.status(404).json({ message: "Não encontrámos o pacote ou evento que pretende editar." });
       }
       if ("status" in result && result.status !== 200) {
         return res.status(result.status!).json({ message: result.message });
@@ -205,7 +205,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao editar pacote no evento" });
+      return res.status(500).json({ message: "Não foi possível guardar as alterações no pacote. Por favor, tente novamente." });
     }
   }
 
@@ -222,7 +222,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao listar pacotes do evento" });
+      return res.status(500).json({ message: "Não foi possível carregar os pacotes deste evento. Por favor, tente novamente." });
     }
   }
 
@@ -239,7 +239,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao buscar pacote" });
+      return res.status(500).json({ message: "Não foi possível carregar os detalhes do pacote. Por favor, tente novamente." });
     }
   }
 
@@ -256,7 +256,7 @@ export class EventController {
       return res.status(result.status!).json({ message: result.message });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao deletar pacote" });
+      return res.status(500).json({ message: "Não foi possível eliminar o pacote. Por favor, tente novamente." });
     }
   }
 
@@ -277,7 +277,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao adicionar membro ao evento" });
+      return res.status(500).json({ message: "Não foi possível adicionar o membro ao evento. Por favor, tente novamente." });
     }
   }
 
@@ -300,7 +300,46 @@ export class EventController {
       return res.status(result.status!).json({ message: result.message });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao remover membro do evento" });
+      return res.status(500).json({ message: "Não foi possível remover o membro do evento. Por favor, tente novamente." });
+    }
+  }
+
+  async listMembersByEvent(req: AuthRequest, res: Response) {
+    try {
+      const { event_id } = req.params;
+      const { page, per_page } = req.query;
+
+      const result = await service.listMembersByEvent(
+        event_id as string,
+        Number(page) || 1,
+        Number(per_page) || 10,
+      );
+
+      if ("status" in result && result.status !== 200) {
+        return res.status(result.status!).json({ message: result.message });
+      }
+
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Não foi possível carregar a lista de membros do evento. Por favor, tente novamente." });
+    }
+  }
+
+  async getMemberById(req: AuthRequest, res: Response) {
+    try {
+      const { member_id } = req.params;
+
+      const result = await service.getMemberById(member_id as string);
+
+      if ("status" in result && result.status !== 200) {
+        return res.status(result.status!).json({ message: result.message });
+      }
+
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Não foi possível carregar os detalhes do membro. Por favor, tente novamente." });
     }
   }
 
@@ -317,7 +356,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao adicionar imagem ao evento" });
+      return res.status(500).json({ message: "Não foi possível adicionar a imagem ao evento. Por favor, tente novamente." });
     }
   }
 
@@ -336,7 +375,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao listar imagens do evento" });
+      return res.status(500).json({ message: "Não foi possível carregar as imagens do evento. Por favor, tente novamente." });
     }
   }
 
@@ -353,7 +392,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao buscar imagem" });
+      return res.status(500).json({ message: "Não foi possível carregar a imagem. Por favor, tente novamente." });
     }
   }
 
@@ -370,7 +409,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao atualizar imagem" });
+      return res.status(500).json({ message: "Não foi possível guardar as alterações na imagem. Por favor, tente novamente." });
     }
   }
 
@@ -387,7 +426,7 @@ export class EventController {
       return res.status(result.status!).json({ message: result.message });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao deletar imagem" });
+      return res.status(500).json({ message: "Não foi possível eliminar a imagem. Por favor, tente novamente." });
     }
   }
 
@@ -397,7 +436,7 @@ export class EventController {
       code = String(code);
       const result = await service.readCode(code);
       if (!result) {
-        return res.status(404).json({ message: "Código não encontrado" });
+        return res.status(404).json({ message: "O código QR lido não corresponde a nenhum convite válido." });
       }
       if ("status" in result && result.status !== 200) {
         return res.status(result.status!).json({ message: result.message });
@@ -405,7 +444,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao ler código" });
+      return res.status(500).json({ message: "Não foi possível processar o código QR. Por favor, tente novamente." });
     }
   }
 
@@ -423,7 +462,7 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao buscar histórico de convites do evento" });
+      return res.status(500).json({ message: "Não foi possível carregar o histórico de entradas. Por favor, tente novamente." });
     }
   }
 }

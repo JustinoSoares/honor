@@ -16,7 +16,7 @@ export class TicketController {
       const user_id = req.userId as string;
 
       if (!user_id || !validate(user_id)) {
-        return res.status(401).json({ message: "Usuário não autenticado" });
+        return res.status(401).json({ message: "É necessário fazer login para comprar tickets." });
       }
 
       const ticket = await service.createTicket(data as schema.TicketArray, user_id as string);
@@ -26,7 +26,7 @@ export class TicketController {
       return res.status(201).json(ticket);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao criar convidado" });
+      return res.status(500).json({ message: "Não foi possível criar os tickets. Por favor, tente novamente." });
     }
   }
 
@@ -51,7 +51,7 @@ export class TicketController {
       return res.status(200).json(tickets);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao buscar tickets" });
+      return res.status(500).json({ message: "Não foi possível carregar os tickets deste evento. Por favor, tente novamente." });
     }
   }
 
@@ -72,7 +72,7 @@ export class TicketController {
       return res.status(200).json(tickets);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao buscar tickets" });
+      return res.status(500).json({ message: "Não foi possível carregar os seus tickets. Por favor, tente novamente." });
     }
   }
 
@@ -85,7 +85,7 @@ export class TicketController {
       const ticket = await service.getTicketById(ticket_id);
 
       if (!ticket) {
-        return res.status(404).json({ message: "Ticket não encontrado" });
+        return res.status(404).json({ message: "Não encontrámos o ticket que procura. Confirme o identificador e tente novamente." });
       }
 
       if ("message" in ticket && ticket.status !== 200) {
@@ -94,7 +94,7 @@ export class TicketController {
       return res.status(200).json(ticket);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao buscar ticket" });
+      return res.status(500).json({ message: "Não foi possível carregar os detalhes do ticket. Por favor, tente novamente." });
     }
   }
 
@@ -109,7 +109,7 @@ export class TicketController {
       return res.status(result.status).json({ message: result.message });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Erro ao deletar ticket" });
+      return res.status(500).json({ message: "Não foi possível cancelar o ticket. Por favor, tente novamente." });
     }
   }
 }

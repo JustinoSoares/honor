@@ -18,7 +18,8 @@ export class EventService {
     try {
       if (!user_id || !validate(user_id))
         return {
-          message: "Usuário não autenticado",
+          message: "Precisa de fazer login para criar um evento.",
+
           status: 401,
         };
 
@@ -28,7 +29,8 @@ export class EventService {
 
       if (!existUser) {
         return {
-          message: "Usuário não autenticado",
+          message: "Precisa de fazer login para criar um evento.",
+
           status: 401,
         };
       }
@@ -40,7 +42,8 @@ export class EventService {
 
       if (!existCategory) {
         return {
-          message: "Categoria de evento inválida",
+          message: "A categoria de evento selecionada não existe. Escolha uma categoria válida da lista disponível.",
+
           status: 400,
         };
       }
@@ -156,7 +159,7 @@ export class EventService {
     } catch (error) {
       console.error("Error creating event:", error);
       return {
-        message: "Erro ao criar evento",
+        message: "Ocorreu um erro ao criar o evento. Por favor, tente novamente.",
         status: 500,
       };
     }
@@ -249,7 +252,8 @@ export class EventService {
 
     if (user_id && !existingUser) {
       return {
-        message: "Usuário não autenticado",
+        message: "Precisa de fazer login para ver os eventos.",
+
         status: 401,
       };
     }
@@ -410,7 +414,8 @@ export class EventService {
 
     if (!existingUser) {
       return {
-        message: "Usuário não autenticado",
+        message: "Precisa de fazer login para ver os seus eventos.",
+
         status: 401,
       };
     }
@@ -560,7 +565,8 @@ export class EventService {
 
       if (user_id && !existUser) {
         return {
-          message: "Usuário não autenticado",
+          message: "Precisa de fazer login para aceder a este evento.",
+
           status: 401,
         };
       }
@@ -588,7 +594,8 @@ export class EventService {
 
       if (!event) {
         return {
-          message: "Evento não encontrado ou não disponível",
+          message: "Este evento não foi encontrado ou ainda não está disponível ao público.",
+
           status: 404,
         };
       }
@@ -998,7 +1005,8 @@ export class EventService {
 
     if (!hasPermission) {
       return {
-        message: "Usuário não tem permissão para adicionar membros",
+        message: "Não tens permissão para adicionar membros neste evento. Apenas o gestor do evento pode fazê-lo.",
+
         status: 403,
       };
     }
@@ -1009,7 +1017,8 @@ export class EventService {
 
     if (!existingUser) {
       return {
-        message: "Usuário com esse email não encontrado",
+        message: "Não encontramos nenhuma conta com o email '"+data.email+"'. Verifique se o email está correto.",
+
         status: 404,
       };
     }
@@ -1023,7 +1032,8 @@ export class EventService {
 
     if (existMember) {
       return {
-        message: "Usuário já é membro do evento",
+        message: "Este utilizador já faz parte da equipa do evento.",
+
         status: 400,
       };
     }
@@ -1081,7 +1091,8 @@ export class EventService {
 
     if (!hasPermission) {
       return {
-        message: "Usuário não tem permissão para remover membros",
+        message: "Não tens permissão para remover membros neste evento. Apenas o gestor do evento pode fazê-lo.",
+
         status: 403,
       };
     }
@@ -1095,7 +1106,8 @@ export class EventService {
 
     if (!existingMember) {
       return {
-        message: "Membro não encontrado",
+        message: "Este utilizador não é membro deste evento.",
+
         status: 404,
       };
     }
@@ -1116,6 +1128,73 @@ export class EventService {
     };
   }
 
+  async listMembersByEvent(
+    event_id: string,
+    page: number = 1,
+    per_page: number = 10,
+  ): Promise<schema.ResponseMemberList | { message: string; status: number }> {
+    const existingEvent = await prisma.event.findUnique({
+      where: { id: event_id },
+    });
+
+    if (!existingEvent) {
+      return {
+        message: "Evento não encontrado",
+        status: 404,
+      };
+    }
+
+    const [members, total] = await Promise.all([
+      prisma.member.findMany({
+        where: { event_id },
+        skip: (page - 1) * per_page,
+        take: per_page,
+      }),
+      prisma.member.count({
+        where: { event_id },
+      }),
+    ]);
+
+    return {
+      data: members.map((member) => ({
+        id: member.id,
+        name: member.name,
+        user_id: member.user_id,
+        event_id: member.event_id,
+        permission: member.permission as "MANAGER" | "STAFF",
+      })),
+      meta: {
+        page,
+        per_page,
+        total,
+        total_pages: Math.ceil(total / per_page),
+      },
+    };
+  }
+
+  async getMemberById(
+    member_id: string,
+  ): Promise<schema.ResponseMember | { message: string; status: number }> {
+    const member = await prisma.member.findUnique({
+      where: { id: member_id },
+    });
+
+    if (!member) {
+      return {
+        message: "Membro não encontrado",
+        status: 404,
+      };
+    }
+
+    return {
+      id: member.id,
+      name: member.name,
+      user_id: member.user_id,
+      event_id: member.event_id,
+      permission: member.permission as "MANAGER" | "STAFF",
+    };
+  }
+
   async addImageToEvent(
     event_id: string,
     data: schema.CreateImage,
@@ -1133,7 +1212,8 @@ export class EventService {
 
     if (isImageByExtension(data.url) == false) {
       return {
-        message: "URL deve ser de uma imagem válida",
+        message: "O formato da URL da imagem não é válido. Use um link que termine em .jpg, .jpeg, .png, .webp ou .gif.",
+
         status: 400,
       };
     }
@@ -1239,7 +1319,8 @@ export class EventService {
 
     if (data.url && isImageByExtension(data.url) == false) {
       return {
-        message: "URL deve ser de uma imagem válida",
+        message: "O formato da URL da imagem não é válido. Use um link que termine em .jpg, .jpeg, .png, .webp ou .gif.",
+
         status: 400,
       };
     }
@@ -1295,7 +1376,8 @@ export class EventService {
 
     if (!invitation_id || !validate(invitation_id)) {
       return {
-        message: "Convite inválido",
+        message: "O código de entrada lido é inválido. Por favor, verifique o QR Code e tente novamente.",
+
         status: 400,
       };
     }
@@ -1313,14 +1395,16 @@ export class EventService {
 
     if (existingTicket.is_used) {
       return {
-        message: "Este convite já foi utilizado",
+        message: "Este convite já foi utilizado para entrada no evento.",
+
         status: 400,
       };
     }
 
     if (!existingTicket.is_paid) {
       return {
-        message: "Convite inválido, valide antes de processeguir",
+        message: "Este convite ainda não foi pago e não pode ser utilizado para entrada.",
+
         status: 400,
       };
     }

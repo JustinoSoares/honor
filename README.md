@@ -95,7 +95,7 @@ coisas que faltam
     - api de pagamento
 
     - revisas as copys (precisa-se de padrão)
-    - rota para listar is membros do evento
+    - rota para listar os membros do evento
     - tests
     - observability
 

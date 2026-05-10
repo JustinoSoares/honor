@@ -10,6 +10,8 @@ import eventRoutes from "./modules/event/event.route";
 import authRoutes from "./modules/auth/auth.route";
 import backofficeRoutes from "./modules/backoffice/routes";
 import ticketRoutes from "./modules/ticket/ticket.route";
+import notificationRoutes from "./modules/notification/notification.route";
+
 
 const app = express();
 const httpServer = createServer(app);
@@ -31,6 +33,8 @@ app.use("/api/v1/event", eventRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/backoffice", backofficeRoutes);
 app.use("/api/v1/ticket", ticketRoutes);
+app.use("/api/v1/notification", notificationRoutes);
+
 
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {

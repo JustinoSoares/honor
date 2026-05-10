@@ -12,7 +12,8 @@ export class BackofficeService {
 
     if (existingCategory) {
       return {
-        message: "Categoria já existe",
+        message: "Já existe uma categoria com este nome. Escolha um nome diferente.",
+
         status: 400,
       };
     }
@@ -90,7 +91,8 @@ export class BackofficeService {
   ): Promise<schema.ResponseCategoryDTO | { message: string; status: number }> {
     if (!validate(name)) {
       return {
-        message: "Nome de categoria inválido",
+        message: "Não encontrámos a categoria que procura. Verifique o nome e tente novamente.",
+
         status: 400,
       };
     }
@@ -101,7 +103,8 @@ export class BackofficeService {
 
     if (!category) {
       return {
-        message: "Categoria não encontrada",
+        message: "Não encontrámos a categoria que procura. Pode ter sido removida ou o nome está errado.",
+
         status: 404,
       };
     }
@@ -117,7 +120,8 @@ export class BackofficeService {
   async updateCategory(id: string, name: string) {
     if (!validate(id)) {
       return {
-        message: "ID de categoria inválido",
+        message: "Não foi possível identificar a categoria para atualizar. Verifique e tente novamente.",
+
         status: 400,
       };
     }
@@ -142,7 +146,8 @@ export class BackofficeService {
 
     if (!existingCategory) {
       return {
-        message: "Categoria não encontrada",
+        message: "Não encontrámos a categoria que procura. Pode ter sido removida ou o nome está errado.",
+
         status: 404,
       };
     }

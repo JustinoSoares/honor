@@ -73,7 +73,7 @@ export class AuthService {
 
     if (!user) {
       return {
-        message: "Usuário não encontrado para recuperar código",
+        message: "Não encontramos nenhuma conta com este email. Verifique o email e tente novamente.",
         status: 404,
       };
     }
@@ -108,14 +108,14 @@ export class AuthService {
 
     if (!user) {
       return {
-        message: "Email ou código inválido",
+        message: "Não encontramos nenhuma conta com este email. Verifique o email e tente novamente.",
         status: 401,
       };
     }
 
     if (user.verified) {
       return {
-        message: "Email já verificado",
+        message: "A sua conta já está verificada. Pode fazer login normalmente.",
         status: 400,
       };
     }
@@ -124,7 +124,7 @@ export class AuthService {
 
     if (!isCodeValid) {
       return {
-        message: "Código inválido ou expirado",
+        message: "O código inserido está incorreto. Verifique o email e tente novamente.",
         status: 401,
       };
     }
@@ -140,7 +140,8 @@ export class AuthService {
         },
       });
       return {
-        message: "Código expirado",
+        message: "O seu código de verificação expirou. Por favor, solicite um novo código.",
+
         status: 401,
       };
     }
@@ -183,7 +184,8 @@ export class AuthService {
     const stateValid = await consumeState(state as string);
     if (!stateValid) {
       return {
-        message: "Estado inválido ou expirado",
+        message: "Sessão de login expirada ou inválida. Por favor, tente iniciar a autenticação com o Google novamente.",
+
         status: 400,
       };
     }
@@ -201,7 +203,8 @@ export class AuthService {
 
     if (!email) {
       return {
-        message: "Email não disponível no perfil do Google",
+        message: "Não foi possível obter o seu email do Google. Certifique-se de que a sua conta Google tem um email público.",
+
         status: 400,
       };
     }
@@ -249,7 +252,8 @@ export class AuthService {
     const isValid = await validateRefreshToken(payload.user_id, oldToken);
     if (!isValid) {
       return {
-        message: "Refresh token inválido ou expirado",
+        message: "A sua sessão expirou. Por favor, faça login novamente.",
+
         status: 401,
       };
     }

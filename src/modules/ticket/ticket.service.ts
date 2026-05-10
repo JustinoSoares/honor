@@ -13,8 +13,8 @@ export class TicketService {
   ): Promise<{ data: schema.ResponseTicket[] } | { status: number; message: string }> {
     if (Array.isArray(data) && data.length === 0) {
       return {
+        message: "Adicione pelo menos um convite antes de continuar.",
         status: 400,
-        message: "Pelo menos um convite deve ser criado",
       };
     }
 
@@ -25,7 +25,7 @@ export class TicketService {
     if (!existUser) {
       return {
         status: 404,
-        message: "Usuário não encontrado",
+        message: "Não foi possível identificar a sua conta. Por favor, faça login novamente.",
       };
     }
 
@@ -41,7 +41,7 @@ export class TicketService {
     if (verifyEvent.includes(null)) {
       return {
         status: 400,
-        message: "Evento não encontrado ou não disponível para adição de convites",
+        message: "Um ou mais eventos selecionados não existem ou não estão disponíveis para compra de convites.",
       };
     }
 
@@ -68,10 +68,10 @@ export class TicketService {
     );
 
     if (verifyPackage.includes(null)) {
-      return {
-        status: 400,
-        message: "Pacote não encontrado ou pertence a este evento",
-      };
+          return {
+            status: 400,
+            message: "O pacote selecionado não pertence a este evento. Por favor, escolha um pacote válido.",
+          };
     }
 
     const createTickets = await Promise.all(
@@ -83,7 +83,7 @@ export class TicketService {
         if (!packageData) {
           return {
             status: 400,
-            message: `Pacote não encontrado para este evento`,
+            message: `O pacote selecionado não foi encontrado. Por favor, escolha um pacote válido.`,
           };
         }
 
@@ -321,7 +321,7 @@ export class TicketService {
     if (!tickets) {
       return {
         status: 404,
-        message: "Ticket não encontrado",
+        message: "Não encontrámos o ticket que procura. Verifique se o ID está correto.",
       };
     }
 

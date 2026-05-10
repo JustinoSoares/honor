@@ -13,6 +13,7 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
   registry.register("ResponsePackage", schema.ResponsePackageSchema);
   registry.register("CreatePackage", schema.CreatePackage);
   registry.register("ResponseMember", schema.ResponseMemberSchema);
+  registry.register("ResponseMemberList", schema.ResponseMemberListSchema);
   registry.register("AddMemberToEvent", schema.addMemberToEventSchema);
 
   // ─── GET /events/list ────────────────────────────────────────────────────────
@@ -561,6 +562,78 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
       },
       404: {
         description: "Evento ou usuário não encontrado",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+      500: {
+        description: "Erro interno do servidor",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+    },
+  });
+
+  // ─── GET /event/list/member/:event_id ──────────────────────────────────────
+  registry.registerPath({
+    method: "get",
+    path: "/event/list/member/{event_id}",
+    tags: ["Events", "Members"],
+    summary: "Lista os membros de um evento",
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: z.object({
+        event_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+      }),
+      query: z.object({
+        page: z.string().optional().openapi({ example: "1" }),
+        per_page: z.string().optional().openapi({ example: "10" }),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Membros listados com sucesso",
+        content: {
+          "application/json": { schema: schema.ResponseMemberListSchema },
+        },
+      },
+      404: {
+        description: "Evento não encontrado",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+      500: {
+        description: "Erro interno do servidor",
+        content: {
+          "application/json": { schema: schema.ResponseBadSchema },
+        },
+      },
+    },
+  });
+
+  // ─── GET /event/get/member/:member_id ──────────────────────────────────────
+  registry.registerPath({
+    method: "get",
+    path: "/event/get/member/{member_id}",
+    tags: ["Events", "Members"],
+    summary: "Obtém um membro por ID",
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: z.object({
+        member_id: z.string().uuid().openapi({ example: "c3d4e5f6-a7b8-..." }),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Membro obtido com sucesso",
+        content: {
+          "application/json": { schema: schema.ResponseMemberSchema },
+        },
+      },
+      404: {
+        description: "Membro não encontrado",
         content: {
           "application/json": { schema: schema.ResponseBadSchema },
         },

@@ -126,6 +126,18 @@ export const ResponseMemberSchema = z.object({
 
 export type ResponseMember = z.infer<typeof ResponseMemberSchema>;
 
+export const ResponseMemberListSchema = z.object({
+  data: z.array(ResponseMemberSchema),
+  meta: z.object({
+    page: z.number().openapi({ example: 1 }),
+    per_page: z.number().openapi({ example: 10 }),
+    total: z.number().openapi({ example: 100 }),
+    total_pages: z.number().openapi({ example: 10 }),
+  }),
+});
+
+export type ResponseMemberList = z.infer<typeof ResponseMemberListSchema>;
+
 export const CreateImageSchema = z.object({
   url: z.string("A URL da imagem é obrigatória").min(1, "A URL da imagem é obrigatória"),
   priority: z.number("A prioridade da imagem deve ser um número inteiro").int().optional(),

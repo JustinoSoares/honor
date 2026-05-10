@@ -35,7 +35,7 @@ eventRouter.post(
   "/add/package/:event_id",
   authentication,
   validate(schema.CreatePackage),
-  eventController.addMemberToEvent,
+  eventController.addPackageToEvent,
 );
 
 eventRouter.put(
@@ -58,6 +58,10 @@ eventRouter.delete(
   authentication,
   eventController.removeMemberFromEvent,
 );
+
+eventRouter.get("/list/member/:event_id", authentication, eventController.listMembersByEvent);
+
+eventRouter.get("/get/member/:member_id", authentication, eventController.getMemberById);
 
 eventRouter.post(
   "/add/image/:event_id",
