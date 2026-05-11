@@ -142,20 +142,7 @@ export const ResponseMemberListSchema = z.object({
 
 export type ResponseMemberList = z.infer<typeof ResponseMemberListSchema>;
 
-export const CreateImageSchema = z.object({
-  url: z.string("A URL da imagem é obrigatória").min(1, "A URL da imagem é obrigatória"),
-  priority: z.number("A prioridade da imagem deve ser um número inteiro").int().optional(),
-});
 
-export type CreateImage = z.infer<typeof CreateImageSchema>;
-
-export const ResponseImageSchema = z.object({
-  id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
-  url: z.string().openapi({ example: "https://example.com/image.jpg" }),
-  priority: z.number().optional().openapi({ example: 1 }),
-});
-
-export type ResponseImage = z.infer<typeof ResponseImageSchema>;
 
 export const ResponsePackageSchema = z
   .object({

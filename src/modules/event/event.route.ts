@@ -79,25 +79,7 @@ eventRouter.get("/list/member/:event_id", authentication, eventController.listMe
 
 eventRouter.get("/get/member/:member_id", authentication, eventController.getMemberById);
 
-eventRouter.post(
-  "/add/image/:event_id",
-  authentication,
-  validate(schema.CreateImageSchema),
-  eventController.addImageToEvent,
-);
 
-eventRouter.get("/list/image/:event_id", authentication, eventController.listImagesByEvent);
-
-eventRouter.get("/get/image/:image_id", authentication, eventController.getImageById);
-
-eventRouter.put(
-  "/update/image/:image_id",
-  authentication,
-  validate(schema.CreateImageSchema),
-  eventController.updateImage,
-);
-
-eventRouter.delete("/delete/image/:image_id", authentication, eventController.deleteImage);
 
 eventRouter.post("/read/code", authentication, eventController.readCode);
 

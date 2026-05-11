@@ -57,7 +57,7 @@ model event {
   responsible_id   String? // O nosso funcionario responsável por este evento
   responsible      user?           @relation(fields: [responsible_id], references: [id])
   event_category   event_category? @relation(fields: [category], references: [name])
-  images           image[]
+
   guests           guest[]
   packages         packages[]
   members          member[]
@@ -115,12 +115,10 @@ model packages {
   tickets       ticket[]
 }
 
-model image {
+model galary {
   id         String   @id @default(uuid())
   url        String
   priority   Int      @default(0)
-  event_id   String
-  event      event    @relation(fields: [event_id], references: [id])
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }

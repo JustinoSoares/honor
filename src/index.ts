@@ -12,6 +12,7 @@ import backofficeRoutes from "./modules/backoffice/routes";
 import ticketRoutes from "./modules/ticket/ticket.route";
 import notificationRoutes from "./modules/notification/notification.route";
 import commentRoutes from "./modules/comment/comment.route";
+import galaryRoutes from "./modules/galary/galary.route";
 
 const app = express();
 const httpServer = createServer(app);
@@ -36,6 +37,7 @@ app.use("/api/v1/backoffice", backofficeRoutes);
 app.use("/api/v1/ticket", ticketRoutes);
 app.use("/api/v1/notification", notificationRoutes);
 app.use("/api/v1/comment", commentRoutes);
+app.use("/api/v1/galary", galaryRoutes);
 
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {

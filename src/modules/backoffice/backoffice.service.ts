@@ -197,7 +197,7 @@ export class BackofficeService {
       prisma.user.count({ where: { role: "MANAGER" } }),
       prisma.user.count({ where: { created_at: { gte: today } } }),
       prisma.event_category.count(),
-      prisma.image.count(),
+      prisma.galary.count(),
     ]);
 
     return {
