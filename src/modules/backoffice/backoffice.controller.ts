@@ -90,4 +90,73 @@ export class BackofficeController {
       return res.status(500).json({ message: "Erro ao buscar métricas do admin" });
     }
   }
+
+  async createPlan(req: AuthRequest, res: Response) {
+    try {
+      const plan = await service.addPlan(req.body);
+      if ("status" in plan && plan.status !== 200) {
+        return res.status(plan.status).json({ message: plan.message });
+      }
+      return res.status(201).json(plan);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao criar plano" });
+    }
+  }
+
+  async getAllPlans(req: AuthRequest, res: Response) {
+    try {
+      const { page, per_page } = req.query;
+      const plans = await service.getAllPlans(Number(page) || 1, Number(per_page) || 10);
+      if ("status" in plans && plans.status !== 200) {
+        return res.status(plans.status as number).json({ message: plans.message as string });
+      }
+      return res.status(200).json(plans);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao buscar planos" });
+    }
+  }
+
+  async getPlanById(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const plan = await service.getPlanById(id as string);
+      if ("status" in plan && plan.status !== 200) {
+        return res.status(plan.status as number).json({ message: plan.message as string });
+      }
+      return res.status(200).json(plan);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao buscar plano" });
+    }
+  }
+
+  async updatePlan(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const plan = await service.updatePlan(id as string, req.body);
+      if ("status" in plan && plan.status !== 200) {
+        return res.status(plan.status as number).json({ message: plan.message as string });
+      }
+      return res.status(200).json(plan);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao atualizar plano" });
+    }
+  }
+
+  async deletePlan(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const result = await service.deletePlan(id as string);
+      if ("status" in result && result.status !== 200) {
+        return res.status(result.status as number).json({ message: result.message as string });
+      }
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao remover plano" });
+    }
+  }
 }

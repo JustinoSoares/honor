@@ -52,3 +52,29 @@ export const AdminMetricsSchema = z.object({
 });
 
 export type AdminMetricsDTO = z.infer<typeof AdminMetricsSchema>;
+
+export const CreatePlanSchema = z.object({
+  name: z.string().min(1, "O nome do plano é obrigatório"),
+  price: z.number().min(0, "O preço deve ser maior ou igual a zero"),
+  description: z.string().min(1, "A descrição é obrigatória"),
+  details: z.array(z.string()).default([]).openapi({ example: ["Acesso VIP", "Suporte 24h"] }),
+});
+
+export type CreatePlanDTO = z.infer<typeof CreatePlanSchema>;
+
+export const UpdatePlanSchema = CreatePlanSchema.partial();
+
+export type UpdatePlanDTO = z.infer<typeof UpdatePlanSchema>;
+
+export const ResponsePlanSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  price: z.number(),
+  description: z.string(),
+  details: z.any(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export type ResponsePlanDTO = z.infer<typeof ResponsePlanSchema>;
+

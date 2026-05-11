@@ -68,6 +68,30 @@ const AdminMetricsSchema = z
   })
   .openapi("AdminMetrics");
 
+const PlanResponseSchema = z
+  .object({
+    id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }),
+    name: z.string().openapi({ example: "Plano Gold" }),
+    price: z.number().openapi({ example: 99.9 }),
+    description: z.string().openapi({ example: "Melhor plano para eventos médios" }),
+    details: z.array(z.string()).openapi({ example: ["Acesso VIP", "Suporte 24h"] }),
+    created_at: z.string().datetime().openapi({ example: "2024-01-01T00:00:00Z" }),
+    updated_at: z.string().datetime().openapi({ example: "2024-01-01T00:00:00Z" }),
+  })
+  .openapi("PlanResponse");
+
+const PlanListResponseSchema = z
+  .object({
+    data: z.array(PlanResponseSchema),
+    meta: z.object({
+      page: z.number(),
+      per_page: z.number(),
+      total: z.number(),
+      total_pages: z.number(),
+    }),
+  })
+  .openapi("PlanListResponse");
+
 // ─── Registo ──────────────────────────────────────────────────────────────────
 
 export function registerBackofficeDocs(registry: OpenAPIRegistry) {
@@ -75,6 +99,8 @@ export function registerBackofficeDocs(registry: OpenAPIRegistry) {
   registry.register("ResponseCategory", ResponseCategorySchema);
   registry.register("BaseResponse", BaseResponseSchema);
   registry.register("AdminMetrics", AdminMetricsSchema);
+  registry.register("PlanResponse", PlanResponseSchema);
+  registry.register("PlanListResponse", PlanListResponseSchema);
 
   // POST /backoffice/category/create
   registry.registerPath({
@@ -137,7 +163,7 @@ export function registerBackofficeDocs(registry: OpenAPIRegistry) {
     },
   });
 
-  // GET /backoffice/category/each/:name
+  // GET /backoffice/category/each/:id
   registry.registerPath({
     method: "get",
     path: "/backoffice/category/each/{category_id}",
@@ -172,7 +198,7 @@ export function registerBackofficeDocs(registry: OpenAPIRegistry) {
     },
   });
 
-  // PUT /backoffice/category/update/:name
+  // PUT /backoffice/category/update/:id
   registry.registerPath({
     method: "put",
     path: "/backoffice/category/update/{category_id}",
@@ -218,7 +244,7 @@ export function registerBackofficeDocs(registry: OpenAPIRegistry) {
     },
   });
 
-  // PATCH /backoffice/category/toggle/:category_name
+  // PATCH /backoffice/category/toggle
   registry.registerPath({
     method: "patch",
     path: "/backoffice/category/toggle",
@@ -282,4 +308,176 @@ export function registerBackofficeDocs(registry: OpenAPIRegistry) {
       },
     },
   });
+
+  // POST /backoffice/plan/create
+  registry.registerPath({
+    method: "post",
+    path: "/backoffice/plan/create",
+    tags: ["Backoffice - Planos"],
+    summary: "Criar plano",
+    description: "Cria um novo plano. Limite de 3 planos no sistema.",
+    security: [{ bearerAuth: [] }],
+    request: {
+      body: {
+        content: {
+          "application/json": {
+            schema: z.object({
+              name: z.string().openapi({ example: "Plano Gold" }),
+              price: z.number().openapi({ example: 99.9 }),
+              description: z.string().openapi({ example: "Melhor plano para eventos médios" }),
+              details: z.array(z.string()).openapi({ example: ["Acesso VIP", "Suporte 24h"] }),
+            }),
+          },
+        },
+      },
+    },
+    responses: {
+      201: {
+        description: "Plano criado com sucesso",
+        content: {
+          "application/json": { schema: PlanResponseSchema },
+        },
+      },
+      400: {
+        description: "Dados inválidos ou limite de planos atingido",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+      401: {
+        description: "Não autorizado",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+    },
+  });
+
+  // GET /backoffice/plan/list
+  registry.registerPath({
+    method: "get",
+    path: "/backoffice/plan/list",
+    tags: ["Backoffice - Planos"],
+    summary: "Listar planos",
+    description: "Retorna todos os planos cadastrados.",
+    responses: {
+      200: {
+        description: "Lista de planos",
+        content: {
+          "application/json": { schema: PlanListResponseSchema },
+        },
+      },
+    },
+  });
+
+  // GET /backoffice/plan/each/:id
+  registry.registerPath({
+    method: "get",
+    path: "/backoffice/plan/each/{id}",
+    tags: ["Backoffice - Planos"],
+    summary: "Buscar plano por ID",
+    description: "Retorna um plano pelo seu ID.",
+    request: {
+      params: z.object({
+        id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Plano encontrado",
+        content: {
+          "application/json": { schema: PlanResponseSchema },
+        },
+      },
+      404: {
+        description: "Plano não encontrado",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+    },
+  });
+
+  // PUT /backoffice/plan/update/:id
+  registry.registerPath({
+    method: "put",
+    path: "/backoffice/plan/update/{id}",
+    tags: ["Backoffice - Planos"],
+    summary: "Atualizar plano",
+    description: "Atualiza os dados de um plano pelo seu ID.",
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: z.object({
+        id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }),
+      }),
+      body: {
+        content: {
+          "application/json": {
+            schema: z.object({
+              name: z.string().optional().openapi({ example: "Plano Premium" }),
+              price: z.number().optional().openapi({ example: 149.9 }),
+              description: z.string().optional().openapi({ example: "Ainda melhor" }),
+              details: z.array(z.string()).optional().openapi({ example: ["Tudo ilimitado"] }),
+            }),
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Plano atualizado com sucesso",
+        content: {
+          "application/json": { schema: PlanResponseSchema },
+        },
+      },
+      404: {
+        description: "Plano não encontrado",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+      401: {
+        description: "Não autorizado",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+    },
+  });
+
+  // DELETE /backoffice/plan/delete/:id
+  registry.registerPath({
+    method: "delete",
+    path: "/backoffice/plan/delete/{id}",
+    tags: ["Backoffice - Planos"],
+    summary: "Remover plano",
+    description: "Remove um plano pelo seu ID.",
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: z.object({
+        id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Plano removido com sucesso",
+        content: {
+          "application/json": { schema: BaseResponseSchema },
+        },
+      },
+      404: {
+        description: "Plano não encontrado",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+      401: {
+        description: "Não autorizado",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+    },
+  });
 }
+

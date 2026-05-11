@@ -115,11 +115,17 @@ export const addMemberToEventSchema = z.object({
 export type AddMemberToEvent = z.infer<typeof addMemberToEventSchema>;
 
 export const ResponseMemberSchema = z.object({
-  id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
-  name: z.string().openapi({ example: "João Silva" }),
-  user_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
-  event_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+  id: z.uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+  event_id: z.uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
   permission: z.enum(["MANAGER", "STAFF"]).openapi({ example: "MANAGER" }),
+  user: z.object({
+    id: z.uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+    name: z.string().openapi({ example: "Justino Soares" }),
+    email: z.string().openapi({ example: "justino@email.com" }),
+    phone: z.string().nullable().openapi({ example: "+244 900 000 000" }),
+    role: z.enum(["USER", "ADMIN", "MANAGER"]).openapi({ example: "USER" }),
+    verified: z.boolean().openapi({ example: false }),
+  })
 });
 
 export type ResponseMember = z.infer<typeof ResponseMemberSchema>;
@@ -281,9 +287,16 @@ export const ResponseEventSchema = z
       .array(
         z.object({
           id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
-          name: z.string().openapi({ example: "João Silva" }),
-          user_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+          event_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
           permission: z.enum(["MANAGER", "STAFF"]).openapi({ example: "MANAGER" }),
+          user: z.object({
+            id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
+            name: z.string().openapi({ example: "Justino Soares" }),
+            email: z.string().openapi({ example: "justino@email.com" }),
+            phone: z.string().nullable().openapi({ example: "+244 900 000 000" }),
+            role: z.enum(["USER", "ADMIN", "MANAGER"]).openapi({ example: "USER" }),
+            verified: z.boolean().openapi({ example: false }),
+          }),
         }),
       )
       .optional(),

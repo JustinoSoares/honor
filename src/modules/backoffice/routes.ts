@@ -32,4 +32,26 @@ backofficeRouter.put(
 backofficeRouter.patch("/category/toggle", authenticationAdmin, backofficeController.toggleCategory);
 backofficeRouter.get("/metrics", authenticationAdmin, backofficeController.getMetrics);
 
+// Plan Routes
+backofficeRouter.post(
+  "/plan/create",
+  authenticationAdmin,
+  validate(schema.CreatePlanSchema),
+  backofficeController.createPlan,
+);
+
+backofficeRouter.get("/plan/list", backofficeController.getAllPlans);
+
+backofficeRouter.get("/plan/each/:id", backofficeController.getPlanById);
+
+backofficeRouter.put(
+  "/plan/update/:id",
+  authenticationAdmin,
+  validate(schema.UpdatePlanSchema),
+  backofficeController.updatePlan,
+);
+
+backofficeRouter.delete("/plan/delete/:id", authenticationAdmin, backofficeController.deletePlan);
+
 export default backofficeRouter;
+

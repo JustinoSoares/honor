@@ -138,6 +138,7 @@ export class EventService {
 
       const getMembers = await prisma.member.findMany({
         where: { event_id: event.id },
+        include: { user: true },
       });
 
       const dataResponse: schema.ResponseEvent = {
@@ -178,9 +179,16 @@ export class EventService {
         })),
         members: getMembers.map((member) => ({
           id: member.id,
-          name: member.name,
-          user_id: member.user_id,
+          event_id: member.event_id,
           permission: member.permission as "MANAGER" | "STAFF",
+          user: {
+            id: member.user.id,
+            name: member.user.name,
+            email: member.user.email,
+            phone: member.user.phone,
+            role: member.user.role as "USER" | "ADMIN" | "MANAGER",
+            verified: member.user.verified,
+          },
         })),
         comments: [],
       };
@@ -466,7 +474,11 @@ export class EventService {
         include: {
           packages: true,
           event_category: true,
-          members: true,
+          members: {
+            include: {
+              user: true,
+            },
+          },
           comments: {
             include: {
               user: {
@@ -542,9 +554,16 @@ export class EventService {
         })),
         members: event.members.map((member) => ({
           id: member.id,
-          name: member.name,
-          user_id: member.user_id,
+          event_id: member.event_id,
           permission: member.permission as "MANAGER" | "STAFF",
+          user: {
+            id: member.user.id,
+            name: member.user.name,
+            email: member.user.email,
+            phone: member.user.phone,
+            role: member.user.role,
+            verified: member.user.verified,
+          },
         })),
         comments: event.comments.map((a) => ({
           id: a.id,
@@ -687,13 +706,18 @@ export class EventService {
           members: {
             some: {
               user_id,
-            },
+            }
           },
         },
         include: {
           packages: true,
           event_category: true,
-          members: true,
+          members: {
+            include: {
+              user: true,
+            },
+          },
+
           comments: {
             include: {
               user: {
@@ -769,8 +793,15 @@ export class EventService {
         })),
         members: event.members.map((member) => ({
           id: member.id,
-          name: member.name,
-          user_id: member.user_id,
+          event_id: member.event_id,
+          user: {
+            id: member.user.id,
+            name: member.user.name,
+            email: member.user.email,
+            phone: member.user.phone,
+            role: member.user.role,
+            verified: member.user.verified,
+          },
           permission: member.permission as "MANAGER" | "STAFF",
         })),
         comments: event.comments.map((a) => ({
@@ -848,7 +879,11 @@ export class EventService {
         },
         include: {
           packages: true,
-          members: true,
+          members: {
+            include: {
+              user: true,
+            },
+          },
           comments: {
             include: {
               user: {
@@ -905,9 +940,16 @@ export class EventService {
         })),
         members: event.members.map((member) => ({
           id: member.id,
-          name: member.name,
-          user_id: member.user_id,
+          event_id: member.event_id,
           permission: member.permission as "MANAGER" | "STAFF",
+          user: {
+            id: member.user.id,
+            name: member.user.name,
+            email: member.user.email,
+            phone: member.user.phone,
+            role: member.user.role as "USER" | "ADMIN" | "MANAGER",
+            verified: member.user.verified,
+          },
         })),
         comments: event.comments.map((a) => ({
           id: a.id,
@@ -936,7 +978,11 @@ export class EventService {
       where: { id: event_id },
       include: {
         packages: true,
-        members: true,
+        members: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
 
@@ -1015,9 +1061,16 @@ export class EventService {
       })),
       members: existingEvent.members.map((member) => ({
         id: member.id,
-        name: member.name,
-        user_id: member.user_id,
+        event_id: member.event_id,
         permission: member.permission as "MANAGER" | "STAFF",
+        user: {
+          id: member.user.id,
+          name: member.user.name,
+          email: member.user.email,
+          phone: member.user.phone,
+          role: member.user.role as "USER" | "ADMIN" | "MANAGER",
+          verified: member.user.verified,
+        },
       })),
     };
 
@@ -1080,7 +1133,11 @@ export class EventService {
       where: { id: event_id },
       include: {
         packages: true,
-        members: true,
+        members: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
 
@@ -1398,10 +1455,16 @@ export class EventService {
 
     const dataResponse: schema.ResponseMember = {
       id: newMember.id,
-      name: newMember.name,
-      user_id: newMember.user_id,
       event_id: newMember.event_id,
       permission: newMember.permission as "MANAGER" | "STAFF",
+      user: {
+        id: existingUser.id,
+        name: existingUser.name,
+        email: existingUser.email,
+        phone: existingUser.phone,
+        role: existingUser.role,
+        verified: existingUser.verified,
+      },
     };
 
     // Notifica o novo membro que foi adicionado ao evento
@@ -1508,6 +1571,9 @@ export class EventService {
     const [members, total] = await Promise.all([
       prisma.member.findMany({
         where: { event_id },
+        include: {
+          user: true,
+        },
         skip: (page - 1) * per_page,
         take: per_page,
       }),
@@ -1519,10 +1585,16 @@ export class EventService {
     return {
       data: members.map((member) => ({
         id: member.id,
-        name: member.name,
-        user_id: member.user_id,
         event_id: member.event_id,
         permission: member.permission as "MANAGER" | "STAFF",
+        user: {
+          id: member.user.id,
+          name: member.user.name,
+          email: member.user.email,
+          phone: member.user.phone,
+          role: member.user.role as "USER" | "ADMIN" | "MANAGER",
+          verified: member.user.verified,
+        },
       })),
       meta: {
         page,
@@ -1539,6 +1611,9 @@ export class EventService {
   ): Promise<schema.ResponseMember | { message: string; status: number }> {
     const member = await prisma.member.findUnique({
       where: { id: member_id },
+      include: {
+        user: true,
+      },
     });
 
     if (!member) {
@@ -1558,10 +1633,16 @@ export class EventService {
 
     return {
       id: member.id,
-      name: member.name,
-      user_id: member.user_id,
       event_id: member.event_id,
       permission: member.permission as "MANAGER" | "STAFF",
+      user: {
+        id: member.user.id,
+        name: member.user.name,
+        email: member.user.email,
+        phone: member.user.phone,
+        role: member.user.role as "USER" | "ADMIN" | "MANAGER",
+        verified: member.user.verified,
+      },
     };
   }
 

@@ -227,4 +227,172 @@ export class BackofficeService {
       },
     };
   }
+
+  async addPlan(data: schema.CreatePlanDTO) {
+    const totalPlans = await prisma.plan.count();
+    if (totalPlans >= 3) {
+      return {
+        message: "O sistema permite apenas no máximo 3 planos.",
+        status: 400,
+      };
+    }
+
+    const plan = await prisma.plan.create({
+      data: {
+        name: data.name,
+        price: data.price,
+        description: data.description,
+        details: data.details,
+      },
+    });
+
+    return {
+      id: plan.id,
+      name: plan.name,
+      price: plan.price,
+      description: plan.description,
+      details: plan.details,
+      created_at: plan.created_at.toISOString(),
+      updated_at: plan.updated_at.toISOString(),
+    } as schema.ResponsePlanDTO;
+  }
+
+  async getAllPlans(
+    page: number = 1,
+    per_page: number = 10,
+  ): Promise<
+    | {
+      data: schema.ResponsePlanDTO[];
+      meta: {
+        page: number;
+        per_page: number;
+        total: number;
+        total_pages: number;
+      };
+    }
+    | { message: string; status: number }
+  > {
+    const plans = await prisma.plan.findMany({
+      skip: (page - 1) * per_page,
+      take: per_page,
+    });
+
+    const dataResponse = plans.map((plan) => ({
+      id: plan.id,
+      name: plan.name,
+      price: plan.price,
+      description: plan.description,
+      details: plan.details,
+      created_at: plan.created_at.toISOString(),
+      updated_at: plan.updated_at.toISOString(),
+    }));
+
+    const total = await prisma.plan.count();
+
+    return {
+      data: dataResponse,
+      meta: {
+        page,
+        per_page,
+        total: total,
+        total_pages: Math.ceil(total / per_page),
+      },
+    };
+  }
+
+  async getPlanById(
+    plan_id: string,
+  ): Promise<schema.ResponsePlanDTO | { message: string; status: number }> {
+    if (!validate(plan_id)) {
+      return {
+        message: "ID de plano inválido.",
+        status: 400,
+      };
+    }
+
+    const plan = await prisma.plan.findUnique({
+      where: { id: plan_id },
+    });
+
+    if (!plan) {
+      return {
+        message: "Plano não encontrado.",
+        status: 404,
+      };
+    }
+
+    return {
+      id: plan.id,
+      name: plan.name,
+      price: plan.price,
+      description: plan.description,
+      details: plan.details,
+      created_at: plan.created_at.toISOString(),
+      updated_at: plan.updated_at.toISOString(),
+    } as schema.ResponsePlanDTO;
+  }
+
+  async updatePlan(id: string, data: schema.UpdatePlanDTO) {
+    if (!validate(id)) {
+      return {
+        message: "ID de plano inválido.",
+        status: 400,
+      };
+    }
+
+    const existingPlan = await prisma.plan.findUnique({ where: { id } });
+    if (!existingPlan) {
+      return {
+        message: "Plano não encontrado.",
+        status: 404,
+      };
+    }
+
+    const plan = await prisma.plan.update({
+      where: { id },
+      data: {
+        name: data.name ?? existingPlan.name,
+        price: data.price ?? existingPlan.price,
+        description: data.description ?? existingPlan.description,
+        details: data.details ?? (existingPlan.details as any),
+      },
+    });
+
+    return {
+      id: plan.id,
+      name: plan.name,
+      price: plan.price,
+      description: plan.description,
+      details: plan.details,
+      created_at: plan.created_at.toISOString(),
+      updated_at: plan.updated_at.toISOString(),
+    } as schema.ResponsePlanDTO;
+  }
+
+  async deletePlan(id: string) {
+    if (!validate(id)) {
+      return {
+        message: "ID de plano inválido.",
+        status: 400,
+      };
+    }
+
+    const existingPlan = await prisma.plan.findUnique({ where: { id } });
+    if (!existingPlan) {
+      return {
+        message: "Plano não encontrado.",
+        status: 404,
+      };
+    }
+
+    await prisma.plan.delete({
+      where: { id },
+    });
+
+    return {
+      status: 200,
+      message: "Plano removido com sucesso.",
+    };
+  }
 }
+
