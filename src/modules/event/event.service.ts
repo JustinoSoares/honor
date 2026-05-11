@@ -1366,6 +1366,7 @@ export class EventService {
         status: 404,
       };
     }
+    
 
     const canDelete = await this.checkPermission(user_id, existingPackage.event_id, "MANAGER");
     if (!canDelete) {
