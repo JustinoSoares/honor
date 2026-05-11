@@ -6,6 +6,8 @@ import {
   ResponseUserSchema,
   UserListResponseSchema,
   UserUpdateSchema,
+  ChangePasswordSchema,
+  ResponseBadSchema,
 } from "./user.schema";
 
 export function registerUserDocs(registry: OpenAPIRegistry) {
@@ -14,6 +16,7 @@ export function registerUserDocs(registry: OpenAPIRegistry) {
   registry.register("CreateUser", UserSchema);
   registry.register("UserListResponse", UserListResponseSchema);
   registry.register("ResponseUser", ResponseUserSchema);
+  registry.register("ChangePassword", ChangePasswordSchema);
   // GET /user
   registry.registerPath({
     method: "get",
@@ -134,6 +137,37 @@ export function registerUserDocs(registry: OpenAPIRegistry) {
       },
       400: { description: "Dados inválidos" },
       404: { description: "Utilizador não encontrado" },
+    },
+  });
+  registry.registerPath({
+    method: "patch",
+    path: "/user/change-password",
+    tags: ["Users"],
+    summary: "Altera a senha do utilizador autenticado",
+    security: [{ bearerAuth: [] }],
+    request: {
+      body: {
+        content: {
+          "application/json": { schema: ChangePasswordSchema },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "Senha alterada com sucesso",
+        content: {
+          "application/json": { schema: ResponseBadSchema },
+        },
+      },
+      400: {
+        description: "Dados inválidos ou senha antiga incorreta",
+        content: {
+          "application/json": { schema: ResponseBadSchema },
+        },
+      },
+      401: { description: "Usuário não autenticado" },
+      404: { description: "Usuário não encontrado" },
+      500: { description: "Erro interno do servidor" },
     },
   });
 }

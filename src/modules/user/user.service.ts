@@ -173,4 +173,38 @@ export class UserService {
       status: 200,
     } as schema.ResponseBad;
   }
+
+  async changePassword(id: string, data: schema.ChangePassword) {
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      return {
+        message: "Usuário não encontrado",
+        status: 404,
+      };
+    }
+
+    const isValidPassword = await bcrypt.compare(data.old_password, user.password);
+
+    if (!isValidPassword) {
+      return {
+        message: "A senha antiga está incorreta",
+        status: 400,
+      };
+    }
+
+    const hashedNewPassword = await bcrypt.hash(data.new_password, 10);
+
+    await prisma.user.update({
+      where: { id },
+      data: { password: hashedNewPassword },
+    });
+
+    return {
+      message: "Senha alterada com sucesso",
+      status: 200,
+    } as schema.ResponseBad;
+  }
 }

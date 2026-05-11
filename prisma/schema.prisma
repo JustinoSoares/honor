@@ -62,7 +62,7 @@ model event {
   packages         packages[]
   members          member[]
   tickets          ticket[]
-  comments      comment[]
+  comments         comment[]
 }
 
 model comment {
@@ -141,6 +141,16 @@ model ticket {
   package       packages @relation(fields: [package_id], references: [id])
   user          user     @relation(fields: [user_id], references: [id])
   event         event    @relation(fields: [event_id], references: [id])
+}
+
+model plan {
+  id          String   @id @default(uuid())
+  name        String
+  price       Float
+  description String
+  details     Json     @default("[]") // detalhes do plano
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 }
 
 model guest {

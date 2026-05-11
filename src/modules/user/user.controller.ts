@@ -131,4 +131,24 @@ export class UserController {
         .json({ message: "Não foi possível remover a conta. Por favor, tente novamente." });
     }
   }
+  async changePassword(req: AuthRequest, res: Response) {
+    try {
+      const user_id = req.userId;
+      if (!user_id) {
+        return res.status(401).json({ message: "Usuário não autenticado." });
+      }
+
+      const result = await userService.changePassword(user_id, req.body);
+      if ("status" in result && result.status !== 200) {
+        return res.status(result.status).json({ message: result.message });
+      }
+
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .json({ message: "Não foi possível alterar a senha. Por favor, tente novamente." });
+    }
+  }
 }

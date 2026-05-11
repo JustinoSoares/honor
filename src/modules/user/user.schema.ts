@@ -61,6 +61,21 @@ export const UserUpdateSchema = zod
 
 export type UserUpdate = zod.infer<typeof UserUpdateSchema>;
 
+export const ChangePasswordSchema = zod
+  .object({
+    old_password: zod
+      .string("A senha antiga é obrigatória")
+      .min(6, "A senha deve ter pelo menos 6 caracteres")
+      .openapi({ example: "senhaAntiga123" }),
+    new_password: zod
+      .string("A nova senha é obrigatória")
+      .min(6, "A senha deve ter pelo menos 6 caracteres")
+      .openapi({ example: "senhaNova123" }),
+  })
+  .openapi("ChangePassword");
+
+export type ChangePassword = zod.infer<typeof ChangePasswordSchema>;
+
 export const ResponseUserSchema = zod
   .object({
     id: zod.string().uuid().openapi({ example: "a1b2c3d4-e5f6-..." }),
