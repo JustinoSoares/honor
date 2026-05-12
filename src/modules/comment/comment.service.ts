@@ -53,7 +53,11 @@ export class CommentService {
     page = 1,
     per_page = 10,
   ): Promise<
-    { data: schema.ResponseComment[]; meta: { total: number; page: number; per_page: number; total_pages: number} } | { message: string; status: number }
+    | {
+        data: schema.ResponseComment[];
+        meta: { total: number; page: number; per_page: number; total_pages: number };
+      }
+    | { message: string; status: number }
   > {
     try {
       if (!validate(event_id)) {
@@ -84,12 +88,12 @@ export class CommentService {
           created_at: c.created_at.toISOString(),
           updated_at: c.updated_at.toISOString(),
         })),
-        meta : {
+        meta: {
           total,
           page,
           per_page,
           total_pages: Math.ceil(total / per_page),
-        }
+        },
       };
     } catch (error) {
       console.error("Error fetching comments:", error);

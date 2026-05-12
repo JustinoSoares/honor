@@ -1,9 +1,10 @@
 import prisma from "../../database/prisma";
 import { validate } from "uuid";
 import * as schema from "./backoffice.schema";
+import { revokeRefreshToken } from "../auth/refreshToken.service";
 
 export class BackofficeService {
-  constructor() { }
+  constructor() {}
 
   async addCategory(data: schema.CreateCategoryDTO) {
     const existingCategory = await prisma.event_category.findFirst({
@@ -37,14 +38,14 @@ export class BackofficeService {
     search?: string,
   ): Promise<
     | {
-      data: schema.ResponseCategoryDTO[];
-      meta: {
-        page: number;
-        per_page: number;
-        total: number;
-        total_pages: number;
-      };
-    }
+        data: schema.ResponseCategoryDTO[];
+        meta: {
+          page: number;
+          per_page: number;
+          total: number;
+          total_pages: number;
+        };
+      }
     | { message: string; status: number }
   > {
     let whereClause = {};
@@ -262,14 +263,14 @@ export class BackofficeService {
     per_page: number = 10,
   ): Promise<
     | {
-      data: schema.ResponsePlanDTO[];
-      meta: {
-        page: number;
-        per_page: number;
-        total: number;
-        total_pages: number;
-      };
-    }
+        data: schema.ResponsePlanDTO[];
+        meta: {
+          page: number;
+          per_page: number;
+          total: number;
+          total_pages: number;
+        };
+      }
     | { message: string; status: number }
   > {
     const plans = await prisma.plan.findMany({
@@ -354,7 +355,7 @@ export class BackofficeService {
         name: data.name ?? existingPlan.name,
         price: data.price ?? existingPlan.price,
         description: data.description ?? existingPlan.description,
-        details: data.details ?? (existingPlan.details as any),
+        details: data.details ?? (existingPlan.details as string[]),
       },
     });
 
@@ -394,5 +395,78 @@ export class BackofficeService {
       message: "Plano removido com sucesso.",
     };
   }
-}
 
+  async blockUser(userId: string) {
+    if (!validate(userId)) {
+      return {
+        message: "ID de utilizador inválido.",
+        status: 400,
+      };
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return {
+        message: "Utilizador não encontrado.",
+        status: 404,
+      };
+    }
+
+    if (!user.is_active) {
+      return {
+        message: "Este utilizador já está bloqueado.",
+        status: 400,
+      };
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { is_active: false },
+    });
+
+    await revokeRefreshToken(userId);
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      is_active: false,
+    } as schema.ResponseUserBlockDTO;
+  }
+
+  async unblockUser(userId: string) {
+    if (!validate(userId)) {
+      return {
+        message: "ID de utilizador inválido.",
+        status: 400,
+      };
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return {
+        message: "Utilizador não encontrado.",
+        status: 404,
+      };
+    }
+
+    if (user.is_active) {
+      return {
+        message: "Este utilizador já está ativo.",
+        status: 400,
+      };
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { is_active: true },
+    });
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      is_active: true,
+    } as schema.ResponseUserBlockDTO;
+  }
+}

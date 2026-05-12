@@ -27,12 +27,16 @@ export const authentication = async (req: AuthRequest, res: Response, next: Next
         .json({ message: "A sua sessão é inválida. Por favor, faça login novamente." });
     }
     if (!existingUser.verified) {
+      return res.status(400).json({
+        message:
+          "A sua conta ainda não está verificada. Verifique o seu email e introduza o código de verificação.",
+      });
+    }
+
+    if (!existingUser.is_active) {
       return res
-        .status(400)
-        .json({
-          message:
-            "A sua conta ainda não está verificada. Verifique o seu email e introduza o código de verificação.",
-        });
+        .status(403)
+        .json({ message: "A sua conta está bloqueada. Contacte o administrador." });
     }
 
     req.userId = existingUser.id;
@@ -70,16 +74,22 @@ export const authenticationAdmin = async (req: AuthRequest, res: Response, next:
         .json({ message: "A sua sessão é inválida. Por favor, faça login novamente." });
     }
     if (!existingUser.verified) {
+      return res.status(400).json({
+        message:
+          "A sua conta ainda não está verificada. Verifique o seu email e introduza o código de verificação.",
+      });
+    }
+
+    if (!existingUser.is_active) {
       return res
-        .status(400)
-        .json({
-          message:
-            "A sua conta ainda não está verificada. Verifique o seu email e introduza o código de verificação.",
-        });
+        .status(403)
+        .json({ message: "A sua conta está bloqueada. Contacte o administrador." });
     }
 
     if (existingUser.role !== "ADMIN") {
-      return res.status(403).json({ message: "Não tem permissão para aceder a esta funcionalidade." });
+      return res
+        .status(403)
+        .json({ message: "Não tem permissão para aceder a esta funcionalidade." });
     }
 
     req.userId = existingUser.id;
@@ -92,7 +102,11 @@ export const authenticationAdmin = async (req: AuthRequest, res: Response, next:
   }
 };
 
-export const authenticationManager = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticationManager = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     return res
@@ -117,16 +131,22 @@ export const authenticationManager = async (req: AuthRequest, res: Response, nex
         .json({ message: "A sua sessão é inválida. Por favor, faça login novamente." });
     }
     if (!existingUser.verified) {
+      return res.status(400).json({
+        message:
+          "A sua conta ainda não está verificada. Verifique o seu email e introduza o código de verificação.",
+      });
+    }
+
+    if (!existingUser.is_active) {
       return res
-        .status(400)
-        .json({
-          message:
-            "A sua conta ainda não está verificada. Verifique o seu email e introduza o código de verificação.",
-        });
+        .status(403)
+        .json({ message: "A sua conta está bloqueada. Contacte o administrador." });
     }
 
     if (existingUser.role !== "MANAGER" && existingUser.role !== "ADMIN") {
-      return res.status(403).json({ message: "Não tem permissão para aceder a esta funcionalidade." });
+      return res
+        .status(403)
+        .json({ message: "Não tem permissão para aceder a esta funcionalidade." });
     }
 
     req.userId = existingUser.id;

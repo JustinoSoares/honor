@@ -6,6 +6,7 @@ interface TokenPayload {
   email: string;
   role: string;
   verified: boolean;
+  is_active: boolean;
 }
 
 export function generateTokens(payload: TokenPayload) {
@@ -26,6 +27,6 @@ export function verifyAccessToken(token: string): TokenPayload {
 
 export function verifyRefreshToken(token: string): TokenPayload {
   const decoded = jwt.verify(token, env.JWT_REFRESH_SECRET);
-  const { user_id, email, role, verified } = decoded as TokenPayload;
-  return { user_id, email, role, verified } as TokenPayload;
+  const { user_id, email, role, verified, is_active } = decoded as TokenPayload;
+  return { user_id, email, role, verified, is_active } as TokenPayload;
 }

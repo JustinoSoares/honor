@@ -159,4 +159,32 @@ export class BackofficeController {
       return res.status(500).json({ message: "Erro ao remover plano" });
     }
   }
+
+  async blockUser(req: AuthRequest, res: Response) {
+    try {
+      const { user_id } = req.params;
+      const result = await service.blockUser(user_id as string);
+      if ("status" in result && result.status !== 200) {
+        return res.status(result.status as number).json({ message: result.message as string });
+      }
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao bloquear utilizador" });
+    }
+  }
+
+  async unblockUser(req: AuthRequest, res: Response) {
+    try {
+      const { user_id } = req.params;
+      const result = await service.unblockUser(user_id as string);
+      if ("status" in result && result.status !== 200) {
+        return res.status(result.status as number).json({ message: result.message as string });
+      }
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro ao desbloquear utilizador" });
+    }
+  }
 }

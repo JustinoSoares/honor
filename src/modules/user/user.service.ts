@@ -3,6 +3,14 @@ import prisma from "../../database/prisma";
 import * as schema from "./user.schema";
 import * as bcrypt from "bcrypt";
 
+type userWhereClause = {
+  is_active: boolean;
+  name?: {
+    contains: string;
+    mode: "insensitive";
+  };
+};
+
 export class UserService {
   constructor() {}
 
@@ -35,6 +43,7 @@ export class UserService {
       phone: user.phone,
       role: user.role as role,
       verified: user.verified,
+      is_active: user.is_active,
       created_at: user.created_at.toISOString(),
       updated_at: user.updated_at.toISOString(),
     } as schema.ResponseUser;
@@ -46,10 +55,11 @@ export class UserService {
     search: string = "",
   ): Promise<[schema.ResponseUser[], number]> {
     const skip = (page - 1) * per_page;
-    let whereClause = {};
+    let whereClause: userWhereClause = { is_active: true };
 
     if (search != "undefined" && search !== "") {
       whereClause = {
+        is_active: true,
         name: {
           contains: search,
           mode: "insensitive",
@@ -73,6 +83,7 @@ export class UserService {
         phone: user.phone,
         role: user.role as role,
         verified: user.verified,
+        is_active: user.is_active,
         created_at: user.created_at.toISOString(),
         updated_at: user.updated_at.toISOString(),
       })) as schema.ResponseUser[],
@@ -139,6 +150,7 @@ export class UserService {
       phone: updatedUser.phone,
       role: updatedUser.role as role,
       verified: updatedUser.verified,
+      is_active: updatedUser.is_active,
       created_at: updatedUser.created_at.toISOString(),
       updated_at: updatedUser.updated_at.toISOString(),
     } as schema.ResponseUser;
@@ -149,7 +161,7 @@ export class UserService {
       where: { id },
     });
 
-    if (!user) {
+    if (!user || !user.is_active) {
       return {
         message: "Usuário não encontrado",
         status: 404,

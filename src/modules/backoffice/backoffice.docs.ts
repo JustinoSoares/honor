@@ -417,7 +417,10 @@ export function registerBackofficeDocs(registry: OpenAPIRegistry) {
               name: z.string().optional().openapi({ example: "Plano Premium" }),
               price: z.number().optional().openapi({ example: 149.9 }),
               description: z.string().optional().openapi({ example: "Ainda melhor" }),
-              details: z.array(z.string()).optional().openapi({ example: ["Tudo ilimitado"] }),
+              details: z
+                .array(z.string())
+                .optional()
+                .openapi({ example: ["Tudo ilimitado"] }),
             }),
           },
         },
@@ -479,5 +482,105 @@ export function registerBackofficeDocs(registry: OpenAPIRegistry) {
       },
     },
   });
-}
 
+  // Block user schemas
+  const BlockUserResponseSchema = z
+    .object({
+      id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }),
+      name: z.string().openapi({ example: "Justino Soares" }),
+      email: z.string().openapi({ example: "justino@email.com" }),
+      is_active: z.boolean().openapi({ example: false }),
+    })
+    .openapi("BlockUserResponse");
+
+  const UnblockUserResponseSchema = z
+    .object({
+      id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }),
+      name: z.string().openapi({ example: "Justino Soares" }),
+      email: z.string().openapi({ example: "justino@email.com" }),
+      is_active: z.boolean().openapi({ example: true }),
+    })
+    .openapi("UnblockUserResponse");
+
+  // PATCH /backoffice/user/block/:user_id
+  registry.registerPath({
+    method: "patch",
+    path: "/backoffice/user/block/{user_id}",
+    tags: ["Backoffice - Utilizadores"],
+    summary: "Bloquear utilizador",
+    description: "Bloqueia um utilizador, impedindo-o de fazer login e usar o sistema.",
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: z.object({
+        user_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Utilizador bloqueado com sucesso",
+        content: {
+          "application/json": { schema: BlockUserResponseSchema },
+        },
+      },
+      400: {
+        description: "Utilizador já está bloqueado",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+      404: {
+        description: "Utilizador não encontrado",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+      401: {
+        description: "Não autorizado",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+    },
+  });
+
+  // PATCH /backoffice/user/unblock/:user_id
+  registry.registerPath({
+    method: "patch",
+    path: "/backoffice/user/unblock/{user_id}",
+    tags: ["Backoffice - Utilizadores"],
+    summary: "Desbloquear utilizador",
+    description: "Desbloqueia um utilizador, permitindo-lhe voltar a usar o sistema.",
+    security: [{ bearerAuth: [] }],
+    request: {
+      params: z.object({
+        user_id: z.string().uuid().openapi({ example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }),
+      }),
+    },
+    responses: {
+      200: {
+        description: "Utilizador desbloqueado com sucesso",
+        content: {
+          "application/json": { schema: UnblockUserResponseSchema },
+        },
+      },
+      400: {
+        description: "Utilizador já está ativo",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+      404: {
+        description: "Utilizador não encontrado",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+      401: {
+        description: "Não autorizado",
+        content: {
+          "application/json": { schema: ErrorResponseSchema },
+        },
+      },
+    },
+  });
+}

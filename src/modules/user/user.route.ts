@@ -11,7 +11,12 @@ router.get("/list", userController.getAllUsers);
 router.get("/each/:user_id", userController.getUserById);
 router.get("/me", authentication, userController.getUserMe);
 router.put("/update/:user_id", validate(userSchema.UserUpdateSchema), userController.updateUser);
-router.patch("/change-password", authentication, validate(userSchema.ChangePasswordSchema), userController.changePassword);
+router.patch(
+  "/change-password",
+  authentication,
+  validate(userSchema.ChangePasswordSchema),
+  userController.changePassword,
+);
 router.delete("/delete/:user_id", userController.deleteUser);
 
 export default router;

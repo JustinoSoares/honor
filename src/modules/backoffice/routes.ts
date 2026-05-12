@@ -1,7 +1,7 @@
 import * as schema from "./backoffice.schema";
 import { validate } from "../../middleware/validate";
 import { BackofficeController } from "./backoffice.controller";
-import { authentication, authenticationAdmin } from "../../middleware/authorization";
+import { authenticationAdmin } from "../../middleware/authorization";
 import { Router } from "express";
 
 const backofficeController = new BackofficeController();
@@ -29,7 +29,11 @@ backofficeRouter.put(
   backofficeController.updateCategory,
 );
 
-backofficeRouter.patch("/category/toggle", authenticationAdmin, backofficeController.toggleCategory);
+backofficeRouter.patch(
+  "/category/toggle",
+  authenticationAdmin,
+  backofficeController.toggleCategory,
+);
 backofficeRouter.get("/metrics", authenticationAdmin, backofficeController.getMetrics);
 
 // Plan Routes
@@ -53,5 +57,13 @@ backofficeRouter.put(
 
 backofficeRouter.delete("/plan/delete/:id", authenticationAdmin, backofficeController.deletePlan);
 
-export default backofficeRouter;
+// User Block/Unblock Routes
+backofficeRouter.patch("/user/block/:user_id", authenticationAdmin, backofficeController.blockUser);
 
+backofficeRouter.patch(
+  "/user/unblock/:user_id",
+  authenticationAdmin,
+  backofficeController.unblockUser,
+);
+
+export default backofficeRouter;

@@ -768,8 +768,6 @@ export function registerEventDocs(registry: OpenAPIRegistry) {
     },
   });
 
-
-
   // POST /event/read/code
   registry.registerPath({
     method: "post",

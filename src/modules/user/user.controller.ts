@@ -41,11 +41,9 @@ export class UserController {
       });
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível carregar a lista de utilizadores. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível carregar a lista de utilizadores. Por favor, tente novamente.",
+      });
     }
   }
 
@@ -64,11 +62,9 @@ export class UserController {
       return res.status(200).json(user);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível carregar os dados do utilizador. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível carregar os dados do utilizador. Por favor, tente novamente.",
+      });
     }
   }
 
@@ -77,11 +73,9 @@ export class UserController {
       const user_id = req.userId;
       const user = await userService.getUserById(user_id as string);
       if (!user) {
-        return res
-          .status(404)
-          .json({
-            message: "Não foi possível encontrar a sua conta. Por favor, faça login novamente.",
-          });
+        return res.status(404).json({
+          message: "Não foi possível encontrar a sua conta. Por favor, faça login novamente.",
+        });
       }
       if ("status" in user && user.status !== 200) {
         return res.status(user.status).json({ message: user.message });

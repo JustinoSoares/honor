@@ -79,8 +79,6 @@ eventRouter.get("/list/member/:event_id", authentication, eventController.listMe
 
 eventRouter.get("/get/member/:member_id", authentication, eventController.getMemberById);
 
-
-
 eventRouter.post("/read/code", authentication, eventController.readCode);
 
 eventRouter.get("/history/:event_id", authentication, eventController.historyTicketsByEvent);

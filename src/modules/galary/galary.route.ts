@@ -12,7 +12,7 @@ galaryRouter.post(
   authentication,
   authenticationAdmin,
   validate(schema.CreateGalarySchema),
-  galaryController.create
+  galaryController.create,
 );
 
 galaryRouter.get("/", galaryController.list);
@@ -24,14 +24,9 @@ galaryRouter.put(
   authentication,
   authenticationAdmin,
   validate(schema.UpdateGalarySchema),
-  galaryController.update
+  galaryController.update,
 );
 
-galaryRouter.delete(
-  "/:id",
-  authentication,
-  authenticationAdmin,
-  galaryController.delete
-);
+galaryRouter.delete("/:id", authentication, authenticationAdmin, galaryController.delete);
 
 export default galaryRouter;

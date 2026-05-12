@@ -14,7 +14,7 @@ const COOKIE_OPTIONS = {
 };
 
 export class AuthController {
-  constructor() {}
+  constructor() { }
 
   async login(req: AuthRequest, res: Response) {
     try {
@@ -45,11 +45,9 @@ export class AuthController {
     const { email } = req.body;
 
     if (!email) {
-      return res
-        .status(400)
-        .json({
-          message: "Por favor, introduza o seu email para receber o código de verificação.",
-        });
+      return res.status(400).json({
+        message: "Por favor, introduza o seu email para receber o código de verificação.",
+      });
     }
     try {
       const result = await authService.sendCodeOnEmail(email);
@@ -60,11 +58,9 @@ export class AuthController {
       return res.status(200).json({ message: "Código enviado com sucesso" });
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível enviar o código. Verifique a ligação e tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível enviar o código. Verifique a ligação e tente novamente.",
+      });
     }
   }
 
@@ -72,11 +68,9 @@ export class AuthController {
     const { email, code } = req.body;
 
     if (!email || !code) {
-      return res
-        .status(400)
-        .json({
-          message: "Por favor, introduza o email e o código de verificação recebido no email.",
-        });
+      return res.status(400).json({
+        message: "Por favor, introduza o email e o código de verificação recebido no email.",
+      });
     }
     try {
       const result = await authService.checkCode(email, code);
@@ -100,12 +94,10 @@ export class AuthController {
       res.redirect(url);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message:
-            "Não foi possível iniciar a autenticação com o Google. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message:
+          "Não foi possível iniciar a autenticação com o Google. Por favor, tente novamente.",
+      });
     }
   }
 

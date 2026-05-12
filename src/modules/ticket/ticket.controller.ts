@@ -53,11 +53,9 @@ export class TicketController {
       return res.status(200).json(tickets);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível carregar os tickets deste evento. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível carregar os tickets deste evento. Por favor, tente novamente.",
+      });
     }
   }
 
@@ -78,11 +76,9 @@ export class TicketController {
       return res.status(200).json(tickets);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível carregar os seus tickets. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível carregar os seus tickets. Por favor, tente novamente.",
+      });
     }
   }
 
@@ -95,12 +91,10 @@ export class TicketController {
       const ticket = await service.getTicketById(ticket_id);
 
       if (!ticket) {
-        return res
-          .status(404)
-          .json({
-            message:
-              "Não encontrámos o ticket que procura. Confirme o identificador e tente novamente.",
-          });
+        return res.status(404).json({
+          message:
+            "Não encontrámos o ticket que procura. Confirme o identificador e tente novamente.",
+        });
       }
 
       if ("message" in ticket && ticket.status !== 200) {
@@ -109,11 +103,9 @@ export class TicketController {
       return res.status(200).json(ticket);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível carregar os detalhes do ticket. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível carregar os detalhes do ticket. Por favor, tente novamente.",
+      });
     }
   }
 

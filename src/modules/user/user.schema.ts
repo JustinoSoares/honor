@@ -84,6 +84,7 @@ export const ResponseUserSchema = zod
     phone: zod.string().openapi({ example: "+244 900 000 000" }),
     role: zod.enum(["USER", "ADMIN", "MANAGER"]).openapi({ example: "USER" }),
     verified: zod.boolean().openapi({ example: false }),
+    is_active: zod.boolean().openapi({ example: true }),
     created_at: zod.string().datetime().openapi({ example: "2024-01-01T00:00:00Z" }),
     updated_at: zod.string().datetime().openapi({ example: "2024-01-01T00:00:00Z" }),
   })

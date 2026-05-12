@@ -21,6 +21,7 @@ model user {
   refreshToken  String? // token para manter o usuário logado
   role          role           @default(USER)
   verified      Boolean        @default(false)
+  is_active     Boolean        @default(true)
   reset_code    String?
   reset_expire  DateTime?
   events        event[]

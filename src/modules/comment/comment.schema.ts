@@ -5,7 +5,10 @@ extendZodWithOpenApi(z);
 
 export const CreateCommentSchema = z.object({
   event_id: z.string("O ID do evento é obrigatório").uuid("O ID do evento deve ser um UUID"),
-  content: z.string("O conteúdo do comentário é obrigatório").min(1, "O conteúdo do comentário é obrigatório").openapi({ example: "Evento incrível!" }),
+  content: z
+    .string("O conteúdo do comentário é obrigatório")
+    .min(1, "O conteúdo do comentário é obrigatório")
+    .openapi({ example: "Evento incrível!" }),
 });
 
 export type CreateComment = z.infer<typeof CreateCommentSchema>;

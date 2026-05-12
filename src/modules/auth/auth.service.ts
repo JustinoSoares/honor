@@ -36,6 +36,13 @@ export class AuthService {
       };
     }
 
+    if (!user.is_active) {
+      return {
+        message: "A sua conta está bloqueada. Contacte o administrador.",
+        status: 403,
+      };
+    }
+
     const isPasswordValid = await bcrypt.compare(data.password, user.password);
 
     if (!isPasswordValid) {
@@ -50,6 +57,7 @@ export class AuthService {
       email: user.email,
       role: user.role,
       verified: user.verified,
+      is_active: user.is_active,
     };
 
     const tokens = generateTokens(payload);
@@ -230,6 +238,7 @@ export class AuthService {
       email: user.email,
       role: user.role,
       verified: user.verified,
+      is_active: user.is_active,
     };
 
     const { accessToken, refreshToken } = generateTokens(payload);
@@ -256,6 +265,15 @@ export class AuthService {
         message: "A sua sessão expirou. Por favor, faça login novamente.",
 
         status: 401,
+      };
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: payload.user_id } });
+    if (!user || !user.is_active) {
+      await revokeRefreshToken(payload.user_id);
+      return {
+        message: "A sua conta está bloqueada. Contacte o administrador.",
+        status: 403,
       };
     }
 

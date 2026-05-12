@@ -125,7 +125,7 @@ export const ResponseMemberSchema = z.object({
     phone: z.string().nullable().openapi({ example: "+244 900 000 000" }),
     role: z.enum(["USER", "ADMIN", "MANAGER"]).openapi({ example: "USER" }),
     verified: z.boolean().openapi({ example: false }),
-  })
+  }),
 });
 
 export type ResponseMember = z.infer<typeof ResponseMemberSchema>;
@@ -141,8 +141,6 @@ export const ResponseMemberListSchema = z.object({
 });
 
 export type ResponseMemberList = z.infer<typeof ResponseMemberListSchema>;
-
-
 
 export const ResponsePackageSchema = z
   .object({
@@ -330,7 +328,9 @@ export const RejectEventSchema = z.object({
 export type RejectEvent = z.infer<typeof RejectEventSchema>;
 
 export const BlockEventSchema = z.object({
-  reason: z.string("O motivo do bloqueio é obrigatório").min(1, "O motivo do bloqueio é obrigatório"),
+  reason: z
+    .string("O motivo do bloqueio é obrigatório")
+    .min(1, "O motivo do bloqueio é obrigatório"),
 });
 
 export type BlockEvent = z.infer<typeof BlockEventSchema>;

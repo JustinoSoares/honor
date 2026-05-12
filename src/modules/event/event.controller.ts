@@ -46,12 +46,10 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message:
-            "Não foi possível alterar a disponibilidade do evento. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message:
+          "Não foi possível alterar a disponibilidade do evento. Por favor, tente novamente.",
+      });
     }
   }
 
@@ -164,11 +162,9 @@ export class EventController {
       return res.status(200).json(events);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível carregar os seus eventos. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível carregar os seus eventos. Por favor, tente novamente.",
+      });
     }
   }
 
@@ -187,11 +183,9 @@ export class EventController {
       return res.status(200).json(event);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível carregar os detalhes do evento. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível carregar os detalhes do evento. Por favor, tente novamente.",
+      });
     }
   }
 
@@ -209,11 +203,9 @@ export class EventController {
       return res.status(200).json(event);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível guardar as alterações no evento. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível guardar as alterações no evento. Por favor, tente novamente.",
+      });
     }
   }
 
@@ -256,11 +248,9 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível adicionar o pacote ao evento. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível adicionar o pacote ao evento. Por favor, tente novamente.",
+      });
     }
   }
 
@@ -284,11 +274,9 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível guardar as alterações no pacote. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível guardar as alterações no pacote. Por favor, tente novamente.",
+      });
     }
   }
 
@@ -305,11 +293,9 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível carregar os pacotes deste evento. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível carregar os pacotes deste evento. Por favor, tente novamente.",
+      });
     }
   }
 
@@ -326,11 +312,9 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível carregar os detalhes do pacote. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível carregar os detalhes do pacote. Por favor, tente novamente.",
+      });
     }
   }
 
@@ -370,11 +354,9 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível adicionar o membro ao evento. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível adicionar o membro ao evento. Por favor, tente novamente.",
+      });
     }
   }
 
@@ -397,11 +379,9 @@ export class EventController {
       return res.status(result.status!).json({ message: result.message });
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível remover o membro do evento. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível remover o membro do evento. Por favor, tente novamente.",
+      });
     }
   }
 
@@ -424,12 +404,10 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message:
-            "Não foi possível carregar a lista de membros do evento. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message:
+          "Não foi possível carregar a lista de membros do evento. Por favor, tente novamente.",
+      });
     }
   }
 
@@ -446,14 +424,11 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível carregar os detalhes do membro. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível carregar os detalhes do membro. Por favor, tente novamente.",
+      });
     }
   }
-
 
   async readCode(req: AuthRequest, res: Response) {
     try {
@@ -491,11 +466,9 @@ export class EventController {
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({
-          message: "Não foi possível carregar o histórico de entradas. Por favor, tente novamente.",
-        });
+      return res.status(500).json({
+        message: "Não foi possível carregar o histórico de entradas. Por favor, tente novamente.",
+      });
     }
   }
 

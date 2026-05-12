@@ -7,7 +7,7 @@ import { decryptDefault } from "../../utils/crypt";
 import { notify } from "../../utils/notify";
 
 export class EventService {
-  constructor() { }
+  constructor() {}
 
   private async checkPermission(
     user_id: string,
@@ -353,14 +353,14 @@ export class EventService {
     status_event?: string | string[],
   ): Promise<
     | {
-      data: schema.ResponseEvent[];
-      meta: {
-        total: number;
-        page: number;
-        per_page: number;
-        total_pages: number;
-      };
-    }
+        data: schema.ResponseEvent[];
+        meta: {
+          total: number;
+          page: number;
+          per_page: number;
+          total_pages: number;
+        };
+      }
     | { message: string; status: number }
   > {
     const skip = (page - 1) * per_page;
@@ -402,9 +402,7 @@ export class EventService {
       if (status_event) {
         whereClause = {
           ...whereClause,
-          status_event: Array.isArray(status_event)
-            ? { in: status_event }
-            : status_event,
+          status_event: Array.isArray(status_event) ? { in: status_event } : status_event,
         };
       }
     } else {
@@ -456,19 +454,19 @@ export class EventService {
           ...whereClause,
           event_category: category
             ? {
-              name: Array.isArray(category) ? { in: category } : category,
-            }
+                name: Array.isArray(category) ? { in: category } : category,
+              }
             : undefined,
           packages:
             min_price !== undefined || max_price !== undefined
               ? {
-                some: {
-                  price: {
-                    gte: min_price ?? undefined,
-                    lte: max_price ?? undefined,
+                  some: {
+                    price: {
+                      gte: min_price ?? undefined,
+                      lte: max_price ?? undefined,
+                    },
                   },
-                },
-              }
+                }
               : undefined,
         },
         include: {
@@ -497,21 +495,21 @@ export class EventService {
           ...whereClause,
           event_category: category
             ? {
-              name: Array.isArray(category)
-                ? { in: category, mode: "insensitive" }
-                : { equals: category, mode: "insensitive" },
-            }
+                name: Array.isArray(category)
+                  ? { in: category, mode: "insensitive" }
+                  : { equals: category, mode: "insensitive" },
+              }
             : undefined,
           packages:
             min_price !== undefined || max_price !== undefined
               ? {
-                some: {
-                  price: {
-                    gte: min_price ?? undefined,
-                    lte: max_price ?? undefined,
+                  some: {
+                    price: {
+                      gte: min_price ?? undefined,
+                      lte: max_price ?? undefined,
+                    },
                   },
-                },
-              }
+                }
               : undefined,
         },
       });
@@ -605,14 +603,14 @@ export class EventService {
     status_event?: string | string[],
   ): Promise<
     | {
-      data: schema.ResponseEvent[];
-      meta: {
-        total: number;
-        page: number;
-        per_page: number;
-        total_pages: number;
-      };
-    }
+        data: schema.ResponseEvent[];
+        meta: {
+          total: number;
+          page: number;
+          per_page: number;
+          total_pages: number;
+        };
+      }
     | { message: string; status: number }
   > {
     const skip = (page - 1) * per_page;
@@ -653,9 +651,7 @@ export class EventService {
       if (status_event) {
         whereClause = {
           ...whereClause,
-          status_event: Array.isArray(status_event)
-            ? { in: status_event }
-            : status_event,
+          status_event: Array.isArray(status_event) ? { in: status_event } : status_event,
         };
       }
     } else {
@@ -689,24 +685,24 @@ export class EventService {
           ...whereClause,
           event_category: category
             ? {
-              name: Array.isArray(category) ? { in: category } : category,
-            }
+                name: Array.isArray(category) ? { in: category } : category,
+              }
             : undefined,
           packages:
             min_price !== undefined || max_price !== undefined
               ? {
-                some: {
-                  price: {
-                    gte: min_price ?? undefined,
-                    lte: max_price ?? undefined,
+                  some: {
+                    price: {
+                      gte: min_price ?? undefined,
+                      lte: max_price ?? undefined,
+                    },
                   },
-                },
-              }
+                }
               : undefined,
           members: {
             some: {
               user_id,
-            }
+            },
           },
         },
         include: {
@@ -736,21 +732,21 @@ export class EventService {
           ...whereClause,
           event_category: category
             ? {
-              name: Array.isArray(category)
-                ? { in: category, mode: "insensitive" }
-                : { equals: category, mode: "insensitive" },
-            }
+                name: Array.isArray(category)
+                  ? { in: category, mode: "insensitive" }
+                  : { equals: category, mode: "insensitive" },
+              }
             : undefined,
           packages:
             min_price !== undefined || max_price !== undefined
               ? {
-                some: {
-                  price: {
-                    gte: min_price ?? undefined,
-                    lte: max_price ?? undefined,
+                  some: {
+                    price: {
+                      gte: min_price ?? undefined,
+                      lte: max_price ?? undefined,
+                    },
                   },
-                },
-              }
+                }
               : undefined,
         },
       });
@@ -1251,14 +1247,14 @@ export class EventService {
     search = "",
   ): Promise<
     | {
-      data: schema.ResponsePackage[];
-      meta: {
-        total: number;
-        page: number;
-        per_page: number;
-        total_pages: number;
-      };
-    }
+        data: schema.ResponsePackage[];
+        meta: {
+          total: number;
+          page: number;
+          per_page: number;
+          total_pages: number;
+        };
+      }
     | { message: string; status: number }
   > {
     const skip = (page - 1) * per_page;
@@ -1366,7 +1362,6 @@ export class EventService {
         status: 404,
       };
     }
-    
 
     const canDelete = await this.checkPermission(user_id, existingPackage.event_id, "MANAGER");
     if (!canDelete) {
@@ -1647,7 +1642,6 @@ export class EventService {
     };
   }
 
-
   async readCode(code: string, user_id: string): Promise<{ message: string; status: number }> {
     if (!code) {
       return {
@@ -1733,14 +1727,14 @@ export class EventService {
     is_used?: boolean,
   ): Promise<
     | {
-      data: schemaGuest.ResponseTicket[];
-      meta: {
-        page: number;
-        per_page: number;
-        total: number;
-        total_pages: number;
-      };
-    }
+        data: schemaGuest.ResponseTicket[];
+        meta: {
+          page: number;
+          per_page: number;
+          total: number;
+          total_pages: number;
+        };
+      }
     | { message: string; status: number }
   > {
     const canView = await this.checkPermission(user_id, event_id, "STAFF");
@@ -1841,11 +1835,10 @@ export class EventService {
 
       // Notificar membros do evento
       for (const member of event.members) {
-        await notify(
-          member.user_id,
-          `O evento "${event.title}" foi bloqueado. Motivo: ${reason}`,
-          { event_id, type: "event_blocked" },
-        );
+        await notify(member.user_id, `O evento "${event.title}" foi bloqueado. Motivo: ${reason}`, {
+          event_id,
+          type: "event_blocked",
+        });
       }
 
       return { message: "Evento bloqueado com sucesso", status: 200 };

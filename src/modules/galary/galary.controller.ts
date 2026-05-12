@@ -24,10 +24,7 @@ export class GalaryController {
   async list(req: Request, res: Response) {
     try {
       const { page, per_page } = req.query;
-      const result = await service.listGalaryItems(
-        Number(page) || 1,
-        Number(per_page) || 10
-      );
+      const result = await service.listGalaryItems(Number(page) || 1, Number(per_page) || 10);
       return res.status(200).json(result);
     } catch (error) {
       console.error(error);
