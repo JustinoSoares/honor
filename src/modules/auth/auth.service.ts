@@ -303,14 +303,16 @@ export class AuthService {
     }
 
     // 4. Build a fresh payload — never mutate the decoded token
-    const freshPayload: RefreshTokenPayload = {
-      ...payload,
+
+    const updatedPayload: RefreshTokenPayload = {
+      user_id: user.id,
+      email: user.email,
+      role: user.role,
       verified: user.verified,
       is_active: user.is_active,
-      role: user.role,
-    };
+    }
 
-    const { accessToken, refreshToken } = generateTokens(freshPayload);
+    const { accessToken, refreshToken } = generateTokens(updatedPayload);
 
     // 5. Revoke old token first, then store the new one atomically
     //    Using a transaction or sequential ops to avoid inconsistent state
