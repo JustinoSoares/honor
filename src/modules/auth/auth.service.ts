@@ -275,10 +275,11 @@ export class AuthService {
   async refreshToken(oldToken: string) {
     let payload: RefreshTokenPayload;
     try {
+      console.log(oldToken);
       payload = verifyRefreshToken(oldToken);
     } catch {
       return {
-        message: "A sua sessão expirou. Por favor, faça login novamente.",
+        message: "A sua sessão expirou! Por favor, faça login novamente.",
         status: 401,
       };
     }
