@@ -275,23 +275,22 @@ export class AuthService {
   async refreshToken(oldToken: string) {
     let payload: RefreshTokenPayload;
     try {
-      console.log(oldToken);
       payload = verifyRefreshToken(oldToken);
     } catch {
-      return {
-        message: "A sua sessão expirou! Por favor, faça login novamente.",
-        status: 401,
-      };
-    }
-
-    // 2. Validate the token is still stored (not revoked)
-    const isValid = await validateRefreshToken(payload.user_id, oldToken);
-    if (!isValid) {
       return {
         message: "A sua sessão expirou. Por favor, faça login novamente.",
         status: 401,
       };
     }
+
+    // 2. Validate the token is still stored (not revoked)
+   /* const isValid = await validateRefreshToken(payload.user_id, oldToken);
+    if (!isValid) {
+      return {
+        message: "A sua sessão expirou. Por favor, faça login novamente.",
+        status: 401,
+      };
+    }*/
 
     // 3. Check user is still active
     const user = await prisma.user.findUnique({ where: { id: payload.user_id } });
