@@ -19,8 +19,24 @@ import { notify } from "../../utils/notify";
 
 const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: env.NODE_ENV === "production",
+  sameSite: "none",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: "api/v1/auth/refresh",
+};
+
+type RefreshTokenPayload = {
+  user_id : string,
+  email: string,
+  role: string,
+  verified: boolean,
+  is_active : boolean
+}
+
 export class AuthService {
-  constructor() {}
+  constructor() { }
 
   async login(data: schema.LoginData) {
     const user = await prisma.user.findFirst({
@@ -146,6 +162,8 @@ export class AuthService {
           reset_expire: null,
         },
       });
+
+
       return {
         message: "O seu código de verificação expirou. Por favor, solicite um novo código.",
 
@@ -242,8 +260,6 @@ export class AuthService {
     };
 
     const { accessToken, refreshToken } = generateTokens(payload);
-
-    // Persiste no Valkey (lookup rápido) e no Postgres (durabilidade)
     await Promise.all([
       storeRefreshToken(user.id, refreshToken),
       prisma.user.update({
@@ -257,17 +273,26 @@ export class AuthService {
   }
 
   async refreshToken(oldToken: string) {
-    const payload = verifyRefreshToken(oldToken);
-
-    const isValid = await validateRefreshToken(payload.user_id, oldToken);
-    if (!isValid) {
+    let payload: RefreshTokenPayload;
+    try {
+      payload = verifyRefreshToken(oldToken);
+    } catch {
       return {
         message: "A sua sessão expirou. Por favor, faça login novamente.",
-
         status: 401,
       };
     }
 
+    // 2. Validate the token is still stored (not revoked)
+    const isValid = await validateRefreshToken(payload.user_id, oldToken);
+    if (!isValid) {
+      return {
+        message: "A sua sessão expirou. Por favor, faça login novamente.",
+        status: 401,
+      };
+    }
+
+    // 3. Check user is still active
     const user = await prisma.user.findUnique({ where: { id: payload.user_id } });
     if (!user || !user.is_active) {
       await revokeRefreshToken(payload.user_id);
@@ -277,16 +302,35 @@ export class AuthService {
       };
     }
 
-    const { accessToken, refreshToken } = generateTokens(payload);
+    // 4. Build a fresh payload — never mutate the decoded token
+    const freshPayload: RefreshTokenPayload = {
+      ...payload,
+      verified: user.verified,
+      is_active: user.is_active,
+      role: user.role,
+    };
 
-    // Rotação: sobrescreve o token antigo atomicamente
-    await Promise.all([
-      storeRefreshToken(payload.user_id, refreshToken), // Sobrescreve o token no Valkey
-      prisma.user.update({
-        where: { id: payload.user_id },
-        data: { refreshToken: refreshToken },
-      }),
-    ]);
+    const { accessToken, refreshToken } = generateTokens(freshPayload);
+
+    // 5. Revoke old token first, then store the new one atomically
+    //    Using a transaction or sequential ops to avoid inconsistent state
+    try {
+      await revokeRefreshToken(payload.user_id); // Invalidate old token first
+
+      await Promise.all([
+        storeRefreshToken(payload.user_id, refreshToken),
+        prisma.user.update({
+          where: { id: payload.user_id },
+          data: { refreshToken },
+        }),
+      ]);
+    } catch {
+      // If storage fails, the old token is already revoked — force re-login
+      return {
+        message: "Erro ao renovar sessão. Por favor, faça login novamente.",
+        status: 500,
+      };
+    }
 
     return { accessToken, refreshToken };
   }
