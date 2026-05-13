@@ -10,7 +10,7 @@ extendZodWithOpenApi(z);
 
 export const LoginSchema = z.object({
   email: z.string().email().openapi({ example: "user@email.com" }),
-  password: z.string().min(8).openapi({ example: "minhasenha123" }),
+  password: z.string().min(1).openapi({ example: "minhasenha123" }),
 });
 
 export const RegisterSchema = z.object({
