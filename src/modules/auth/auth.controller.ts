@@ -124,7 +124,7 @@ export class AuthController {
 
       res.cookie("refresh_token", result.refreshToken, COOKIE_OPTIONS);
 
-      return res.redirect(`${env.FRONTEND_URL}/?access_token=${result.accessToken}`);
+      return res.redirect(`${env.FRONTEND_URL}/?status=ok`);
     } catch (error) {
       console.error(error);
       return res.redirect(`${env.FRONTEND_URL}/login?error=oauth_failed`);
