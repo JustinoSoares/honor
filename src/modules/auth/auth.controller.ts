@@ -25,14 +25,17 @@ export class AuthController {
 
       if ("refreshToken" in result) {
         res.cookie("refresh_token", result.refreshToken, {
-          httpOnly: true, // not accessible via JS
-          secure: process.env.NODE_ENV === "production", // HTTPS only in prod
-          sameSite: "none", // CSRF protection
-          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+          path: "/api/v1/auth/refresh"
         });
 
         return res.status(200).json(result);
       }
+
+      return res.status(500).json({ message: "Ocorreu um erro ao tentar fazer login. Por favor, tente novamente." });
     } catch (error) {
       console.error(error);
       return res
@@ -131,7 +134,6 @@ export class AuthController {
   async refreshToken(req: AuthRequest, res: Response) {
     try {
       const refreshToken = req.cookies.refresh_token;
-
       if (!refreshToken) {
         return res
           .status(401)

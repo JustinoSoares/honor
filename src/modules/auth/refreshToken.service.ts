@@ -13,7 +13,7 @@ export async function storeRefreshToken(user_id: string, token: string): Promise
 // Verifica se o token é válido e pertence ao user_id
 export async function validateRefreshToken(user_id: string, token: string): Promise<boolean> {
   const stored = await valkey.get(`${RT_PREFIX}${user_id}`);
-  return stored === token;
+  return stored == token;
 }
 
 // Revoga a sessão do usuário instantaneamente
