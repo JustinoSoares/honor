@@ -51,11 +51,6 @@ export const UserUpdateSchema = zod
       )
       .optional()
       .openapi({ example: "+244 900 000 000" }),
-    password: zod
-      .string("A sua senha é obrigatória")
-      .min(6, "A senha deve ter pelo menos 6 caracteres")
-      .optional()
-      .openapi({ example: "senha123" }),
   })
   .openapi("UserUpdate");
 

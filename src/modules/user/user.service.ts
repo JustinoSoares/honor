@@ -136,11 +136,11 @@ export class UserService {
       },
     });
 
-    if (data.password) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { password: await bcrypt.hash(data.password, 10) },
-      });
+    if ("password" in data) {
+      return {
+        message: "Não é possível atualizar a senha por aqui",
+        status: 400,
+      } as schema.ResponseBad;
     }
 
     return {
